@@ -4,19 +4,46 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dossier N-00</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,400;1,600&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet" />
 
-    body {
-      background: #000;
-      color: #fff;
-      font-family: sans-serif;
-      height: 100vh;
+  <style>
+    /* ═══════════════════════════════════════════════════════════
+       Reset & variables
+    ═══════════════════════════════════════════════════════════ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg:        #0a0a0a;
+      --or:        #c9a84c;
+      --or-clair:  #e8d5a3;
+      --creme:     #f5f0e8;
+      --rouge:     #8b1a1a;
+
+      --font-titre: 'Playfair Display', Georgia, serif;
+      --font-corps: 'EB Garamond', Georgia, serif;
+      --font-mono:  'Courier Prime', 'Courier New', monospace;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: var(--bg);
+      color: var(--creme);
+      font-family: var(--font-corps);
+      font-size: 18px;
+      line-height: 1.65;
       overflow: hidden;
     }
 
-    /* ── SCREENS ── */
+    /* ═══════════════════════════════════════════════════════════
+       Système d'écrans — un seul visible à la fois, fondu CSS
+    ═══════════════════════════════════════════════════════════ */
     .screen {
       position: fixed;
       inset: 0;
@@ -24,211 +51,435 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 2rem;
+      padding: 5rem 2rem 3rem;
+      gap: 1.25rem;
+      text-align: center;
+
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.6s ease;
+      transition: opacity 0.65s ease;
+      overflow-y: auto;
     }
+
     .screen.active {
       opacity: 1;
       pointer-events: all;
     }
 
-    /* ── SCREEN 1 ── */
-    #screen-1 {
-      background: #000;
-      gap: 0;
+    /* ═══════════════════════════════════════════════════════════
+       Typographie globale
+    ═══════════════════════════════════════════════════════════ */
+    h1 {
+      font-family: var(--font-titre);
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      color: var(--or);
+      letter-spacing: 0.05em;
+      line-height: 1.1;
     }
 
-    /* stamp */
-    .stamp-wrapper {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 3rem;
+    h2 {
+      font-family: var(--font-titre);
+      font-size: clamp(1.5rem, 3.5vw, 2.4rem);
+      color: var(--or);
+      letter-spacing: 0.04em;
     }
 
-    .stamp {
-      position: relative;
-      width: 220px;
-      height: 220px;
-      border-radius: 50%;
-      border: 8px solid #c0392b;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      animation: stampCrash 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
-      transform-origin: center center;
-      opacity: 0;
-    }
-
-    .stamp::before,
-    .stamp::after {
-      content: '';
-      position: absolute;
-      inset: 8px;
-      border-radius: 50%;
-      border: 3px solid #c0392b;
-    }
-    .stamp::after {
-      inset: 16px;
-    }
-
-    .stamp-text {
-      font-family: 'Arial Black', Arial, sans-serif;
-      font-size: 1.35rem;
-      font-weight: 900;
-      letter-spacing: 0.18em;
-      color: #c0392b;
-      text-transform: uppercase;
-      text-align: center;
-      line-height: 1.3;
-      user-select: none;
-    }
-
-    @keyframes stampCrash {
-      0%   { transform: scale(3) rotate(-8deg); opacity: 0; }
-      60%  { transform: scale(0.92) rotate(2deg); opacity: 1; }
-      80%  { transform: scale(1.05) rotate(-1deg); opacity: 1; }
-      100% { transform: scale(1) rotate(-3deg); opacity: 1; }
-    }
-
-    /* intro text */
-    .intro-text {
-      font-family: 'Playfair Display', Georgia, serif;
+    h3 {
+      font-family: var(--font-titre);
+      font-size: clamp(1rem, 2vw, 1.4rem);
+      color: var(--or-clair);
       font-style: italic;
-      color: #f5f0e0;
-      font-size: 1.15rem;
-      line-height: 1.9;
-      text-align: center;
-      max-width: 520px;
-      padding: 0 1.5rem;
-      opacity: 0;
-      animation: fadeIn 1s ease forwards;
-      animation-delay: 1.5s;
-      margin-bottom: 2.5rem;
     }
 
-    /* form */
-    .entry-form {
+    p {
+      font-family: var(--font-corps);
+      font-size: clamp(0.95rem, 1.5vw, 1.1rem);
+      color: var(--creme);
+      max-width: 56ch;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       Composants réutilisables
+    ═══════════════════════════════════════════════════════════ */
+
+    /* Étiquette rouge CONFIDENTIEL */
+    .stamp-label {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--rouge);
+      border: 1px solid var(--rouge);
+      padding: 0.2em 0.7em;
+    }
+
+    /* Numéro d'écran discret */
+    .screen-id {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      color: var(--or);
+      opacity: 0.35;
+    }
+
+    /* Séparateur linéaire doré */
+    .divider {
+      width: 100px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--or), transparent);
+      flex-shrink: 0;
+    }
+
+    /* Bouton principal */
+    .btn {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--or);
+      background: transparent;
+      border: 1px solid var(--or);
+      padding: 0.6em 1.8em;
+      cursor: pointer;
+      transition: background 0.22s ease, color 0.22s ease;
+    }
+
+    .btn:hover {
+      background: var(--or);
+      color: var(--bg);
+    }
+
+    .btn + .btn { margin-left: 0.75rem; }
+
+    /* Zone de boutons de navigation entre écrans */
+    .nav-btns {
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-      opacity: 0;
-      animation: fadeIn 0.8s ease forwards;
-      animation-delay: 2.8s;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.6rem;
+      margin-top: 0.5rem;
     }
 
-    .entry-form input {
+    /* ═══════════════════════════════════════════════════════════
+       Barre de navigation persistante (cachée sur screen-1)
+    ═══════════════════════════════════════════════════════════ */
+    #top-nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 3.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      border-bottom: 1px solid rgba(201, 168, 76, 0.12);
+      z-index: 200;
+
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+
+    #top-nav.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    #top-nav .brand {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.22em;
+      color: var(--or);
+      opacity: 0.5;
+    }
+
+    #top-nav .links {
+      display: flex;
+      gap: 1.6rem;
+    }
+
+    #top-nav .links button {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--or-clair);
       background: transparent;
       border: none;
-      border-bottom: 1px solid #555;
-      color: #f5f0e0;
-      font-family: 'Playfair Display', Georgia, serif;
-      font-style: italic;
-      font-size: 1rem;
-      padding: 0.5rem 0.25rem;
-      width: 260px;
-      text-align: center;
-      outline: none;
-      transition: border-color 0.3s;
-    }
-    .entry-form input::placeholder {
-      color: #666;
-      letter-spacing: 0.05em;
-    }
-    .entry-form input:focus {
-      border-bottom-color: #c0392b;
-    }
-
-    .btn-open {
-      margin-top: 0.5rem;
-      background: transparent;
-      border: 1px solid #c0392b;
-      color: #c0392b;
-      font-family: 'Arial', sans-serif;
-      font-size: 0.85rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      padding: 0.65rem 2rem;
       cursor: pointer;
-      transition: background 0.25s, color 0.25s;
-    }
-    .btn-open:hover {
-      background: #c0392b;
-      color: #000;
+      opacity: 0.4;
+      transition: opacity 0.2s;
+      padding: 0;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to   { opacity: 1; transform: translateY(0); }
+    #top-nav .links button:hover,
+    #top-nav .links button.active-link {
+      opacity: 1;
     }
 
-    /* ── SCREEN 2 (placeholder) ── */
-    #screen-2 {
-      background: #000;
+    /* ═══════════════════════════════════════════════════════════
+       Ornements de coin permanents
+    ═══════════════════════════════════════════════════════════ */
+    .corner {
+      position: fixed;
+      width: 36px;
+      height: 36px;
+      opacity: 0.18;
+      pointer-events: none;
+      z-index: 100;
     }
-    #screen-2 p {
-      color: #555;
-      font-family: 'Playfair Display', serif;
+    .corner.tl { top: 10px; left: 10px;
+      border-top: 1px solid var(--or); border-left: 1px solid var(--or); }
+    .corner.tr { top: 10px; right: 10px;
+      border-top: 1px solid var(--or); border-right: 1px solid var(--or); }
+    .corner.bl { bottom: 10px; left: 10px;
+      border-bottom: 1px solid var(--or); border-left: 1px solid var(--or); }
+    .corner.br { bottom: 10px; right: 10px;
+      border-bottom: 1px solid var(--or); border-right: 1px solid var(--or); }
+
+    /* ═══════════════════════════════════════════════════════════
+       SCREEN-1  Accueil / splash
+    ═══════════════════════════════════════════════════════════ */
+    #screen-1 {
+      gap: 1.5rem;
+    }
+
+    #screen-1 .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--or);
+      opacity: 0.6;
+    }
+
+    #screen-1 h1 {
+      font-size: clamp(3.5rem, 10vw, 7rem);
       font-style: italic;
+    }
+
+    #screen-1 .tagline {
+      font-family: var(--font-corps);
+      font-style: italic;
+      font-size: clamp(0.9rem, 1.8vw, 1.05rem);
+      color: var(--or-clair);
+      letter-spacing: 0.06em;
+      max-width: 48ch;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       SCREEN-2 à SCREEN-6 & SCREEN-CARTE  (placeholders)
+       Styles identiques, contenu différencié via les classes
+    ═══════════════════════════════════════════════════════════ */
+    .placeholder-badge {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      color: var(--or);
+      opacity: 0.3;
+      margin-top: 0.25rem;
     }
   </style>
 </head>
 <body>
 
-  <!-- SCREEN 1 -->
-  <div id="screen-1" class="screen active">
-    <div class="stamp-wrapper">
-      <div class="stamp">
-        <span class="stamp-text">CONFIDENTIEL</span>
-      </div>
-    </div>
+  <!-- ── Ornements de coin ──────────────────────────────────── -->
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
 
-    <p class="intro-text">
-      Ce dossier n'était pas censé quitter les archives.<br>
+  <!-- ── Barre de navigation persistante ──────────────────── -->
+  <nav id="top-nav">
+    <span class="brand">N-00 // DOSSIER CLASSIFIÉ</span>
+    <div class="links">
+      <button data-target="screen-2">Profil</button>
+      <button data-target="screen-3">Mission</button>
+      <button data-target="screen-4">Réseau</button>
+      <button data-target="screen-5">Archives</button>
+      <button data-target="screen-6">Protocole</button>
+      <button data-target="screen-carte">Carte</button>
+    </div>
+  </nav>
+
+  <!-- ════════════════════════════════════════════════════════
+       SCREEN-1 : Accueil
+  ════════════════════════════════════════════════════════ -->
+  <div id="screen-1" class="screen active">
+    <span class="eyebrow">Dossier classifié</span>
+
+    <h1>N-00</h1>
+
+    <div class="divider"></div>
+
+    <p class="tagline">
+      Ce dossier n'était pas censé quitter les archives.<br />
       Il est maintenant entre vos mains.
     </p>
 
-    <div class="entry-form">
-      <input
-        type="text"
-        id="input-nom"
-        placeholder="Votre nom de code"
-        autocomplete="off"
-        maxlength="40"
-      />
-      <button class="btn-open" id="btn-open">&#9654; Ouvrir le dossier</button>
+    <div class="nav-btns">
+      <button class="btn" onclick="showScreen('screen-2')">
+        &#9654;&nbsp; Accéder au dossier
+      </button>
+    </div>
+
+    <span class="stamp-label">Confidentiel Défense</span>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       SCREEN-2 : Profil (placeholder)
+  ════════════════════════════════════════════════════════ -->
+  <div id="screen-2" class="screen">
+    <span class="screen-id">ÉCRAN 02 / 07</span>
+    <span class="stamp-label">Profil</span>
+
+    <h2>Identité de l'agent</h2>
+    <div class="divider"></div>
+
+    <p>[ contenu à venir ]</p>
+    <p class="placeholder-badge">// profil //</p>
+
+    <div class="nav-btns">
+      <button class="btn" onclick="showScreen('screen-1')">← Accueil</button>
+      <button class="btn" onclick="showScreen('screen-3')">Mission →</button>
     </div>
   </div>
 
-  <!-- SCREEN 2 -->
-  <div id="screen-2" class="screen">
-    <p id="screen2-greeting">…</p>
+  <!-- ════════════════════════════════════════════════════════
+       SCREEN-3 : Mission (placeholder)
+  ════════════════════════════════════════════════════════ -->
+  <div id="screen-3" class="screen">
+    <span class="screen-id">ÉCRAN 03 / 07</span>
+    <span class="stamp-label">Mission</span>
+
+    <h2>Briefing opérationnel</h2>
+    <div class="divider"></div>
+
+    <p>[ contenu à venir ]</p>
+    <p class="placeholder-badge">// mission //</p>
+
+    <div class="nav-btns">
+      <button class="btn" onclick="showScreen('screen-2')">← Profil</button>
+      <button class="btn" onclick="showScreen('screen-4')">Réseau →</button>
+    </div>
   </div>
 
+  <!-- ════════════════════════════════════════════════════════
+       SCREEN-4 : Réseau (placeholder)
+  ════════════════════════════════════════════════════════ -->
+  <div id="screen-4" class="screen">
+    <span class="screen-id">ÉCRAN 04 / 07</span>
+    <span class="stamp-label">Réseau</span>
+
+    <h2>Réseau de contacts</h2>
+    <div class="divider"></div>
+
+    <p>[ contenu à venir ]</p>
+    <p class="placeholder-badge">// réseau //</p>
+
+    <div class="nav-btns">
+      <button class="btn" onclick="showScreen('screen-3')">← Mission</button>
+      <button class="btn" onclick="showScreen('screen-5')">Archives →</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       SCREEN-5 : Archives (placeholder)
+  ════════════════════════════════════════════════════════ -->
+  <div id="screen-5" class="screen">
+    <span class="screen-id">ÉCRAN 05 / 07</span>
+    <span class="stamp-label">Archives</span>
+
+    <h2>Archives secrètes</h2>
+    <div class="divider"></div>
+
+    <p>[ contenu à venir ]</p>
+    <p class="placeholder-badge">// archives //</p>
+
+    <div class="nav-btns">
+      <button class="btn" onclick="showScreen('screen-4')">← Réseau</button>
+      <button class="btn" onclick="showScreen('screen-6')">Protocole →</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       SCREEN-6 : Protocole (placeholder)
+  ════════════════════════════════════════════════════════ -->
+  <div id="screen-6" class="screen">
+    <span class="screen-id">ÉCRAN 06 / 07</span>
+    <span class="stamp-label">Protocole</span>
+
+    <h2>Protocole de sécurité</h2>
+    <div class="divider"></div>
+
+    <p>[ contenu à venir ]</p>
+    <p class="placeholder-badge">// protocole //</p>
+
+    <div class="nav-btns">
+      <button class="btn" onclick="showScreen('screen-5')">← Archives</button>
+      <button class="btn" onclick="showScreen('screen-carte')">Carte →</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       SCREEN-CARTE : Carte opérationnelle (placeholder)
+  ════════════════════════════════════════════════════════ -->
+  <div id="screen-carte" class="screen">
+    <span class="screen-id">ÉCRAN 07 / 07</span>
+    <span class="stamp-label">Carte opérationnelle</span>
+
+    <h2>Zone d'opération</h2>
+    <div class="divider"></div>
+
+    <p>[ contenu à venir ]</p>
+    <p class="placeholder-badge">// carte //</p>
+
+    <div class="nav-btns">
+      <button class="btn" onclick="showScreen('screen-6')">← Protocole</button>
+      <button class="btn" onclick="showScreen('screen-1')">⌂ Accueil</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       JavaScript — navigation
+  ════════════════════════════════════════════════════════ -->
   <script>
-    var enqueteurNom = '';
+    var topNav = document.getElementById('top-nav');
 
-    document.getElementById('btn-open').addEventListener('click', function () {
-      var val = document.getElementById('input-nom').value.trim();
-      enqueteurNom = val || 'Inconnu';
-      goToScreen('screen-2');
-      document.getElementById('screen2-greeting').textContent =
-        'Bienvenue, ' + enqueteurNom + '.';
-    });
-
-    document.getElementById('input-nom').addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') document.getElementById('btn-open').click();
-    });
-
-    function goToScreen(id) {
+    function showScreen(id) {
+      // Retire la classe active de tous les écrans
       document.querySelectorAll('.screen').forEach(function (s) {
         s.classList.remove('active');
       });
-      document.getElementById(id).classList.add('active');
+
+      // Active l'écran cible
+      var target = document.getElementById(id);
+      if (target) { target.classList.add('active'); }
+
+      // Barre de navigation : masquée sur l'accueil
+      if (id === 'screen-1') {
+        topNav.classList.remove('visible');
+      } else {
+        topNav.classList.add('visible');
+      }
+
+      // Met en évidence le lien actif dans la nav
+      document.querySelectorAll('#top-nav .links button').forEach(function (btn) {
+        btn.classList.toggle('active-link', btn.dataset.target === id);
+      });
     }
+
+    // Câble les boutons de la barre de navigation
+    document.querySelectorAll('#top-nav .links button').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        showScreen(btn.dataset.target);
+      });
+    });
+
+    // Démarre sur le premier écran
+    showScreen('screen-1');
   </script>
+
 </body>
 </html>
