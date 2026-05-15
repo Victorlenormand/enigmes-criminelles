@@ -242,30 +242,132 @@
        SCREEN-1  Accueil / splash
     ═══════════════════════════════════════════════════════════ */
     #screen-1 {
-      gap: 1.5rem;
+      background: #000;
+      gap: 0;
+      justify-content: center;
     }
 
-    #screen-1 .eyebrow {
+    /* — Tampon circulaire rouge — */
+    .s1-stamp {
+      width: clamp(160px, 22vw, 210px);
+      height: clamp(160px, 22vw, 210px);
+      border-radius: 50%;
+      border: 6px solid var(--rouge);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      flex-shrink: 0;
+      margin-bottom: 2.6rem;
+
+      opacity: 0;
+      animation: stampCrash 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+      transform-origin: center;
+    }
+
+    .s1-stamp::before {
+      content: '';
+      position: absolute;
+      inset: 10px;
+      border-radius: 50%;
+      border: 2px solid var(--rouge);
+      opacity: 0.45;
+    }
+
+    .s1-stamp-text {
       font-family: var(--font-mono);
-      font-size: 0.65rem;
-      letter-spacing: 0.32em;
+      font-size: clamp(0.85rem, 1.5vw, 1.05rem);
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: var(--rouge);
       text-transform: uppercase;
-      color: var(--or);
-      opacity: 0.6;
+      text-align: center;
+      line-height: 1.4;
+      user-select: none;
+      padding: 0 1rem;
     }
 
-    #screen-1 h1 {
-      font-size: clamp(3.5rem, 10vw, 7rem);
-      font-style: italic;
+    @keyframes stampCrash {
+      0%   { transform: scale(3)    rotate(-8deg); opacity: 0; }
+      60%  { transform: scale(0.92) rotate( 2deg); opacity: 1; }
+      80%  { transform: scale(1.06) rotate(-1deg); opacity: 1; }
+      100% { transform: scale(1)    rotate(-3deg); opacity: 1; }
     }
 
-    #screen-1 .tagline {
-      font-family: var(--font-corps);
+    /* — Texte d'introduction — */
+    .s1-intro {
+      font-family: var(--font-titre);
       font-style: italic;
-      font-size: clamp(0.9rem, 1.8vw, 1.05rem);
-      color: var(--or-clair);
-      letter-spacing: 0.06em;
-      max-width: 48ch;
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: var(--creme);
+      line-height: 1.85;
+      text-align: center;
+      max-width: 46ch;
+      margin-bottom: 2rem;
+
+      opacity: 0;
+      animation: s1FadeUp 0.9s ease forwards;
+      animation-delay: 1.5s;
+    }
+
+    /* — Formulaire d'entrée — */
+    .s1-form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+
+      opacity: 0;
+      animation: s1FadeUp 0.8s ease forwards;
+      animation-delay: 2.8s;
+    }
+
+    .s1-form input {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(201, 168, 76, 0.3);
+      color: var(--creme);
+      font-family: var(--font-titre);
+      font-style: italic;
+      font-size: 1rem;
+      padding: 0.45rem 0.3rem;
+      width: clamp(200px, 30vw, 280px);
+      text-align: center;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    .s1-form input::placeholder {
+      color: rgba(245, 240, 232, 0.28);
+      letter-spacing: 0.04em;
+    }
+
+    .s1-form input:focus {
+      border-bottom-color: var(--or);
+    }
+
+    .s1-btn-open {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--rouge);
+      background: transparent;
+      border: 1px solid var(--rouge);
+      padding: 0.6em 1.8em;
+      cursor: pointer;
+      margin-top: 0.2rem;
+      transition: background 0.22s ease, color 0.22s ease;
+    }
+
+    .s1-btn-open:hover {
+      background: var(--rouge);
+      color: var(--creme);
+    }
+
+    @keyframes s1FadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0);   }
     }
 
     /* ═══════════════════════════════════════════════════════════
@@ -307,24 +409,32 @@
        SCREEN-1 : Accueil
   ════════════════════════════════════════════════════════ -->
   <div id="screen-1" class="screen active">
-    <span class="eyebrow">Dossier classifié</span>
 
-    <h1>N-00</h1>
+    <!-- Tampon animé -->
+    <div class="s1-stamp">
+      <span class="s1-stamp-text">CONFIDENTIEL</span>
+    </div>
 
-    <div class="divider"></div>
-
-    <p class="tagline">
+    <!-- Texte d'intro (apparaît à 1,5 s) -->
+    <p class="s1-intro">
       Ce dossier n'était pas censé quitter les archives.<br />
       Il est maintenant entre vos mains.
     </p>
 
-    <div class="nav-btns">
-      <button class="btn" onclick="showScreen('screen-2')">
-        &#9654;&nbsp; Accéder au dossier
+    <!-- Formulaire (apparaît à 2,8 s) -->
+    <div class="s1-form">
+      <input
+        type="text"
+        id="s1-input"
+        placeholder="Votre nom de code"
+        autocomplete="off"
+        maxlength="40"
+      />
+      <button class="s1-btn-open" id="s1-btn">
+        &#9654;&nbsp; Ouvrir le dossier
       </button>
     </div>
 
-    <span class="stamp-label">Confidentiel Défense</span>
   </div>
 
   <!-- ════════════════════════════════════════════════════════
@@ -445,6 +555,20 @@
        JavaScript — navigation
   ════════════════════════════════════════════════════════ -->
   <script>
+    // Nom de l'enquêteur — accessible dans toute l'app
+    var enqueteurNom = '';
+
+    // Formulaire screen-1
+    document.getElementById('s1-btn').addEventListener('click', function () {
+      var val = document.getElementById('s1-input').value.trim();
+      enqueteurNom = val || 'Inconnu';
+      showScreen('screen-2');
+    });
+
+    document.getElementById('s1-input').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { document.getElementById('s1-btn').click(); }
+    });
+
     var topNav = document.getElementById('top-nav');
 
     function showScreen(id) {
