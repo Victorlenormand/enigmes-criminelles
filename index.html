@@ -475,7 +475,68 @@
     }
 
     /* ═══════════════════════════════════════════════════════════
-       SCREEN-3 à SCREEN-6 & SCREEN-CARTE  (placeholders)
+       SCREEN-6  Résultats finaux
+    ═══════════════════════════════════════════════════════════ */
+    #screen-6 {
+      justify-content: flex-start;
+      padding-top: 5.5rem;
+      gap: 1.4rem;
+    }
+
+    .s6-headline {
+      font-family: var(--font-corps);
+      font-style: italic;
+      font-size: clamp(0.95rem, 1.8vw, 1.15rem);
+      color: var(--or-clair);
+      text-align: center;
+      max-width: 52ch;
+    }
+
+    .s6-grade {
+      font-family: var(--font-titre);
+      font-size: clamp(1.7rem, 4vw, 2.8rem);
+      color: var(--or);
+      text-align: center;
+      letter-spacing: 0.06em;
+      line-height: 1.15;
+    }
+
+    .s6-grade.divisionnaire {
+      animation: s6Shimmer 2s ease-in-out infinite;
+    }
+
+    @keyframes s6Shimmer {
+      0%, 100% { text-shadow: 0 0 8px rgba(201, 168, 76, 0.3); color: var(--or); }
+      50%       { text-shadow: 0 0 22px rgba(232, 213, 163, 0.9), 0 0 44px rgba(201, 168, 76, 0.5); color: var(--or-clair); }
+    }
+
+    .s6-stars {
+      display: flex;
+      gap: 0.55rem;
+      justify-content: center;
+      font-size: 1.9rem;
+      line-height: 1;
+    }
+
+    .s6-star          { color: rgba(201, 168, 76, 0.18); }
+    .s6-star.active   { color: var(--or); }
+    .s6-star.gold     { color: var(--or-clair); text-shadow: 0 0 14px rgba(232, 213, 163, 0.9); }
+
+    .s6-canvas-wrap {
+      border: 1px solid rgba(201, 168, 76, 0.28);
+      box-shadow: 0 4px 32px rgba(0, 0, 0, 0.55);
+      line-height: 0;
+      flex-shrink: 0;
+    }
+
+    .s6-canvas-wrap canvas {
+      display: block;
+      max-width: min(400px, 90vw);
+      height: auto;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       SCREEN-3 à 5 & SCREEN-CARTE  (placeholders)
     ═══════════════════════════════════════════════════════════ */
     .placeholder-badge {
       font-family: var(--font-mono);
@@ -650,22 +711,28 @@
   </div>
 
   <!-- ════════════════════════════════════════════════════════
-       SCREEN-6 : Protocole (placeholder)
+       SCREEN-6 : Résultats finaux
   ════════════════════════════════════════════════════════ -->
   <div id="screen-6" class="screen">
-    <span class="screen-id">ÉCRAN 06 / 07</span>
-    <span class="stamp-label">Protocole</span>
 
-    <h2>Protocole de sécurité</h2>
+    <p class="s6-headline" id="s6-headline"></p>
+
+    <h2 class="s6-grade" id="s6-grade"></h2>
+
+    <div class="s6-stars" id="s6-stars"></div>
+
     <div class="divider"></div>
 
-    <p>[ contenu à venir ]</p>
-    <p class="placeholder-badge">// protocole //</p>
+    <!-- Carte enquêteur générée en canvas -->
+    <div class="s6-canvas-wrap">
+      <canvas id="s6-canvas" width="400" height="220"></canvas>
+    </div>
 
     <div class="nav-btns">
-      <button class="btn" onclick="showScreen('screen-5')">← Archives</button>
-      <button class="btn" onclick="showScreen('screen-carte')">Carte →</button>
+      <button class="btn" id="s6-dl-btn">&#11015; Télécharger ma carte</button>
+      <button class="btn" id="s6-replay-btn">&#8635; Rejouer depuis le début</button>
     </div>
+
   </div>
 
   <!-- ════════════════════════════════════════════════════════
@@ -691,10 +758,11 @@
        JavaScript — navigation
   ════════════════════════════════════════════════════════ -->
   <script>
-    // Nom de l'enquêteur — accessible dans toute l'app
+    /* ── Globales ─────────────────────────────────────────────── */
     var enqueteurNom = '';
+    var score = 0; // incrémenté par les écrans 3-4-5
 
-    // Formulaire screen-1
+    /* ── Formulaire screen-1 ──────────────────────────────────── */
     document.getElementById('s1-btn').addEventListener('click', function () {
       var val = document.getElementById('s1-input').value.trim();
       enqueteurNom = val || 'Inconnu';
@@ -705,39 +773,172 @@
       if (e.key === 'Enter') { document.getElementById('s1-btn').click(); }
     });
 
+    /* ── Navigation ───────────────────────────────────────────── */
     var topNav = document.getElementById('top-nav');
 
     function showScreen(id) {
-      // Retire la classe active de tous les écrans
       document.querySelectorAll('.screen').forEach(function (s) {
         s.classList.remove('active');
       });
 
-      // Active l'écran cible
       var target = document.getElementById(id);
       if (target) { target.classList.add('active'); }
 
-      // Barre de navigation : masquée sur l'accueil
       if (id === 'screen-1') {
         topNav.classList.remove('visible');
       } else {
         topNav.classList.add('visible');
       }
 
-      // Met en évidence le lien actif dans la nav
       document.querySelectorAll('#top-nav .links button').forEach(function (btn) {
         btn.classList.toggle('active-link', btn.dataset.target === id);
       });
+
+      if (id === 'screen-6') { renderScreen6(); }
     }
 
-    // Câble les boutons de la barre de navigation
     document.querySelectorAll('#top-nav .links button').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        showScreen(btn.dataset.target);
-      });
+      btn.addEventListener('click', function () { showScreen(btn.dataset.target); });
     });
 
-    // Démarre sur le premier écran
+    /* ── Screen-6 : résultats ─────────────────────────────────── */
+    var GRADES = [
+      { label: 'Inspecteur Stagiaire',       stars: 1, div: false },
+      { label: 'Inspecteur',                 stars: 2, div: false },
+      { label: 'Commissaire',                stars: 3, div: false },
+      { label: 'Commissaire Divisionnaire',  stars: 3, div: true  }
+    ];
+
+    // Stocke le matricule généré pour que download et rendu soient cohérents
+    var s6Cache = { grade: '', stars: 0, div: false, matricule: '' };
+
+    function renderScreen6() {
+      var g = GRADES[Math.min(score, 3)];
+      var year = new Date().getFullYear();
+      var rand = String(1000 + Math.floor(Math.random() * 9000));
+      s6Cache = { grade: g.label, stars: g.stars, div: g.div,
+                  matricule: 'EC-' + year + '-' + rand };
+
+      // Headline
+      document.getElementById('s6-headline').textContent =
+        'Dossier ' + score + '/3 affaires résolues, ' + enqueteurNom + '.';
+
+      // Grade
+      var gradeEl = document.getElementById('s6-grade');
+      gradeEl.textContent = g.label;
+      gradeEl.className = 's6-grade' + (g.div ? ' divisionnaire' : '');
+
+      // Étoiles DOM
+      var starsEl = document.getElementById('s6-stars');
+      starsEl.innerHTML = '';
+      for (var i = 0; i < 3; i++) {
+        var sp = document.createElement('span');
+        sp.textContent = '★';
+        sp.className = 's6-star' + (i < g.stars ? (g.div ? ' gold' : ' active') : '');
+        starsEl.appendChild(sp);
+      }
+
+      drawCarteEnqueteur();
+    }
+
+    function drawCarteEnqueteur() {
+      var canvas = document.getElementById('s6-canvas');
+      var ctx    = canvas.getContext('2d');
+      var W = 400, H = 220;
+
+      // Fond
+      ctx.fillStyle = '#0a0a0a';
+      ctx.fillRect(0, 0, W, H);
+
+      // Bordure double
+      ctx.strokeStyle = '#c9a84c';
+      ctx.lineWidth   = 2;
+      ctx.strokeRect(5, 5, W - 10, H - 10);
+      ctx.strokeStyle = 'rgba(201,168,76,0.45)';
+      ctx.lineWidth   = 0.7;
+      ctx.strokeRect(10, 10, W - 20, H - 20);
+
+      ctx.textAlign = 'center';
+
+      // Logo
+      ctx.fillStyle = '#c9a84c';
+      ctx.font = 'bold 10px "Courier New", monospace';
+      ctx.fillText('ÉNIGMES  CRIMINELLES', W / 2, 32);
+
+      // Ligne séparatrice haute
+      _hline(ctx, 18, 41, W - 18, 'rgba(201,168,76,0.38)');
+
+      // Enquêteur
+      ctx.fillStyle = '#f5f0e8';
+      ctx.font = '11px "Courier New", monospace';
+      ctx.fillText('ENQUÊTEUR : ' + (enqueteurNom || 'INCONNU').toUpperCase(), W / 2, 64);
+
+      // Grade
+      ctx.fillStyle = '#c9a84c';
+      ctx.font = 'bold 13px Georgia, serif';
+      ctx.fillText(s6Cache.grade.toUpperCase(), W / 2, 90);
+
+      // Étoiles canvas
+      var starsFull  = '';
+      var starsEmpty = '';
+      for (var i = 0; i < 3; i++) {
+        starsFull  += (i < s6Cache.stars ? '★' : '');
+        starsEmpty += (i < s6Cache.stars ? '' : '☆');
+      }
+      ctx.font = '18px serif';
+      ctx.fillStyle = s6Cache.div ? '#e8d5a3' : '#c9a84c';
+      ctx.fillText(starsFull + starsEmpty, W / 2, 118);
+
+      // Ligne séparatrice basse
+      _hline(ctx, 18, 134, W - 18, 'rgba(201,168,76,0.25)');
+
+      // Matricule
+      ctx.fillStyle = '#e8d5a3';
+      ctx.font = '10px "Courier New", monospace';
+      ctx.fillText('MATRICULE : ' + s6Cache.matricule, W / 2, 156);
+
+      // Ligne avant pied
+      _hline(ctx, 18, 170, W - 18, 'rgba(201,168,76,0.2)');
+
+      // Pied confidentiel
+      ctx.fillStyle = 'rgba(139,26,26,0.85)';
+      ctx.font = 'bold 8px "Courier New", monospace';
+      ctx.fillText('DOSSIER  CONFIDENTIEL', W / 2, 193);
+    }
+
+    function _hline(ctx, x1, y, x2, color) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth   = 0.5;
+      ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y); ctx.stroke();
+    }
+
+    /* ── Télécharger la carte ─────────────────────────────────── */
+    document.getElementById('s6-dl-btn').addEventListener('click', function () {
+      var a = document.createElement('a');
+      a.download = 'carte-enqueteur.png';
+      a.href = document.getElementById('s6-canvas').toDataURL('image/png');
+      a.click();
+    });
+
+    /* ── Rejouer depuis le début ──────────────────────────────── */
+    document.getElementById('s6-replay-btn').addEventListener('click', function () {
+      score        = 0;
+      enqueteurNom = '';
+      document.getElementById('s1-input').value = '';
+
+      // Relance les animations CSS du screen-1
+      ['s1-stamp', 's1-intro', 's1-form'].forEach(function (cls) {
+        var el = document.querySelector('.' + cls);
+        if (!el) return;
+        el.style.animation = 'none';
+        el.offsetHeight;           // force reflow
+        el.style.animation = '';
+      });
+
+      showScreen('screen-1');
+    });
+
+    /* ── Démarrage ────────────────────────────────────────────── */
     showScreen('screen-1');
   </script>
 
