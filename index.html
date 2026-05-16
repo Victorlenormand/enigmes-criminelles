@@ -1025,14 +1025,30 @@
 
     /* ── Télécharger la carte ─────────────────────────────────── */
     document.getElementById('s6-dl-btn').addEventListener('click', function () {
-      var a = document.createElement('a');
-      a.download = 'carte-enqueteur.png';
-      a.href = document.getElementById('s6-canvas').toDataURL('image/png');
-      a.style.position = 'fixed';
-      a.style.opacity  = '0';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      var canvas = document.getElementById('s6-canvas');
+
+      function triggerDownload(url) {
+        var a = document.createElement('a');
+        a.href     = url;
+        a.download = 'carte-enqueteur.png';
+        a.style.cssText = 'position:fixed;top:-9999px;opacity:0;pointer-events:none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+
+      // toBlob + createObjectURL : seule méthode fiable sur Safari/Firefox/Chrome
+      if (typeof canvas.toBlob === 'function') {
+        canvas.toBlob(function (blob) {
+          var url = URL.createObjectURL(blob);
+          triggerDownload(url);
+          // Révoque l'URL après que le navigateur a eu le temps de la consommer
+          setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+        }, 'image/png');
+      } else {
+        // Navigateurs anciens sans toBlob — ouvre dans un nouvel onglet
+        window.open(canvas.toDataURL('image/png'), '_blank');
+      }
     });
 
     /* ── Rejouer depuis le début ──────────────────────────────── */
