@@ -559,7 +559,7 @@
     .ws-word-item { font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.1em; color:var(--creme); padding:0.3em 0; border-bottom:1px solid rgba(201,168,76,0.1); transition:all 0.3s; }
     .ws-word-item.ws-word-found { text-decoration:line-through; color:var(--rouge); opacity:0.7; }
     .ws-word-item.ws-word-ghost { color:var(--or); opacity:0.55; font-style:italic; }
-    .ws-word-item.ws-word-ghost::after { content:' ✦'; font-size:0.6rem; }
+    .ws-word-item.ws-word-ghost::after { content:' ✶'; font-size:0.6rem; }
     .ws-answer-section { display:none; padding-top:0.6rem; }
     .ws-ans-lbl { font-family:var(--font-corps); font-style:italic; font-size:0.82rem; color:var(--creme); opacity:0.75; margin-bottom:0.5rem; line-height:1.4; }
     .ws-char-boxes { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:0.8rem; }
@@ -912,106 +912,83 @@
     /* ══════════════════════════════════════════════════════════
        MOTS MÊLÉS — données et moteur
     ══════════════════════════════════════════════════════════ */
+
+    var wsActiveAffaire = null;
+
+    function generateGrid(placements, residualSeq) {
+      var r, c, i, pr, pc;
+      var grid = [], wordCells = [];
+      for (r = 0; r < 10; r++) {
+        grid.push([]); wordCells.push([]);
+        for (c = 0; c < 10; c++) { grid[r].push(null); wordCells[r].push(false); }
+      }
+      placements.forEach(function(p) {
+        for (i = 0; i < p.mot.length; i++) {
+          pr = p.dir === 'V' ? p.row + i : p.row;
+          pc = p.dir === 'H' ? p.col + i : p.col;
+          grid[pr][pc] = p.mot[i];
+          wordCells[pr][pc] = true;
+        }
+      });
+      var residuels = [], seqIdx = 0;
+      for (r = 0; r < 10; r++) {
+        for (c = 0; c < 10; c++) {
+          if (!wordCells[r][c]) {
+            grid[r][c] = residualSeq[seqIdx % residualSeq.length];
+            seqIdx++;
+            residuels.push([r, c]);
+          }
+        }
+      }
+      return {grid: grid, residuels: residuels};
+    }
+
     var AFFAIRES = [
       {
         id: 3,
         affaireNum: 1,
         titre: 'La Nuit du Palais Royal',
-        grid: [
-          ['R','A','P','P','O','R','T','M','V','C'],
-          ['F','X','D','H','W','K','Q','B','J','O'],
-          ['R','E','G','I','S','T','R','E','V','G'],
-          ['D','K','M','W','P','X','N','F','B','N'],
-          ['L','A','N','T','E','R','N','E','Z','A'],
-          ['H','Q','S','V','X','J','M','W','P','C'],
-          ['B','R','U','Y','E','R','E','K','X','F'],
-          ['L','E','O','N','C','E','M','V','W','D'],
-          ['C','A','B','A','N','E','P','Q','S','T'],
-          ['X','W','F','D','K','M','V','P','Q','H']
+        ghost: {mot: 'GRENIER', cat: 'LIEU'},
+        wordPlacements: [
+          {mot:'RAPPORT',  row:0, col:0, dir:'H'},
+          {mot:'REGISTRE', row:2, col:0, dir:'H'},
+          {mot:'LANTERNE', row:0, col:9, dir:'V'},
+          {mot:'BRUYERE',  row:4, col:0, dir:'H'},
+          {mot:'COGNAC',   row:0, col:8, dir:'V'}
         ],
-        mots: [
-          {mot:'RAPPORT',  findable:true},
-          {mot:'REGISTRE', findable:true},
-          {mot:'LANTERNE', findable:true},
-          {mot:'BRUYERE',  findable:true},
-          {mot:'COGNAC',   findable:false}
-        ],
-        positions: [
-          {mot:'RAPPORT',  row:0, col:0, dir:'H', len:7},
-          {mot:'REGISTRE', row:2, col:0, dir:'H', len:8},
-          {mot:'LANTERNE', row:4, col:0, dir:'H', len:8},
-          {mot:'BRUYERE',  row:6, col:0, dir:'H', len:7},
-          {mot:'COGNAC',   row:0, col:9, dir:'V', len:6}
-        ],
-        residuels: [[7,0],[7,1],[7,2],[7,3],[7,4],[7,5],[8,0],[8,1],[8,2],[8,3],[8,4],[8,5]],
-        solution: {tueur:'LEONCE', methode:'COGNAC', lieu:'CABANE'},
+        residualSeq: 'LEONEPEE',
+        solution: {tueur:'LEON', methode:'EPEE', lieu:'GRENIER'},
         nextScreen: 'screen-4'
       },
       {
         id: 4,
         affaireNum: 2,
         titre: 'Le Dernier Train de Lyon',
-        grid: [
-          ['R','A','P','P','O','R','T','M','V','E'],
-          ['F','X','D','H','W','K','Q','B','J','X'],
-          ['P','O','I','G','N','A','R','D','V','P'],
-          ['D','K','M','W','P','X','N','F','B','R'],
-          ['C','O','U','L','O','I','R','Z','V','E'],
-          ['H','Q','S','V','X','J','M','W','P','S'],
-          ['B','A','G','A','G','E','K','M','X','S'],
-          ['X','W','F','D','K','M','V','P','Q','H'],
-          ['V','I','C','T','O','R','W','D','K','F'],
-          ['Q','U','A','I','M','X','P','D','H','W']
+        ghost: {mot: 'LAME', cat: 'METHODE'},
+        wordPlacements: [
+          {mot:'BAGAGE',  row:0, col:0, dir:'H'},
+          {mot:'EXPRESS', row:2, col:0, dir:'H'},
+          {mot:'TICKET',  row:4, col:0, dir:'H'},
+          {mot:'COULOIR', row:0, col:7, dir:'V'},
+          {mot:'RETARD',  row:0, col:9, dir:'V'}
         ],
-        mots: [
-          {mot:'RAPPORT',  findable:true},
-          {mot:'POIGNARD', findable:false},
-          {mot:'COULOIR',  findable:true},
-          {mot:'BAGAGE',   findable:true},
-          {mot:'EXPRESS',  findable:true}
-        ],
-        positions: [
-          {mot:'RAPPORT',  row:0, col:0, dir:'H', len:7},
-          {mot:'POIGNARD', row:2, col:0, dir:'H', len:8},
-          {mot:'COULOIR',  row:4, col:0, dir:'H', len:7},
-          {mot:'BAGAGE',   row:6, col:0, dir:'H', len:6},
-          {mot:'EXPRESS',  row:0, col:9, dir:'V', len:7}
-        ],
-        residuels: [[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[9,0],[9,1],[9,2],[9,3]],
-        solution: {tueur:'VICTOR', methode:'POIGNARD', lieu:'QUAI'},
+        residualSeq: 'VICTORQUAI',
+        solution: {tueur:'VICTOR', methode:'LAME', lieu:'QUAI'},
         nextScreen: 'screen-5'
       },
       {
         id: 5,
         affaireNum: 3,
         titre: 'La Disparition Rue des Orfèvres',
-        grid: [
-          ['C','O','N','T','R','A','T','M','V','R'],
-          ['F','X','D','H','W','K','Q','B','J','E'],
-          ['A','R','C','H','I','V','E','S','V','G'],
-          ['D','K','M','W','P','X','N','F','B','I'],
-          ['A','R','S','E','N','I','C','Z','V','S'],
-          ['H','Q','P','V','X','J','M','W','P','T'],
-          ['F','E','N','E','T','R','E','K','X','R'],
-          ['D','K','M','W','P','X','N','F','B','E'],
-          ['B','L','A','N','C','H','E','M','V','W'],
-          ['C','A','V','E','M','X','P','D','H','W']
+        ghost: {mot: 'BLANCHE', cat: 'TUEUR'},
+        wordPlacements: [
+          {mot:'CONTRAT',  row:0, col:0, dir:'H'},
+          {mot:'ARCHIVES', row:2, col:0, dir:'H'},
+          {mot:'FENETRE',  row:0, col:9, dir:'V'},
+          {mot:'DOSSIER',  row:0, col:8, dir:'V'},
+          {mot:'SCEAU',    row:4, col:0, dir:'H'}
         ],
-        mots: [
-          {mot:'CONTRAT',  findable:true},
-          {mot:'ARCHIVES', findable:true},
-          {mot:'ARSENIC',  findable:false},
-          {mot:'FENETRE',  findable:true},
-          {mot:'REGISTRE', findable:true}
-        ],
-        positions: [
-          {mot:'CONTRAT',  row:0, col:0, dir:'H', len:7},
-          {mot:'ARCHIVES', row:2, col:0, dir:'H', len:8},
-          {mot:'ARSENIC',  row:4, col:0, dir:'H', len:7},
-          {mot:'FENETRE',  row:6, col:0, dir:'H', len:7},
-          {mot:'REGISTRE', row:0, col:9, dir:'V', len:8}
-        ],
-        residuels: [[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,6],[9,0],[9,1],[9,2],[9,3]],
+        residualSeq: 'ARSENICCAVE',
         solution: {tueur:'BLANCHE', methode:'ARSENIC', lieu:'CAVE'},
         nextScreen: 'screen-6'
       }
@@ -1020,7 +997,7 @@
     var wsStates = {};
 
     function wsNorm(s) {
-      return (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();
+      return (s||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
     }
 
     function wsGetCell(affId, r, c) {
@@ -1041,7 +1018,12 @@
     }
 
     function wsInitAffaire(aff) {
-      wsStates[aff.id] = {found:[], startCell:null, done:false};
+      if (!aff.grid) {
+        var result = generateGrid(aff.wordPlacements, aff.residualSeq);
+        aff.grid = result.grid;
+        aff.residuels = result.residuels;
+      }
+      wsStates[aff.id] = {found:[], done:false, mouseDown:false, startCell:null, axis:null};
 
       var hdr = document.getElementById('ws-hdr-' + aff.id);
       hdr.innerHTML =
@@ -1067,6 +1049,26 @@
       return '<div class="s2-step'+(lit?' lit':'')+'"><div class="s2-dot"></div><span class="s2-step-label">'+label+'</span></div>';
     }
 
+    function wsExtendSel(aff, r, c) {
+      var st = wsStates[aff.id];
+      if (!st.startCell) return;
+      var sr = st.startCell[0], sc = st.startCell[1];
+      if (r === sr && c === sc) { wsClearSel(aff); return; }
+      if (!st.axis) {
+        if (r === sr) st.axis = 'H';
+        else if (c === sc) st.axis = 'V';
+        else st.axis = (Math.abs(r - sr) >= Math.abs(c - sc)) ? 'V' : 'H';
+      }
+      var cells = (st.axis === 'H')
+        ? wsGetCellsBetween(sr, sc, sr, c)
+        : wsGetCellsBetween(sr, sc, r, sc);
+      wsClearSel(aff);
+      cells.forEach(function(pos) {
+        var cell = wsGetCell(aff.id, pos[0], pos[1]);
+        if (cell && !cell.classList.contains('ws-found')) cell.classList.add('ws-sel');
+      });
+    }
+
     function wsRenderGrid(aff) {
       var gridEl = document.getElementById('ws-grid-' + aff.id);
       gridEl.innerHTML = '';
@@ -1080,101 +1082,97 @@
           gridEl.appendChild(cell);
         }
       }
-      gridEl.addEventListener('click', function(e) {
+
+      gridEl.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        var st = wsStates[aff.id];
+        if (st.done) return;
         var t = e.target.closest('.ws-cell');
         if (!t) return;
-        wsCellClick(aff, parseInt(t.dataset.r), parseInt(t.dataset.c));
+        st.mouseDown = true;
+        st.startCell = [parseInt(t.dataset.r), parseInt(t.dataset.c)];
+        st.axis = null;
+        wsActiveAffaire = aff;
+        wsClearSel(aff);
+        if (!t.classList.contains('ws-found')) t.classList.add('ws-sel');
       });
+
+      gridEl.addEventListener('mouseover', function(e) {
+        var st = wsStates[aff.id];
+        if (!st.mouseDown) return;
+        var t = e.target.closest('.ws-cell');
+        if (t) wsExtendSel(aff, parseInt(t.dataset.r), parseInt(t.dataset.c));
+      });
+
       gridEl.addEventListener('touchstart', function(e) {
         e.preventDefault();
-        var t = e.touches[0];
-        var el = document.elementFromPoint(t.clientX, t.clientY);
+        var st = wsStates[aff.id];
+        if (st.done) return;
+        var touch = e.touches[0];
+        var el = document.elementFromPoint(touch.clientX, touch.clientY);
         var cell = el && el.closest('.ws-cell');
-        if (cell) { wsStates[aff.id].startCell = [parseInt(cell.dataset.r), parseInt(cell.dataset.c)]; wsClearSel(aff); wsMarkStart(aff); }
+        if (!cell) return;
+        st.mouseDown = true;
+        st.startCell = [parseInt(cell.dataset.r), parseInt(cell.dataset.c)];
+        st.axis = null;
+        wsActiveAffaire = aff;
+        wsClearSel(aff);
+        if (!cell.classList.contains('ws-found')) cell.classList.add('ws-sel');
       }, {passive:false});
+
       gridEl.addEventListener('touchmove', function(e) {
         e.preventDefault();
         var st = wsStates[aff.id];
-        if (!st.startCell) return;
-        var t = e.touches[0];
-        var el = document.elementFromPoint(t.clientX, t.clientY);
+        if (!st.mouseDown) return;
+        var touch = e.touches[0];
+        var el = document.elementFromPoint(touch.clientX, touch.clientY);
         var cell = el && el.closest('.ws-cell');
-        if (!cell) return;
-        var er = parseInt(cell.dataset.r), ec = parseInt(cell.dataset.c);
-        wsClearSel(aff);
-        var cells = wsGetCellsBetween(st.startCell[0], st.startCell[1], er, ec);
-        cells.forEach(function(pos) {
-          var c2 = wsGetCell(aff.id, pos[0], pos[1]);
-          if (c2 && !c2.classList.contains('ws-found')) c2.classList.add('ws-sel');
-        });
+        if (cell) wsExtendSel(aff, parseInt(cell.dataset.r), parseInt(cell.dataset.c));
       }, {passive:false});
+
       gridEl.addEventListener('touchend', function(e) {
         e.preventDefault();
         var st = wsStates[aff.id];
-        if (!st.startCell) return;
+        if (!st.mouseDown) return;
+        st.mouseDown = false;
+        wsActiveAffaire = null;
         var selCells = [];
         gridEl.querySelectorAll('.ws-sel').forEach(function(c2) {
           selCells.push([parseInt(c2.dataset.r), parseInt(c2.dataset.c)]);
         });
         wsClearSel(aff);
-        if (selCells.length >= 2) wsCheckMatch(aff, selCells);
         st.startCell = null;
+        st.axis = null;
+        if (selCells.length >= 2) wsCheckMatch(aff, selCells);
       }, {passive:false});
-    }
-
-    function wsMarkStart(aff) {
-      var st = wsStates[aff.id];
-      if (!st.startCell) return;
-      var c = wsGetCell(aff.id, st.startCell[0], st.startCell[1]);
-      if (c && !c.classList.contains('ws-found')) c.classList.add('ws-start');
     }
 
     function wsClearSel(aff) {
       var g = document.getElementById('ws-grid-' + aff.id);
-      g.querySelectorAll('.ws-start,.ws-sel').forEach(function(c) {
-        c.classList.remove('ws-start','ws-sel');
+      if (!g) return;
+      g.querySelectorAll('.ws-sel').forEach(function(c) {
+        c.classList.remove('ws-sel');
       });
-    }
-
-    function wsCellClick(aff, r, c) {
-      var st = wsStates[aff.id];
-      if (st.done) return;
-      var clickedCell = wsGetCell(aff.id, r, c);
-      if (clickedCell && clickedCell.classList.contains('ws-found')) {
-        st.startCell = null; wsClearSel(aff); return;
-      }
-      if (!st.startCell) {
-        st.startCell = [r, c];
-        wsClearSel(aff);
-        wsMarkStart(aff);
-      } else {
-        var cells = wsGetCellsBetween(st.startCell[0], st.startCell[1], r, c);
-        wsClearSel(aff);
-        st.startCell = null;
-        if (cells.length >= 2) wsCheckMatch(aff, cells);
-      }
     }
 
     function wsCheckMatch(aff, cells) {
       var forward = cells.map(function(p) { return aff.grid[p[0]][p[1]]; }).join('');
       var backward = forward.split('').reverse().join('');
       var st = wsStates[aff.id];
-      var found = null;
-      aff.mots.forEach(function(m) {
-        if (!m.findable) return;
-        if (st.found.indexOf(m.mot) !== -1) return;
-        if (forward === m.mot || backward === m.mot) found = m;
+      var foundMot = null;
+      aff.wordPlacements.forEach(function(p) {
+        if (st.found.indexOf(p.mot) !== -1) return;
+        if (forward === p.mot || backward === p.mot) foundMot = p.mot;
       });
-      if (found) {
-        st.found.push(found.mot);
+      if (foundMot) {
+        st.found.push(foundMot);
         cells.forEach(function(p) {
           var c = wsGetCell(aff.id, p[0], p[1]);
-          if (c) { c.classList.remove('ws-sel','ws-start'); c.classList.add('ws-found'); }
+          if (c) { c.classList.remove('ws-sel'); c.classList.add('ws-found'); }
         });
-        var item = document.querySelector('#ws-wlist-'+aff.id+' [data-mot="'+found.mot+'"]');
+        var item = document.querySelector('#ws-wlist-'+aff.id+' [data-mot="'+foundMot+'"]');
         if (item) item.classList.add('ws-word-found');
-        var findable = aff.mots.filter(function(m) { return m.findable; });
-        if (st.found.length >= findable.length) {
+        if (st.found.length >= aff.wordPlacements.length) {
           st.done = true;
           setTimeout(function() { wsIlluminateResiduals(aff); }, 350);
         }
@@ -1184,52 +1182,80 @@
     function wsRenderWordList(aff) {
       var el = document.getElementById('ws-wlist-' + aff.id);
       el.innerHTML = '<div class="ws-list-lbl">Mots à trouver</div>';
-      aff.mots.forEach(function(m) {
+      aff.wordPlacements.forEach(function(p) {
         var item = document.createElement('div');
-        item.className = 'ws-word-item' + (m.findable ? '' : ' ws-word-absent');
-        item.dataset.mot = m.mot;
-        item.textContent = m.mot;
+        item.className = 'ws-word-item';
+        item.dataset.mot = p.mot;
+        item.textContent = p.mot;
         el.appendChild(item);
       });
+      var ghost = document.createElement('div');
+      ghost.className = 'ws-word-item ws-word-ghost';
+      ghost.textContent = aff.ghost.mot;
+      el.appendChild(ghost);
     }
 
     function wsIlluminateResiduals(aff) {
       var res = aff.residuels;
+      var interval = Math.min(300, Math.ceil(2800 / res.length));
       res.forEach(function(pos, i) {
         setTimeout(function() {
           var c = wsGetCell(aff.id, pos[0], pos[1]);
-          if (c) { c.classList.remove('ws-found'); c.classList.add('ws-residual'); }
-        }, i * 200);
+          if (c) c.classList.add('ws-residual');
+        }, i * interval);
       });
-      setTimeout(function() { wsShowAnswerForm(aff); }, res.length * 200 + 500);
+      setTimeout(function() { wsShowAnswerForm(aff); }, Math.min(2800, res.length * interval) + 500);
     }
 
     function wsShowAnswerForm(aff) {
       var sec = document.getElementById('ws-ans-' + aff.id);
-      sec.style.display = 'flex';
-      sec.innerHTML =
-        '<div class="ws-answer-row"><span class="ws-answer-lbl">Tueur</span><input class="ws-answer-inp" id="ws-t-'+aff.id+'" type="text" autocomplete="off" /></div>' +
-        '<div class="ws-answer-row"><span class="ws-answer-lbl">Méthode</span><input class="ws-answer-inp" id="ws-m-'+aff.id+'" type="text" autocomplete="off" /></div>' +
-        '<div class="ws-answer-row"><span class="ws-answer-lbl">Lieu</span><input class="ws-answer-inp" id="ws-l-'+aff.id+'" type="text" autocomplete="off" /></div>' +
-        '<button class="btn" id="ws-sub-'+aff.id+'">Refermer le dossier</button>' +
-        '<div class="ws-stamp-wrap" id="ws-sw-'+aff.id+'"></div>' +
-        '<div id="ws-nxt-'+aff.id+'" style="display:none"><button class="btn" id="ws-nxt-btn-'+aff.id+'">Affaire suivante &rarr;</button></div>';
+      sec.style.display = 'block';
+      var ghostWord = aff.ghost.mot;
+      var catLabel = aff.ghost.cat;
+      var len = ghostWord.length;
+      var html = '<p class="ws-ans-lbl">Le mot fantôme vous a révélé le ' + catLabel + '.</p>';
+      html += '<div class="ws-char-boxes" id="ws-chars-' + aff.id + '">';
+      for (var i = 0; i < len; i++) {
+        html += '<input class="ws-char-inp" type="text" inputmode="text" maxlength="2" autocomplete="off" data-idx="' + i + '" />';
+      }
+      html += '</div>';
+      html += '<button class="btn ws-sub-btn" id="ws-sub-' + aff.id + '">Refermer le dossier</button>';
+      html += '<div class="ws-stamp-wrap" id="ws-sw-' + aff.id + '"></div>';
+      html += '<div id="ws-nxt-' + aff.id + '" style="display:none"><button class="btn" id="ws-nxt-btn-' + aff.id + '">Affaire suivante &rarr;</button></div>';
+      sec.innerHTML = html;
 
-      document.getElementById('ws-sub-'+aff.id).addEventListener('click', function() {
+      var boxes = Array.prototype.slice.call(sec.querySelectorAll('.ws-char-inp'));
+      if (boxes[0]) boxes[0].focus();
+
+      boxes.forEach(function(box, idx) {
+        box.addEventListener('input', function() {
+          var v = wsNorm(box.value).replace(/[^A-Z]/g, '');
+          box.value = v ? v[v.length - 1] : '';
+          if (box.value && idx < boxes.length - 1) boxes[idx + 1].focus();
+        });
+        box.addEventListener('keydown', function(e) {
+          if (e.key === 'Backspace' && !box.value && idx > 0) {
+            boxes[idx - 1].focus();
+            boxes[idx - 1].value = '';
+          }
+        });
+      });
+
+      document.getElementById('ws-sub-' + aff.id).addEventListener('click', function() {
         wsValidate(aff);
       });
-      document.getElementById('ws-nxt-btn-'+aff.id).addEventListener('click', function() {
+      document.getElementById('ws-nxt-btn-' + aff.id).addEventListener('click', function() {
         showScreen(aff.nextScreen);
       });
     }
 
     function wsValidate(aff) {
-      var t = wsNorm(document.getElementById('ws-t-'+aff.id).value);
-      var m = wsNorm(document.getElementById('ws-m-'+aff.id).value);
-      var l = wsNorm(document.getElementById('ws-l-'+aff.id).value);
-      var ok = t === wsNorm(aff.solution.tueur) && m === wsNorm(aff.solution.methode) && l === wsNorm(aff.solution.lieu);
-      if (ok) { score++; }
-      var wrap = document.getElementById('ws-sw-'+aff.id);
+      var boxes = Array.prototype.slice.call(document.querySelectorAll('#ws-chars-' + aff.id + ' .ws-char-inp'));
+      var answer = '';
+      boxes.forEach(function(b) { answer += b.value; });
+      var ok = wsNorm(answer) === wsNorm(aff.ghost.mot);
+      if (ok) score++;
+      var wrap = document.getElementById('ws-sw-' + aff.id);
       var stamp = document.createElement('div');
       stamp.className = 'ws-stamp ' + (ok ? 'ws-resolu' : 'ws-echec');
       stamp.textContent = ok ? 'RÉSOLU' : 'ÉCHEC';
@@ -1237,13 +1263,31 @@
       if (!ok) {
         var sol = document.createElement('p');
         sol.className = 'ws-sol-reveal';
-        sol.innerHTML = 'Tueur : ' + aff.solution.tueur + '<br>Méthode : ' + aff.solution.methode + '<br>Lieu : ' + aff.solution.lieu;
+        sol.textContent = aff.ghost.mot;
         wrap.appendChild(sol);
       }
-      document.getElementById('ws-sub-'+aff.id).disabled = true;
-      document.getElementById('ws-nxt-'+aff.id).style.display = 'block';
+      document.getElementById('ws-sub-' + aff.id).disabled = true;
+      document.getElementById('ws-nxt-' + aff.id).style.display = 'block';
     }
 
+    document.addEventListener('mouseup', function() {
+      if (!wsActiveAffaire) return;
+      var aff = wsActiveAffaire;
+      var st = wsStates[aff.id];
+      if (!st || !st.mouseDown) return;
+      st.mouseDown = false;
+      wsActiveAffaire = null;
+      var g = document.getElementById('ws-grid-' + aff.id);
+      if (!g) return;
+      var selCells = [];
+      g.querySelectorAll('.ws-sel').forEach(function(c) {
+        selCells.push([parseInt(c.dataset.r), parseInt(c.dataset.c)]);
+      });
+      wsClearSel(aff);
+      st.startCell = null;
+      st.axis = null;
+      if (selCells.length >= 2) wsCheckMatch(aff, selCells);
+    });
     /* ── Navigation ───────────────────────────────────────────── */
     var topNav = document.getElementById('top-nav');
 
