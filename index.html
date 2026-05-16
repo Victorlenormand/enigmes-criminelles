@@ -39,6 +39,8 @@
       font-size: 18px;
       line-height: 1.65;
       overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     /* ═══════════════════════════════════════════════════════════
@@ -556,18 +558,19 @@
     .ws-list-lbl { font-family:var(--font-mono); font-size:0.55rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--or); opacity:0.45; }
     .ws-word-item { font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.1em; color:var(--creme); padding:0.3em 0; border-bottom:1px solid rgba(201,168,76,0.1); transition:all 0.3s; }
     .ws-word-item.ws-word-found { text-decoration:line-through; color:var(--rouge); opacity:0.7; }
-    .ws-word-item.ws-word-absent { text-decoration:line-through; color:var(--or); }
-    .ws-word-item.ws-word-absent::after { content:' — indice révélé'; font-size:0.55rem; opacity:0.6; }
-    .ws-answer-section { display:none; flex-direction:column; gap:0.7rem; padding-top:0.4rem; }
-    .ws-answer-row { display:flex; align-items:baseline; gap:0.6rem; }
-    .ws-answer-lbl { font-family:var(--font-mono); font-size:0.56rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--or); width:4.5rem; text-align:right; flex-shrink:0; }
-    .ws-answer-inp { background:transparent; border:none; border-bottom:1px solid rgba(201,168,76,0.3); color:var(--creme); font-family:var(--font-corps); font-style:italic; font-size:0.95rem; padding:0.25rem 0.2rem; width:130px; outline:none; transition:border-color 0.3s; }
-    .ws-answer-inp:focus { border-bottom-color:var(--or); }
-    .ws-stamp-wrap { display:flex; flex-direction:column; align-items:center; gap:0.4rem; margin-top:0.3rem; }
+    .ws-word-item.ws-word-ghost { color:var(--or); opacity:0.55; font-style:italic; }
+    .ws-word-item.ws-word-ghost::after { content:' ✦'; font-size:0.6rem; }
+    .ws-answer-section { display:none; padding-top:0.6rem; }
+    .ws-ans-lbl { font-family:var(--font-corps); font-style:italic; font-size:0.82rem; color:var(--creme); opacity:0.75; margin-bottom:0.5rem; line-height:1.4; }
+    .ws-char-boxes { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:0.8rem; }
+    .ws-char-inp { width:36px; height:44px; text-align:center; background:transparent; border:1.5px solid var(--or); color:var(--or-clair); font-family:var(--font-mono); font-size:1.15rem; font-weight:700; text-transform:uppercase; outline:none; transition:border-color 0.2s, box-shadow 0.2s; caret-color:var(--or); }
+    .ws-char-inp:focus { border-color:var(--or-clair); box-shadow:0 0 6px rgba(201,168,76,0.45); }
+    .ws-sub-btn { margin-top:0.3rem; }
+    .ws-stamp-wrap { display:flex; flex-direction:column; align-items:center; gap:0.4rem; margin-top:0.5rem; }
     .ws-stamp { font-family:var(--font-mono); font-size:clamp(1.1rem,3vw,1.8rem); font-weight:700; letter-spacing:0.22em; padding:0.25em 0.6em; border:3px solid; display:inline-block; animation:stampCrash 0.5s cubic-bezier(0.22,0.61,0.36,1) forwards; opacity:0; transform-origin:center; }
     .ws-stamp.ws-resolu { color:#3a9a3a; border-color:#3a9a3a; }
     .ws-stamp.ws-echec  { color:var(--rouge); border-color:var(--rouge); }
-    .ws-sol-reveal { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:0.07em; color:var(--or-clair); opacity:0.8; text-align:center; line-height:1.7; }
+    .ws-sol-reveal { font-family:var(--font-mono); font-size:0.75rem; letter-spacing:0.12em; color:var(--or-clair); opacity:0.85; text-align:center; margin-top:0.3rem; }
 
     /* ═══════════════════════════════════════════════════════════
        SCREEN-3 à 5 & SCREEN-CARTE  (placeholders)
