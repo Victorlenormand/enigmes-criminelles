@@ -1028,7 +1028,11 @@
       var a = document.createElement('a');
       a.download = 'carte-enqueteur.png';
       a.href = document.getElementById('s6-canvas').toDataURL('image/png');
+      a.style.position = 'fixed';
+      a.style.opacity  = '0';
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
     });
 
     /* ── Rejouer depuis le début ──────────────────────────────── */
