@@ -535,6 +535,40 @@
       height: auto;
     }
 
+    /* ═══ Mots mêlés — écrans 3-4-5 ═══ */
+    #screen-3, #screen-4, #screen-5 {
+      justify-content: flex-start;
+      padding-top: 5.2rem;
+      gap: 0.8rem;
+    }
+    .ws-header { display:flex; flex-direction:column; align-items:center; gap:0.5rem; flex-shrink:0; width:100%; }
+    .ws-titre { font-family:var(--font-titre); font-size:clamp(0.9rem,2vw,1.3rem); color:var(--or); font-style:italic; }
+    .ws-body { display:flex; gap:1.5rem; align-items:flex-start; flex-wrap:wrap; justify-content:center; width:100%; }
+    .ws-grid { display:grid; grid-template-columns:repeat(10,1fr); gap:3px; user-select:none; -webkit-user-select:none; flex-shrink:0; touch-action:none; }
+    .ws-cell { width:38px; height:38px; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:0.8rem; font-weight:700; color:var(--creme); background:rgba(201,168,76,0.03); border:1px solid rgba(201,168,76,0.1); cursor:pointer; transition:background 0.12s,color 0.12s; }
+    .ws-cell:hover:not(.ws-found):not(.ws-residual) { background:rgba(201,168,76,0.1); }
+    .ws-cell.ws-start { background:rgba(201,168,76,0.35); color:var(--or); }
+    .ws-cell.ws-sel   { background:rgba(201,168,76,0.2); color:var(--or-clair); }
+    .ws-cell.ws-found { background:rgba(139,26,26,0.2); color:rgba(245,240,232,0.55); text-decoration:line-through; }
+    .ws-cell.ws-residual { color:var(--or); background:rgba(201,168,76,0.14); animation:wsGlow 0.5s ease forwards; }
+    @keyframes wsGlow { from { background:rgba(201,168,76,0.55); } to { background:rgba(201,168,76,0.14); } }
+    .ws-side { display:flex; flex-direction:column; gap:1rem; min-width:145px; }
+    .ws-list-lbl { font-family:var(--font-mono); font-size:0.55rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--or); opacity:0.45; }
+    .ws-word-item { font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.1em; color:var(--creme); padding:0.3em 0; border-bottom:1px solid rgba(201,168,76,0.1); transition:all 0.3s; }
+    .ws-word-item.ws-word-found { text-decoration:line-through; color:var(--rouge); opacity:0.7; }
+    .ws-word-item.ws-word-absent { text-decoration:line-through; color:var(--or); }
+    .ws-word-item.ws-word-absent::after { content:' — indice révélé'; font-size:0.55rem; opacity:0.6; }
+    .ws-answer-section { display:none; flex-direction:column; gap:0.7rem; padding-top:0.4rem; }
+    .ws-answer-row { display:flex; align-items:baseline; gap:0.6rem; }
+    .ws-answer-lbl { font-family:var(--font-mono); font-size:0.56rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--or); width:4.5rem; text-align:right; flex-shrink:0; }
+    .ws-answer-inp { background:transparent; border:none; border-bottom:1px solid rgba(201,168,76,0.3); color:var(--creme); font-family:var(--font-corps); font-style:italic; font-size:0.95rem; padding:0.25rem 0.2rem; width:130px; outline:none; transition:border-color 0.3s; }
+    .ws-answer-inp:focus { border-bottom-color:var(--or); }
+    .ws-stamp-wrap { display:flex; flex-direction:column; align-items:center; gap:0.4rem; margin-top:0.3rem; }
+    .ws-stamp { font-family:var(--font-mono); font-size:clamp(1.1rem,3vw,1.8rem); font-weight:700; letter-spacing:0.22em; padding:0.25em 0.6em; border:3px solid; display:inline-block; animation:stampCrash 0.5s cubic-bezier(0.22,0.61,0.36,1) forwards; opacity:0; transform-origin:center; }
+    .ws-stamp.ws-resolu { color:#3a9a3a; border-color:#3a9a3a; }
+    .ws-stamp.ws-echec  { color:var(--rouge); border-color:var(--rouge); }
+    .ws-sol-reveal { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:0.07em; color:var(--or-clair); opacity:0.8; text-align:center; line-height:1.7; }
+
     /* ═══════════════════════════════════════════════════════════
        SCREEN-3 à 5 & SCREEN-CARTE  (placeholders)
     ═══════════════════════════════════════════════════════════ */
@@ -592,6 +626,9 @@
       /* Screen-6 */
       .s6-grade { font-size: clamp(1.3rem, 5vw, 2rem); }
       .s6-canvas-wrap canvas { max-width: calc(100vw - 2rem); }
+
+      .ws-body { flex-direction: column; align-items: center; }
+      .ws-side { max-width: 100%; flex-direction: row; flex-wrap: wrap; gap: 0.8rem; }
 
       /* Grilles mots mêlés (screens 3-5) — cellule minimale 32×32 */
       .ws-cell {
@@ -712,59 +749,44 @@
   </div>
 
   <!-- ════════════════════════════════════════════════════════
-       SCREEN-3 : Mission (placeholder)
+       SCREEN-3 : Affaire 1
   ════════════════════════════════════════════════════════ -->
   <div id="screen-3" class="screen">
-    <span class="screen-id">ÉCRAN 03 / 07</span>
-    <span class="stamp-label">Mission</span>
-
-    <h2>Briefing opérationnel</h2>
-    <div class="divider"></div>
-
-    <p>[ contenu à venir ]</p>
-    <p class="placeholder-badge">// mission //</p>
-
-    <div class="nav-btns">
-      <button class="btn" onclick="showScreen('screen-2')">← Profil</button>
-      <button class="btn" onclick="showScreen('screen-4')">Réseau →</button>
+    <div class="ws-header" id="ws-hdr-3"></div>
+    <div class="ws-body">
+      <div class="ws-grid" id="ws-grid-3"></div>
+      <div class="ws-side">
+        <div id="ws-wlist-3"></div>
+        <div class="ws-answer-section" id="ws-ans-3"></div>
+      </div>
     </div>
   </div>
 
   <!-- ════════════════════════════════════════════════════════
-       SCREEN-4 : Réseau (placeholder)
+       SCREEN-4 : Affaire 2
   ════════════════════════════════════════════════════════ -->
   <div id="screen-4" class="screen">
-    <span class="screen-id">ÉCRAN 04 / 07</span>
-    <span class="stamp-label">Réseau</span>
-
-    <h2>Réseau de contacts</h2>
-    <div class="divider"></div>
-
-    <p>[ contenu à venir ]</p>
-    <p class="placeholder-badge">// réseau //</p>
-
-    <div class="nav-btns">
-      <button class="btn" onclick="showScreen('screen-3')">← Mission</button>
-      <button class="btn" onclick="showScreen('screen-5')">Archives →</button>
+    <div class="ws-header" id="ws-hdr-4"></div>
+    <div class="ws-body">
+      <div class="ws-grid" id="ws-grid-4"></div>
+      <div class="ws-side">
+        <div id="ws-wlist-4"></div>
+        <div class="ws-answer-section" id="ws-ans-4"></div>
+      </div>
     </div>
   </div>
 
   <!-- ════════════════════════════════════════════════════════
-       SCREEN-5 : Archives (placeholder)
+       SCREEN-5 : Affaire 3
   ════════════════════════════════════════════════════════ -->
   <div id="screen-5" class="screen">
-    <span class="screen-id">ÉCRAN 05 / 07</span>
-    <span class="stamp-label">Archives</span>
-
-    <h2>Archives secrètes</h2>
-    <div class="divider"></div>
-
-    <p>[ contenu à venir ]</p>
-    <p class="placeholder-badge">// archives //</p>
-
-    <div class="nav-btns">
-      <button class="btn" onclick="showScreen('screen-4')">← Réseau</button>
-      <button class="btn" onclick="showScreen('screen-6')">Protocole →</button>
+    <div class="ws-header" id="ws-hdr-5"></div>
+    <div class="ws-body">
+      <div class="ws-grid" id="ws-grid-5"></div>
+      <div class="ws-side">
+        <div id="ws-wlist-5"></div>
+        <div class="ws-answer-section" id="ws-ans-5"></div>
+      </div>
     </div>
   </div>
 
@@ -884,6 +906,341 @@
       if (e.key === 'Enter') { document.getElementById('s1-btn').click(); }
     });
 
+    /* ══════════════════════════════════════════════════════════
+       MOTS MÊLÉS — données et moteur
+    ══════════════════════════════════════════════════════════ */
+    var AFFAIRES = [
+      {
+        id: 3,
+        affaireNum: 1,
+        titre: 'La Nuit du Palais Royal',
+        grid: [
+          ['R','A','P','P','O','R','T','M','V','C'],
+          ['F','X','D','H','W','K','Q','B','J','O'],
+          ['R','E','G','I','S','T','R','E','V','G'],
+          ['D','K','M','W','P','X','N','F','B','N'],
+          ['L','A','N','T','E','R','N','E','Z','A'],
+          ['H','Q','S','V','X','J','M','W','P','C'],
+          ['B','R','U','Y','E','R','E','K','X','F'],
+          ['L','E','O','N','C','E','M','V','W','D'],
+          ['C','A','B','A','N','E','P','Q','S','T'],
+          ['X','W','F','D','K','M','V','P','Q','H']
+        ],
+        mots: [
+          {mot:'RAPPORT',  findable:true},
+          {mot:'REGISTRE', findable:true},
+          {mot:'LANTERNE', findable:true},
+          {mot:'BRUYERE',  findable:true},
+          {mot:'COGNAC',   findable:false}
+        ],
+        positions: [
+          {mot:'RAPPORT',  row:0, col:0, dir:'H', len:7},
+          {mot:'REGISTRE', row:2, col:0, dir:'H', len:8},
+          {mot:'LANTERNE', row:4, col:0, dir:'H', len:8},
+          {mot:'BRUYERE',  row:6, col:0, dir:'H', len:7},
+          {mot:'COGNAC',   row:0, col:9, dir:'V', len:6}
+        ],
+        residuels: [[7,0],[7,1],[7,2],[7,3],[7,4],[7,5],[8,0],[8,1],[8,2],[8,3],[8,4],[8,5]],
+        solution: {tueur:'LEONCE', methode:'COGNAC', lieu:'CABANE'},
+        nextScreen: 'screen-4'
+      },
+      {
+        id: 4,
+        affaireNum: 2,
+        titre: 'Le Dernier Train de Lyon',
+        grid: [
+          ['R','A','P','P','O','R','T','M','V','E'],
+          ['F','X','D','H','W','K','Q','B','J','X'],
+          ['P','O','I','G','N','A','R','D','V','P'],
+          ['D','K','M','W','P','X','N','F','B','R'],
+          ['C','O','U','L','O','I','R','Z','V','E'],
+          ['H','Q','S','V','X','J','M','W','P','S'],
+          ['B','A','G','A','G','E','K','M','X','S'],
+          ['X','W','F','D','K','M','V','P','Q','H'],
+          ['V','I','C','T','O','R','W','D','K','F'],
+          ['Q','U','A','I','M','X','P','D','H','W']
+        ],
+        mots: [
+          {mot:'RAPPORT',  findable:true},
+          {mot:'POIGNARD', findable:false},
+          {mot:'COULOIR',  findable:true},
+          {mot:'BAGAGE',   findable:true},
+          {mot:'EXPRESS',  findable:true}
+        ],
+        positions: [
+          {mot:'RAPPORT',  row:0, col:0, dir:'H', len:7},
+          {mot:'POIGNARD', row:2, col:0, dir:'H', len:8},
+          {mot:'COULOIR',  row:4, col:0, dir:'H', len:7},
+          {mot:'BAGAGE',   row:6, col:0, dir:'H', len:6},
+          {mot:'EXPRESS',  row:0, col:9, dir:'V', len:7}
+        ],
+        residuels: [[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[9,0],[9,1],[9,2],[9,3]],
+        solution: {tueur:'VICTOR', methode:'POIGNARD', lieu:'QUAI'},
+        nextScreen: 'screen-5'
+      },
+      {
+        id: 5,
+        affaireNum: 3,
+        titre: 'La Disparition Rue des Orfèvres',
+        grid: [
+          ['C','O','N','T','R','A','T','M','V','R'],
+          ['F','X','D','H','W','K','Q','B','J','E'],
+          ['A','R','C','H','I','V','E','S','V','G'],
+          ['D','K','M','W','P','X','N','F','B','I'],
+          ['A','R','S','E','N','I','C','Z','V','S'],
+          ['H','Q','P','V','X','J','M','W','P','T'],
+          ['F','E','N','E','T','R','E','K','X','R'],
+          ['D','K','M','W','P','X','N','F','B','E'],
+          ['B','L','A','N','C','H','E','M','V','W'],
+          ['C','A','V','E','M','X','P','D','H','W']
+        ],
+        mots: [
+          {mot:'CONTRAT',  findable:true},
+          {mot:'ARCHIVES', findable:true},
+          {mot:'ARSENIC',  findable:false},
+          {mot:'FENETRE',  findable:true},
+          {mot:'REGISTRE', findable:true}
+        ],
+        positions: [
+          {mot:'CONTRAT',  row:0, col:0, dir:'H', len:7},
+          {mot:'ARCHIVES', row:2, col:0, dir:'H', len:8},
+          {mot:'ARSENIC',  row:4, col:0, dir:'H', len:7},
+          {mot:'FENETRE',  row:6, col:0, dir:'H', len:7},
+          {mot:'REGISTRE', row:0, col:9, dir:'V', len:8}
+        ],
+        residuels: [[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,6],[9,0],[9,1],[9,2],[9,3]],
+        solution: {tueur:'BLANCHE', methode:'ARSENIC', lieu:'CAVE'},
+        nextScreen: 'screen-6'
+      }
+    ];
+
+    var wsStates = {};
+
+    function wsNorm(s) {
+      return (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();
+    }
+
+    function wsGetCell(affId, r, c) {
+      var g = document.getElementById('ws-grid-' + affId);
+      return g ? g.querySelector('[data-r="'+r+'"][data-c="'+c+'"]') : null;
+    }
+
+    function wsGetCellsBetween(r1,c1,r2,c2) {
+      var cells = [];
+      if (r1 === r2) {
+        var mn = Math.min(c1,c2), mx = Math.max(c1,c2);
+        for (var c = mn; c <= mx; c++) cells.push([r1,c]);
+      } else if (c1 === c2) {
+        var mn2 = Math.min(r1,r2), mx2 = Math.max(r1,r2);
+        for (var r = mn2; r <= mx2; r++) cells.push([r,c1]);
+      }
+      return cells;
+    }
+
+    function wsInitAffaire(aff) {
+      wsStates[aff.id] = {found:[], startCell:null, done:false};
+
+      var hdr = document.getElementById('ws-hdr-' + aff.id);
+      hdr.innerHTML =
+        '<div class="s2-progress">' +
+          wsStep('Affaire 1', aff.affaireNum >= 1) +
+          '<div class="s2-connector"></div>' +
+          wsStep('Affaire 2', aff.affaireNum >= 2) +
+          '<div class="s2-connector"></div>' +
+          wsStep('Affaire 3', aff.affaireNum >= 3) +
+        '</div>' +
+        '<p class="ws-titre">' + aff.titre + '</p>' +
+        '<div class="divider"></div>';
+
+      wsRenderGrid(aff);
+      wsRenderWordList(aff);
+
+      var ans = document.getElementById('ws-ans-' + aff.id);
+      ans.innerHTML = '';
+      ans.style.display = 'none';
+    }
+
+    function wsStep(label, lit) {
+      return '<div class="s2-step'+(lit?' lit':'')+'"><div class="s2-dot"></div><span class="s2-step-label">'+label+'</span></div>';
+    }
+
+    function wsRenderGrid(aff) {
+      var gridEl = document.getElementById('ws-grid-' + aff.id);
+      gridEl.innerHTML = '';
+      for (var r = 0; r < 10; r++) {
+        for (var c = 0; c < 10; c++) {
+          var cell = document.createElement('div');
+          cell.className = 'ws-cell';
+          cell.dataset.r = r;
+          cell.dataset.c = c;
+          cell.textContent = aff.grid[r][c];
+          gridEl.appendChild(cell);
+        }
+      }
+      gridEl.addEventListener('click', function(e) {
+        var t = e.target.closest('.ws-cell');
+        if (!t) return;
+        wsCellClick(aff, parseInt(t.dataset.r), parseInt(t.dataset.c));
+      });
+      gridEl.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        var t = e.touches[0];
+        var el = document.elementFromPoint(t.clientX, t.clientY);
+        var cell = el && el.closest('.ws-cell');
+        if (cell) { wsStates[aff.id].startCell = [parseInt(cell.dataset.r), parseInt(cell.dataset.c)]; wsClearSel(aff); wsMarkStart(aff); }
+      }, {passive:false});
+      gridEl.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+        var st = wsStates[aff.id];
+        if (!st.startCell) return;
+        var t = e.touches[0];
+        var el = document.elementFromPoint(t.clientX, t.clientY);
+        var cell = el && el.closest('.ws-cell');
+        if (!cell) return;
+        var er = parseInt(cell.dataset.r), ec = parseInt(cell.dataset.c);
+        wsClearSel(aff);
+        var cells = wsGetCellsBetween(st.startCell[0], st.startCell[1], er, ec);
+        cells.forEach(function(pos) {
+          var c2 = wsGetCell(aff.id, pos[0], pos[1]);
+          if (c2 && !c2.classList.contains('ws-found')) c2.classList.add('ws-sel');
+        });
+      }, {passive:false});
+      gridEl.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        var st = wsStates[aff.id];
+        if (!st.startCell) return;
+        var selCells = [];
+        gridEl.querySelectorAll('.ws-sel').forEach(function(c2) {
+          selCells.push([parseInt(c2.dataset.r), parseInt(c2.dataset.c)]);
+        });
+        wsClearSel(aff);
+        if (selCells.length >= 2) wsCheckMatch(aff, selCells);
+        st.startCell = null;
+      }, {passive:false});
+    }
+
+    function wsMarkStart(aff) {
+      var st = wsStates[aff.id];
+      if (!st.startCell) return;
+      var c = wsGetCell(aff.id, st.startCell[0], st.startCell[1]);
+      if (c && !c.classList.contains('ws-found')) c.classList.add('ws-start');
+    }
+
+    function wsClearSel(aff) {
+      var g = document.getElementById('ws-grid-' + aff.id);
+      g.querySelectorAll('.ws-start,.ws-sel').forEach(function(c) {
+        c.classList.remove('ws-start','ws-sel');
+      });
+    }
+
+    function wsCellClick(aff, r, c) {
+      var st = wsStates[aff.id];
+      if (st.done) return;
+      var clickedCell = wsGetCell(aff.id, r, c);
+      if (clickedCell && clickedCell.classList.contains('ws-found')) {
+        st.startCell = null; wsClearSel(aff); return;
+      }
+      if (!st.startCell) {
+        st.startCell = [r, c];
+        wsClearSel(aff);
+        wsMarkStart(aff);
+      } else {
+        var cells = wsGetCellsBetween(st.startCell[0], st.startCell[1], r, c);
+        wsClearSel(aff);
+        st.startCell = null;
+        if (cells.length >= 2) wsCheckMatch(aff, cells);
+      }
+    }
+
+    function wsCheckMatch(aff, cells) {
+      var forward = cells.map(function(p) { return aff.grid[p[0]][p[1]]; }).join('');
+      var backward = forward.split('').reverse().join('');
+      var st = wsStates[aff.id];
+      var found = null;
+      aff.mots.forEach(function(m) {
+        if (!m.findable) return;
+        if (st.found.indexOf(m.mot) !== -1) return;
+        if (forward === m.mot || backward === m.mot) found = m;
+      });
+      if (found) {
+        st.found.push(found.mot);
+        cells.forEach(function(p) {
+          var c = wsGetCell(aff.id, p[0], p[1]);
+          if (c) { c.classList.remove('ws-sel','ws-start'); c.classList.add('ws-found'); }
+        });
+        var item = document.querySelector('#ws-wlist-'+aff.id+' [data-mot="'+found.mot+'"]');
+        if (item) item.classList.add('ws-word-found');
+        var findable = aff.mots.filter(function(m) { return m.findable; });
+        if (st.found.length >= findable.length) {
+          st.done = true;
+          setTimeout(function() { wsIlluminateResiduals(aff); }, 350);
+        }
+      }
+    }
+
+    function wsRenderWordList(aff) {
+      var el = document.getElementById('ws-wlist-' + aff.id);
+      el.innerHTML = '<div class="ws-list-lbl">Mots à trouver</div>';
+      aff.mots.forEach(function(m) {
+        var item = document.createElement('div');
+        item.className = 'ws-word-item' + (m.findable ? '' : ' ws-word-absent');
+        item.dataset.mot = m.mot;
+        item.textContent = m.mot;
+        el.appendChild(item);
+      });
+    }
+
+    function wsIlluminateResiduals(aff) {
+      var res = aff.residuels;
+      res.forEach(function(pos, i) {
+        setTimeout(function() {
+          var c = wsGetCell(aff.id, pos[0], pos[1]);
+          if (c) { c.classList.remove('ws-found'); c.classList.add('ws-residual'); }
+        }, i * 200);
+      });
+      setTimeout(function() { wsShowAnswerForm(aff); }, res.length * 200 + 500);
+    }
+
+    function wsShowAnswerForm(aff) {
+      var sec = document.getElementById('ws-ans-' + aff.id);
+      sec.style.display = 'flex';
+      sec.innerHTML =
+        '<div class="ws-answer-row"><span class="ws-answer-lbl">Tueur</span><input class="ws-answer-inp" id="ws-t-'+aff.id+'" type="text" autocomplete="off" /></div>' +
+        '<div class="ws-answer-row"><span class="ws-answer-lbl">Méthode</span><input class="ws-answer-inp" id="ws-m-'+aff.id+'" type="text" autocomplete="off" /></div>' +
+        '<div class="ws-answer-row"><span class="ws-answer-lbl">Lieu</span><input class="ws-answer-inp" id="ws-l-'+aff.id+'" type="text" autocomplete="off" /></div>' +
+        '<button class="btn" id="ws-sub-'+aff.id+'">Refermer le dossier</button>' +
+        '<div class="ws-stamp-wrap" id="ws-sw-'+aff.id+'"></div>' +
+        '<div id="ws-nxt-'+aff.id+'" style="display:none"><button class="btn" id="ws-nxt-btn-'+aff.id+'">Affaire suivante &rarr;</button></div>';
+
+      document.getElementById('ws-sub-'+aff.id).addEventListener('click', function() {
+        wsValidate(aff);
+      });
+      document.getElementById('ws-nxt-btn-'+aff.id).addEventListener('click', function() {
+        showScreen(aff.nextScreen);
+      });
+    }
+
+    function wsValidate(aff) {
+      var t = wsNorm(document.getElementById('ws-t-'+aff.id).value);
+      var m = wsNorm(document.getElementById('ws-m-'+aff.id).value);
+      var l = wsNorm(document.getElementById('ws-l-'+aff.id).value);
+      var ok = t === wsNorm(aff.solution.tueur) && m === wsNorm(aff.solution.methode) && l === wsNorm(aff.solution.lieu);
+      if (ok) { score++; }
+      var wrap = document.getElementById('ws-sw-'+aff.id);
+      var stamp = document.createElement('div');
+      stamp.className = 'ws-stamp ' + (ok ? 'ws-resolu' : 'ws-echec');
+      stamp.textContent = ok ? 'RÉSOLU' : 'ÉCHEC';
+      wrap.appendChild(stamp);
+      if (!ok) {
+        var sol = document.createElement('p');
+        sol.className = 'ws-sol-reveal';
+        sol.innerHTML = 'Tueur : ' + aff.solution.tueur + '<br>Méthode : ' + aff.solution.methode + '<br>Lieu : ' + aff.solution.lieu;
+        wrap.appendChild(sol);
+      }
+      document.getElementById('ws-sub-'+aff.id).disabled = true;
+      document.getElementById('ws-nxt-'+aff.id).style.display = 'block';
+    }
+
     /* ── Navigation ───────────────────────────────────────────── */
     var topNav = document.getElementById('top-nav');
 
@@ -906,6 +1263,9 @@
       });
 
       if (id === 'screen-6') { renderScreen6(); }
+
+      var wsMap = {'screen-3': AFFAIRES[0], 'screen-4': AFFAIRES[1], 'screen-5': AFFAIRES[2]};
+      if (wsMap[id]) { wsInitAffaire(wsMap[id]); }
     }
 
     document.querySelectorAll('#top-nav .links button').forEach(function (btn) {
