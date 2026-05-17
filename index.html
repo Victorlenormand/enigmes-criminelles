@@ -558,9 +558,11 @@
     .ws-list-lbl { font-family:var(--font-mono); font-size:0.55rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--or); opacity:0.45; }
     .ws-word-item { font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.1em; color:var(--creme); padding:0.3em 0; border-bottom:1px solid rgba(201,168,76,0.1); transition:all 0.3s; }
     .ws-word-item.ws-word-found { text-decoration:line-through; color:var(--rouge); opacity:0.7; }
-    .ws-word-item.ws-word-ghost { color:var(--or); opacity:0.55; font-style:italic; }
-    .ws-word-item.ws-word-ghost::after { content:' ✶'; font-size:0.6rem; }
+    .ws-word-item.ws-word-ghost-revealed { color:var(--or); font-weight:700; }
+    .ws-ghost-msg { font-family:var(--font-corps); font-style:italic; font-size:0.72rem; color:var(--or-clair); opacity:0.85; margin-top:0.4rem; line-height:1.4; }
     .ws-answer-section { display:none; padding-top:0.6rem; }
+    .ws-answer-row { display:flex; align-items:flex-start; gap:0.5rem; margin-bottom:0.45rem; flex-wrap:wrap; }
+    .ws-answer-lbl { font-family:var(--font-mono); font-size:0.52rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--or); width:4.5rem; text-align:right; flex-shrink:0; padding-top:14px; }
     .ws-ans-lbl { font-family:var(--font-corps); font-style:italic; font-size:0.82rem; color:var(--creme); opacity:0.75; margin-bottom:0.5rem; line-height:1.4; }
     .ws-char-boxes { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:0.8rem; }
     .ws-char-inp { width:36px; height:44px; text-align:center; background:transparent; border:1.5px solid var(--or); color:var(--or-clair); font-family:var(--font-mono); font-size:1.15rem; font-weight:700; text-transform:uppercase; outline:none; transition:border-color 0.2s, box-shadow 0.2s; caret-color:var(--or); }
@@ -1040,6 +1042,7 @@
       wsRenderGrid(aff);
       wsRenderWordList(aff);
 
+      verifyGrid(aff);
       var ans = document.getElementById('ws-ans-' + aff.id);
       ans.innerHTML = '';
       ans.style.display = 'none';
@@ -1174,7 +1177,7 @@
         if (item) item.classList.add('ws-word-found');
         if (st.found.length >= aff.wordPlacements.length) {
           st.done = true;
-          setTimeout(function() { wsIlluminateResiduals(aff); }, 350);
+          setTimeout(function() { wsRevealGhost(aff); }, 400);
         }
       }
     }
@@ -1190,12 +1193,59 @@
         el.appendChild(item);
       });
       var ghost = document.createElement('div');
-      ghost.className = 'ws-word-item ws-word-ghost';
+      ghost.className = 'ws-word-item';
+      ghost.id = 'ws-ghost-item-' + aff.id;
       ghost.textContent = aff.ghost.mot;
       el.appendChild(ghost);
     }
 
-    function wsIlluminateResiduals(aff) {
+    function wsRevealGhost(aff) {
+      var ghostItem = document.getElementById('ws-ghost-item-' + aff.id);
+      if (ghostItem) {
+        ghostItem.classList.add('ws-word-ghost-revealed');
+        var msg = document.createElement('div');
+        msg.className = 'ws-ghost-msg';
+        msg.textContent = 'Ce mot est introuvable dans la grille. Il constitue votre premier indice.';
+        ghostItem.parentNode.insertBefore(msg, ghostItem.nextSibling);
+      }
+      setTimeout(function() { wsIlluminateResiduals(aff); }, 1800);
+    }
+
+    function verifyGrid(aff) {
+      var wordCells = {};
+      aff.wordPlacements.forEach(function(p) {
+        for (var i = 0; i < p.mot.length; i++) {
+          var r = p.dir === 'V' ? p.row + i : p.row;
+          var c = p.dir === 'H' ? p.col + i : p.col;
+          var key = r + ',' + c;
+          if (wordCells[key] && wordCells[key] !== p.mot[i]) {
+            console.error('[verifyGrid] Affaire ' + aff.affaireNum + ': conflit cellule (' + r + ',' + c + ') entre "' + wordCells[key] + '" et "' + p.mot[i] + '"');
+          }
+          wordCells[key] = p.mot[i];
+        }
+      });
+      var uniqueWordCount = Object.keys(wordCells).length;
+      var residualCount = aff.residuels.length;
+      var total = uniqueWordCount + residualCount;
+      if (total !== 100) {
+        console.error('[verifyGrid] Affaire ' + aff.affaireNum + ': total=' + total + ' (attendu 100). mots=' + uniqueWordCount + ', res=' + residualCount);
+      }
+      var ghost = aff.ghost.cat;
+      var expected = '';
+      if (ghost === 'TUEUR') expected = aff.solution.methode + aff.solution.lieu;
+      else if (ghost === 'METHODE') expected = aff.solution.tueur + aff.solution.lieu;
+      else expected = aff.solution.tueur + aff.solution.methode;
+      var residualLetters = aff.residuels.map(function(pos) { return aff.grid[pos[0]][pos[1]]; }).join('');
+      var rSorted = residualLetters.split('').sort().join('');
+      var eSorted = expected.split('').sort().join('');
+      if (rSorted !== eSorted) {
+        console.error('[verifyGrid] Affaire ' + aff.affaireNum + ': residuels="' + residualLetters + '" != attendu="' + expected + '"');
+      } else {
+        console.log('[verifyGrid] Affaire ' + aff.affaireNum + ' OK — ' + uniqueWordCount + ' mots + ' + residualCount + ' res = 100');
+      }
+    }
+
+        function wsIlluminateResiduals(aff) {
       var res = aff.residuels;
       var interval = Math.min(300, Math.ceil(2800 / res.length));
       res.forEach(function(pos, i) {
@@ -1210,36 +1260,44 @@
     function wsShowAnswerForm(aff) {
       var sec = document.getElementById('ws-ans-' + aff.id);
       sec.style.display = 'block';
-      var ghostWord = aff.ghost.mot;
-      var catLabel = aff.ghost.cat;
-      var len = ghostWord.length;
-      var html = '<p class="ws-ans-lbl">Le mot fantôme vous a révélé le ' + catLabel + '.</p>';
-      html += '<div class="ws-char-boxes" id="ws-chars-' + aff.id + '">';
-      for (var i = 0; i < len; i++) {
-        html += '<input class="ws-char-inp" type="text" inputmode="text" maxlength="2" autocomplete="off" data-idx="' + i + '" />';
-      }
-      html += '</div>';
+      var fields = [
+        {key:'tueur',    label:'TUEUR',   len:aff.solution.tueur.length},
+        {key:'methode',  label:'MÉTHODE', len:aff.solution.methode.length},
+        {key:'lieu',     label:'LIEU',    len:aff.solution.lieu.length}
+      ];
+      var html = '';
+      fields.forEach(function(f) {
+        html += '<div class="ws-answer-row"><span class="ws-answer-lbl">' + f.label + '</span>';
+        html += '<div class="ws-char-boxes" id="ws-chars-' + aff.id + '-' + f.key + '">';
+        for (var i = 0; i < f.len; i++) {
+          html += '<input class="ws-char-inp" type="text" inputmode="text" maxlength="2" autocomplete="off" data-idx="' + i + '" />';
+        }
+        html += '</div></div>';
+      });
       html += '<button class="btn ws-sub-btn" id="ws-sub-' + aff.id + '">Refermer le dossier</button>';
       html += '<div class="ws-stamp-wrap" id="ws-sw-' + aff.id + '"></div>';
       html += '<div id="ws-nxt-' + aff.id + '" style="display:none"><button class="btn" id="ws-nxt-btn-' + aff.id + '">Affaire suivante &rarr;</button></div>';
       sec.innerHTML = html;
 
-      var boxes = Array.prototype.slice.call(sec.querySelectorAll('.ws-char-inp'));
-      if (boxes[0]) boxes[0].focus();
-
-      boxes.forEach(function(box, idx) {
-        box.addEventListener('input', function() {
-          var v = wsNorm(box.value).replace(/[^A-Z]/g, '');
-          box.value = v ? v[v.length - 1] : '';
-          if (box.value && idx < boxes.length - 1) boxes[idx + 1].focus();
-        });
-        box.addEventListener('keydown', function(e) {
-          if (e.key === 'Backspace' && !box.value && idx > 0) {
-            boxes[idx - 1].focus();
-            boxes[idx - 1].value = '';
-          }
+      fields.forEach(function(f) {
+        var boxes = Array.prototype.slice.call(sec.querySelectorAll('#ws-chars-' + aff.id + '-' + f.key + ' .ws-char-inp'));
+        boxes.forEach(function(box, idx) {
+          box.addEventListener('input', function() {
+            var v = wsNorm(box.value).replace(/[^A-Z]/g, '');
+            box.value = v ? v[v.length - 1] : '';
+            if (box.value && idx < boxes.length - 1) boxes[idx + 1].focus();
+          });
+          box.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace' && !box.value && idx > 0) {
+              boxes[idx - 1].focus();
+              boxes[idx - 1].value = '';
+            }
+          });
         });
       });
+
+      var firstBox = sec.querySelector('.ws-char-inp');
+      if (firstBox) firstBox.focus();
 
       document.getElementById('ws-sub-' + aff.id).addEventListener('click', function() {
         wsValidate(aff);
@@ -1250,10 +1308,16 @@
     }
 
     function wsValidate(aff) {
-      var boxes = Array.prototype.slice.call(document.querySelectorAll('#ws-chars-' + aff.id + ' .ws-char-inp'));
-      var answer = '';
-      boxes.forEach(function(b) { answer += b.value; });
-      var ok = wsNorm(answer) === wsNorm(aff.ghost.mot);
+      function readField(key) {
+        var boxes = document.querySelectorAll('#ws-chars-' + aff.id + '-' + key + ' .ws-char-inp');
+        var v = '';
+        boxes.forEach(function(b) { v += b.value; });
+        return wsNorm(v);
+      }
+      var okT = readField('tueur')   === wsNorm(aff.solution.tueur);
+      var okM = readField('methode') === wsNorm(aff.solution.methode);
+      var okL = readField('lieu')    === wsNorm(aff.solution.lieu);
+      var ok = okT && okM && okL;
       if (ok) score++;
       var wrap = document.getElementById('ws-sw-' + aff.id);
       var stamp = document.createElement('div');
@@ -1263,7 +1327,7 @@
       if (!ok) {
         var sol = document.createElement('p');
         sol.className = 'ws-sol-reveal';
-        sol.textContent = aff.ghost.mot;
+        sol.textContent = 'Tueur : ' + aff.solution.tueur + ' — Méthode : ' + aff.solution.methode + ' — Lieu : ' + aff.solution.lieu;
         wrap.appendChild(sol);
       }
       document.getElementById('ws-sub-' + aff.id).disabled = true;
