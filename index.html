@@ -327,6 +327,16 @@
       animation-delay: 2.8s;
     }
 
+    .s1-email-error {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: #c97a7a;
+      letter-spacing: 0.05em;
+      text-align: center;
+      max-width: 36ch;
+      margin-top: -0.4rem;
+    }
+
     .s1-form input {
       background: transparent;
       border: none;
@@ -697,6 +707,16 @@
         autocomplete="off"
         maxlength="40"
       />
+      <input
+        type="email"
+        id="s1-email"
+        placeholder="Votre adresse email"
+        autocomplete="email"
+        maxlength="120"
+      />
+      <p id="s1-email-error" class="s1-email-error" style="display:none;">
+        Une adresse email valide est requise pour accéder au dossier.
+      </p>
       <button class="s1-btn-open" id="s1-btn">
         &#9654;&nbsp; Ouvrir le dossier
       </button>
@@ -846,6 +866,35 @@
        JavaScript — navigation
   ════════════════════════════════════════════════════════ -->
   <script>
+    /* ── MailerLite ───────────────────────────────────────────── */
+    // MAILERLITE_API_KEY : Dashboard MailerLite → Integrations → API → copier la clé
+    const MAILERLITE_API_KEY = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI0IiwianRpIjoiNjEzNDE2YWNjMzA4OTA4YmUyZWIyZGIxY2UwMjFiYWRjNjdiOTVjOGI1ZGUyOWViNDM1NWFlMjMxZDYxNDgyMTcyMGQxNTczMWEyMmZhYzgiLCJpYXQiOjE3NzkxMzk0NjguMjY2Nzc4LCJuYmYiOjE3NzkxMzk0NjguMjY2NzgsImV4cCI6NDkzNDgxMzA2OC4yNjA2MDgsInN1YiI6IjE0NDExMDUiLCJzY29wZXMiOltdfQ.bR8SteS9f2DS-6LHbVdguaiY7zLpcg1CFp_BL2EDgKz_9SBD6qZyPssdtO1DuzT-SgLjd27C9DyokFsPQvEwM6gQYXyNnK6oVUEo_QbgcJfytcjNe8tmW57piM-B1DHOS-ovXZeaBiRTxofpR0TYset1HOB4v5Ya-h_0aqTsuA4b86Qc0MOUeWLYjlmgxDBUfoAQDMCaqZJfK0JqAQTeWF-Eq56PlNFW_GKByjPvbZVrIsbE9OwnSEZAFmVptaHTRYRYVsgvlVS4NRLw72k4N-xynEbgKlryqgIs8bEwMR_Pu8oIzobhuQccdbPaxGmqkjKSbB0NeYfmm3C3WnAHFJ7cWGpUY5FXMAWkgpj8vctT_DuqiFuS5_4CA7vjzOaEM6nlJkjCE4GxuwRymXYgEoxGx_jnAsrX5ZWY9wGw2Xzpc3irGrEGRzZzyQP6VoYcLBTK93opUX_6M4Bxe62E52q2PJMREG7nSeM6xwHvuXnqfEEsbfruYtWn2vPoR49VIQsR8AlzFQhiVymef_48GMjxYYN_FSjrLnpZC1RZlWWDD2hqY4X6vzHc3w86CCw0DBJts9n_DaDl8E8Qqim9gCp8R1XXpVPkjISPmLFi7j1WwJfbJT-npshvyxQFKMTVgefouci9aVz3PghrVgG-Ol1VbLaGwFpyVkJXmfdSPfU';
+    // MAILERLITE_GROUP_ID : Dashboard MailerLite → Subscribers → Groups → cliquer sur le groupe → l'ID est dans l'URL
+    const MAILERLITE_GROUP_ID = 'Liste Victor Lenormand';
+
+    async function subscribeToMailerLite(email, nom) {
+      try {
+        var body = { email: email, fields: { name: nom } };
+        if (MAILERLITE_GROUP_ID) body.groups = [MAILERLITE_GROUP_ID];
+        var response = await fetch('https://connect.mailerlite.com/api/subscribers', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + MAILERLITE_API_KEY
+          },
+          body: JSON.stringify(body)
+        });
+        if (!response.ok) {
+          response.json().then(function(err) { console.error('MailerLite error:', err); });
+        } else {
+          console.log('MailerLite: abonné ajouté —', email);
+        }
+      } catch (error) {
+        console.error('MailerLite network error:', error);
+      }
+    }
+
     /* ── Globales ─────────────────────────────────────────────── */
     var enqueteurNom = '';
     var score = 0; // incrémenté par les écrans 3-4-5
@@ -903,15 +952,34 @@
     }
 
     /* ── Formulaire screen-1 ──────────────────────────────────── */
-    document.getElementById('s1-btn').addEventListener('click', function () {
-      playStampSound();
-      var val = document.getElementById('s1-input').value.trim();
-      enqueteurNom = val || 'Inconnu';
-      showScreen('screen-2');
-    });
+    function s1Submit() {
+      var nom   = document.getElementById('s1-input').value.trim() || 'Inconnu';
+      var email = document.getElementById('s1-email').value.trim();
+      var errEl = document.getElementById('s1-email-error');
 
+      var emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      if (!emailOk) {
+        errEl.style.display = 'block';
+        document.getElementById('s1-email').focus();
+        return;
+      }
+      errEl.style.display = 'none';
+
+      enqueteurNom = nom;
+      localStorage.setItem('dossier_email', email);
+      localStorage.setItem('dossier_nom', nom);
+      subscribeToMailerLite(email, nom);
+
+      playStampSound();
+      showScreen('screen-2');
+    }
+
+    document.getElementById('s1-btn').addEventListener('click', s1Submit);
     document.getElementById('s1-input').addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') { document.getElementById('s1-btn').click(); }
+      if (e.key === 'Enter') { document.getElementById('s1-email').focus(); }
+    });
+    document.getElementById('s1-email').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { s1Submit(); }
     });
 
     /* ══════════════════════════════════════════════════════════
