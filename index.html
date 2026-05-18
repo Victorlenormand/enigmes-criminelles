@@ -1056,7 +1056,7 @@
         aff.grid = result.grid;
         aff.residuels = result.residuels;
       }
-      wsStates[aff.id] = {found:[], done:false, mouseDown:false, startCell:null, axis:null};
+      wsStates[aff.id] = {found:[], done:false, mouseDown:false, startCell:null, endCell:null, axis:null};
 
       var hdr = document.getElementById('ws-hdr-' + aff.id);
       hdr.innerHTML =
@@ -1087,12 +1087,13 @@
       var st = wsStates[aff.id];
       if (!st.startCell) return;
       var sr = st.startCell[0], sc = st.startCell[1];
-      if (r === sr && c === sc) { wsClearSel(aff); return; }
+      if (r === sr && c === sc) { wsClearSel(aff); st.endCell = [r, c]; return; }
       if (!st.axis) {
         if (r === sr) st.axis = 'H';
         else if (c === sc) st.axis = 'V';
         else st.axis = (Math.abs(r - sr) >= Math.abs(c - sc)) ? 'V' : 'H';
       }
+      st.endCell = (st.axis === 'H') ? [sr, c] : [r, sc];
       var cells = (st.axis === 'H')
         ? wsGetCellsBetween(sr, sc, sr, c)
         : wsGetCellsBetween(sr, sc, r, sc);
@@ -1125,6 +1126,7 @@
         if (!t) return;
         st.mouseDown = true;
         st.startCell = [parseInt(t.dataset.r), parseInt(t.dataset.c)];
+        st.endCell = st.startCell;
         st.axis = null;
         wsActiveAffaire = aff;
         wsClearSel(aff);
@@ -1148,6 +1150,7 @@
         if (!cell) return;
         st.mouseDown = true;
         st.startCell = [parseInt(cell.dataset.r), parseInt(cell.dataset.c)];
+        st.endCell = st.startCell;
         st.axis = null;
         wsActiveAffaire = aff;
         wsClearSel(aff);
@@ -1170,12 +1173,10 @@
         if (!st.mouseDown) return;
         st.mouseDown = false;
         wsActiveAffaire = null;
-        var selCells = [];
-        gridEl.querySelectorAll('.ws-sel').forEach(function(c2) {
-          selCells.push([parseInt(c2.dataset.r), parseInt(c2.dataset.c)]);
-        });
+        var selCells = wsSelRange(st);
         wsClearSel(aff);
         st.startCell = null;
+        st.endCell = null;
         st.axis = null;
         if (selCells.length >= 2) wsCheckMatch(aff, selCells);
       }, {passive:false});
@@ -1187,6 +1188,17 @@
       g.querySelectorAll('.ws-sel').forEach(function(c) {
         c.classList.remove('ws-sel');
       });
+    }
+
+    function wsSelRange(st) {
+      if (!st.startCell || !st.endCell) return [];
+      var sr = st.startCell[0], sc = st.startCell[1];
+      var er = st.endCell[0],   ec = st.endCell[1];
+      if (st.axis === 'H') return wsGetCellsBetween(sr, sc, sr, ec);
+      if (st.axis === 'V') return wsGetCellsBetween(sr, sc, er, sc);
+      if (sr === er) return wsGetCellsBetween(sr, sc, sr, ec);
+      if (sc === ec) return wsGetCellsBetween(sr, sc, er, sc);
+      return [];
     }
 
     function wsCheckMatch(aff, cells) {
@@ -1372,14 +1384,10 @@
       if (!st || !st.mouseDown) return;
       st.mouseDown = false;
       wsActiveAffaire = null;
-      var g = document.getElementById('ws-grid-' + aff.id);
-      if (!g) return;
-      var selCells = [];
-      g.querySelectorAll('.ws-sel').forEach(function(c) {
-        selCells.push([parseInt(c.dataset.r), parseInt(c.dataset.c)]);
-      });
+      var selCells = wsSelRange(st);
       wsClearSel(aff);
       st.startCell = null;
+      st.endCell = null;
       st.axis = null;
       if (selCells.length >= 2) wsCheckMatch(aff, selCells);
     });
