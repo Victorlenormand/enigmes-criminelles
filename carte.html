@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>Énigmes Criminelles — Carte</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Dancing+Script:wght@600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- Ornements de coin -->
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+  <!-- Navigation -->
+  <nav id="top-nav">
+    <a class="brand" href="index.html">ÉNIGMES CRIMINELLES</a>
+    <div class="links">
+      <a data-page="affaires" href="affaires.html">Affaires</a>
+      <a data-page="carte" href="carte.html" class="active-link">Carte</a>
+      <a data-page="livres" href="livres.html">Livres</a>
+      <a data-page="compte" id="nav-compte" href="inscription.html">Mon compte</a>
+    </div>
+  </nav>
+
+  <main class="page-content">
+
+    <span class="stamp-label">Zone Opérationnelle</span>
+    <h2>Carte de Paris — Lieux des Affaires</h2>
+    <div class="divider"></div>
+
+    <div class="carte-placeholder">
+      <p class="placeholder-badge">// EN DÉVELOPPEMENT //</p>
+      <p style="font-family:var(--font-corps);font-style:italic;color:var(--creme);opacity:0.7;font-size:1rem;max-width:34ch;text-align:center;line-height:1.6;">
+        La carte interactive sera disponible dans la prochaine mise à jour.
+      </p>
+      <p style="font-family:var(--font-mono);font-size:0.6rem;letter-spacing:0.1em;color:var(--or);opacity:0.4;margin-top:0.5rem;">
+        Revenez bientôt.
+      </p>
+    </div>
+
+    <div class="nav-btns">
+      <a class="btn" href="affaires.html">&larr; Retour aux affaires</a>
+    </div>
+
+  </main>
+
+  <script src="js/auth.js"></script>
+  <script src="js/carte.js"></script>
+  <script>
+    /* ── Favicon ─────────────────────────────────────────────── */
+    (function () {
+      var fc = document.createElement('canvas');
+      fc.width = fc.height = 32;
+      var x = fc.getContext('2d');
+      x.fillStyle = '#0a0a0a'; x.fillRect(0, 0, 32, 32);
+      x.strokeStyle = '#c9a84c'; x.lineWidth = 2.5; x.lineCap = 'round';
+      x.beginPath(); x.arc(13, 13, 7, 0, Math.PI * 2); x.stroke();
+      x.beginPath(); x.moveTo(18, 18); x.lineTo(26, 26); x.stroke();
+      var lk = document.createElement('link');
+      lk.rel = 'icon'; lk.href = fc.toDataURL();
+      document.head.appendChild(lk);
+    }());
+  </script>
+
+</body>
+</html>

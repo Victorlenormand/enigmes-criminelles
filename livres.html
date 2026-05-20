@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>Énigmes Criminelles — La Série</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Dancing+Script:wght@600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- Ornements de coin -->
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+  <!-- Navigation -->
+  <nav id="top-nav">
+    <a class="brand" href="index.html">ÉNIGMES CRIMINELLES</a>
+    <div class="links">
+      <a data-page="affaires" data-locked="true" href="affaires.html">Affaires</a>
+      <a data-page="carte" data-locked="true" href="carte.html">Carte</a>
+      <a data-page="livres" href="livres.html" class="active-link">Livres</a>
+      <a data-page="compte" id="nav-compte" href="inscription.html">Mon compte</a>
+    </div>
+  </nav>
+
+  <main class="page-content">
+
+    <span class="stamp-label">Catalogue</span>
+    <h2>La Série</h2>
+    <h3>Trois affaires. Un coupable. Saurez-vous le trouver ?</h3>
+    <div class="divider"></div>
+
+    <div class="livres-grid">
+
+      <!-- Livre 1 -->
+      <div class="livre-card">
+        <div class="livre-num">Livre N°01</div>
+        <div class="livre-titre">La Nuit du Palais Royal</div>
+        <span class="livre-badge disponible">Disponible</span>
+        <a class="livre-amazon" href="#" target="_blank" rel="noopener">
+          &#9654; Voir sur Amazon
+        </a>
+      </div>
+
+      <!-- Livre 2 -->
+      <div class="livre-card">
+        <div class="livre-num">Livre N°02</div>
+        <div class="livre-titre">Le Dernier Train de Lyon</div>
+        <span class="livre-badge a-venir">À Venir</span>
+      </div>
+
+      <!-- Livre 3 -->
+      <div class="livre-card">
+        <div class="livre-num">Livre N°03</div>
+        <div class="livre-titre">Rue des Orfèvres</div>
+        <span class="livre-badge a-venir">À Venir</span>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script src="js/auth.js"></script>
+  <script>
+    /* ── Favicon ─────────────────────────────────────────────── */
+    (function () {
+      var fc = document.createElement('canvas');
+      fc.width = fc.height = 32;
+      var x = fc.getContext('2d');
+      x.fillStyle = '#0a0a0a'; x.fillRect(0, 0, 32, 32);
+      x.strokeStyle = '#c9a84c'; x.lineWidth = 2.5; x.lineCap = 'round';
+      x.beginPath(); x.arc(13, 13, 7, 0, Math.PI * 2); x.stroke();
+      x.beginPath(); x.moveTo(18, 18); x.lineTo(26, 26); x.stroke();
+      var lk = document.createElement('link');
+      lk.rel = 'icon'; lk.href = fc.toDataURL();
+      document.head.appendChild(lk);
+    }());
+  </script>
+
+</body>
+</html>
