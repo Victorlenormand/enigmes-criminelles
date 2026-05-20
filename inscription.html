@@ -6,21 +6,135 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>Énigmes Criminelles — Rejoindre l'enquête</title>
+  <title>Énigmes Criminelles — Inscription</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Dancing+Script:wght@600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .insc-wrap {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+    .insc-subtitle {
+      font-family: var(--font-corps);
+      font-style: italic;
+      font-size: clamp(0.9rem, 1.4vw, 1.05rem);
+      color: var(--or-clair);
+      opacity: 0.8;
+      text-align: center;
+      max-width: 38ch;
+      line-height: 1.5;
+    }
+    .insc-context {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      color: var(--or);
+      border: 1px solid rgba(201,168,76,0.3);
+      padding: 0.5em 1.2em;
+      text-align: center;
+      max-width: 38ch;
+    }
+    .insc-form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.85rem;
+      width: 100%;
+    }
+    .insc-form input {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(201,168,76,0.3);
+      color: var(--creme);
+      font-family: var(--font-titre);
+      font-style: italic;
+      font-size: 1rem;
+      padding: 0.45rem 0.3rem;
+      width: 100%;
+      max-width: 340px;
+      outline: none;
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+    .insc-form input:focus {
+      border-bottom-color: var(--or);
+    }
+    .insc-form input::placeholder { color: rgba(245,240,232,0.3); }
+    .insc-note {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      color: var(--creme);
+      opacity: 0.3;
+    }
+    .insc-login-link {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      color: var(--or-clair);
+      opacity: 0.6;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      transition: opacity 0.2s;
+    }
+    .insc-login-link:hover { opacity: 1; }
+    .insc-reconnect {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+      padding: 1rem 0 0;
+      border-top: 1px solid rgba(201,168,76,0.12);
+    }
+    .insc-reconnect.open { display: flex; }
+    .insc-reconnect-label {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      color: var(--or-clair);
+      opacity: 0.6;
+      text-transform: uppercase;
+    }
+    .insc-reconnect-error {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: #c97a7a;
+      display: none;
+      text-align: center;
+    }
+    .insc-reconnect-btn {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--or);
+      background: transparent;
+      border: 1px solid rgba(201,168,76,0.4);
+      padding: 0.45em 1.4em;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .insc-reconnect-btn:hover { background: var(--or); color: var(--bg); }
+  </style>
 </head>
 <body>
 
-  <!-- Ornements de coin -->
   <div class="corner tl"></div>
   <div class="corner tr"></div>
   <div class="corner bl"></div>
   <div class="corner br"></div>
 
-  <!-- Navigation -->
   <nav id="top-nav">
     <a class="brand" href="index.html">ÉNIGMES CRIMINELLES</a>
     <div class="links">
@@ -33,111 +147,132 @@
 
   <main class="page-home">
 
-    <!-- Tampon -->
-    <div class="s1-stamp">
-      <span class="s1-stamp-text">DOSSIER<br/>CLASSIFIÉ</span>
-    </div>
+    <div class="insc-wrap">
 
-    <h2>Rejoindre l'enquête</h2>
-    <div class="divider"></div>
+      <div class="s1-stamp">
+        <span class="s1-stamp-text">CONFIDENTIEL</span>
+      </div>
 
-    <!-- Message contextuel -->
-    <p id="context-msg" class="inscription-context-msg" style="display:none;"></p>
+      <h2>Accédez aux dossiers classifiés</h2>
+      <p class="insc-subtitle">Inscription gratuite.<br/>20 affaires vous attendent.</p>
+      <div class="divider"></div>
 
-    <!-- Formulaire -->
-    <div class="inscription-form">
-      <input
-        type="text"
-        id="insc-nom"
-        placeholder="Votre nom de code"
-        autocomplete="off"
-        maxlength="40"
-      />
-      <input
-        type="email"
-        id="insc-email"
-        placeholder="Votre adresse email"
-        autocomplete="email"
-        maxlength="120"
-        required
-      />
-      <p id="insc-email-error" class="s1-email-error" style="display:none;">
-        Une adresse email valide est requise pour accéder au dossier.
-      </p>
-      <button class="s1-btn-open" id="insc-btn">
-        &#9654;&nbsp; Rejoindre l'enquête
+      <p id="context-msg" class="insc-context" style="display:none;"></p>
+
+      <div class="insc-form">
+        <input type="text" id="insc-nom" placeholder="Votre nom de code" autocomplete="off" maxlength="40" />
+        <input type="email" id="insc-email" placeholder="Votre adresse email" autocomplete="email" maxlength="120" required />
+        <p id="insc-error" class="s1-email-error" style="display:none;">
+          Une adresse email valide est requise pour accéder au dossier.
+        </p>
+        <button class="s1-btn-open" id="insc-btn">
+          &#9654;&nbsp; Accéder aux affaires
+        </button>
+      </div>
+
+      <p class="insc-note">Accès gratuit. Aucune carte bleue requise.</p>
+
+      <!-- Lien déjà inscrit -->
+      <button class="insc-login-link" id="toggle-reconnect">
+        Déjà inscrit ? Saisir mon email →
       </button>
-    </div>
 
-    <p style="font-family:var(--font-mono);font-size:0.6rem;letter-spacing:0.1em;color:var(--creme);opacity:0.3;margin-top:0.5rem;">
-      Accès gratuit. Aucune carte bleue requise.
-    </p>
+      <!-- Mini-formulaire reconnexion -->
+      <div class="insc-reconnect" id="reconnect-form">
+        <span class="insc-reconnect-label">Reconnecter mon compte</span>
+        <input class="insc-form" type="email" id="rc-email" placeholder="Votre adresse email" autocomplete="email" maxlength="120"
+          style="background:transparent;border:none;border-bottom:1px solid rgba(201,168,76,0.3);color:var(--creme);font-family:var(--font-titre);font-style:italic;font-size:1rem;padding:0.45rem 0.3rem;width:100%;max-width:340px;outline:none;text-align:center;" />
+        <p id="rc-error" class="insc-reconnect-error">Aucun compte trouvé pour cet email.</p>
+        <button class="insc-reconnect-btn" id="rc-btn">Me reconnecter</button>
+      </div>
+
+    </div>
 
   </main>
 
   <script src="js/mailerlite.js"></script>
   <script src="js/auth.js"></script>
   <script>
-    /* ── Favicon ─────────────────────────────────────────────── */
     (function () {
-      var fc = document.createElement('canvas');
-      fc.width = fc.height = 32;
+      var fc = document.createElement('canvas'); fc.width = fc.height = 32;
       var x = fc.getContext('2d');
       x.fillStyle = '#0a0a0a'; x.fillRect(0, 0, 32, 32);
       x.strokeStyle = '#c9a84c'; x.lineWidth = 2.5; x.lineCap = 'round';
       x.beginPath(); x.arc(13, 13, 7, 0, Math.PI * 2); x.stroke();
       x.beginPath(); x.moveTo(18, 18); x.lineTo(26, 26); x.stroke();
-      var lk = document.createElement('link');
-      lk.rel = 'icon'; lk.href = fc.toDataURL();
+      var lk = document.createElement('link'); lk.rel = 'icon'; lk.href = fc.toDataURL();
       document.head.appendChild(lk);
     }());
 
-    document.addEventListener('DOMContentLoaded', function() {
-      // Si déjà connecté, rediriger vers affaires
-      if (isLoggedIn()) {
-        window.location.href = 'affaires.html';
-        return;
-      }
+    document.addEventListener('DOMContentLoaded', function () {
+      if (isLoggedIn()) { window.location.href = 'affaires.html'; return; }
 
-      // Message contextuel selon ?from=
       var params = new URLSearchParams(window.location.search);
       var from = params.get('from');
-      var msgEl = document.getElementById('context-msg');
-      var messages = {
-        'affaires': 'Créez votre compte gratuit pour accéder aux affaires.',
-        'carte': 'Créez votre compte gratuit pour accéder à la carte des lieux.',
+      var msgs = {
+        affaires: 'Créez votre compte gratuit pour accéder aux affaires.',
+        carte: 'Créez votre compte gratuit pour accéder à la carte des lieux.'
       };
-      if (from && messages[from]) {
-        msgEl.textContent = messages[from];
-        msgEl.style.display = 'block';
+      if (from && msgs[from]) {
+        var el = document.getElementById('context-msg');
+        el.textContent = msgs[from];
+        el.style.display = 'block';
       }
     });
 
+    /* ── Inscription ── */
     function inscSubmit() {
       var nom   = document.getElementById('insc-nom').value.trim() || 'Enquêteur';
       var email = document.getElementById('insc-email').value.trim();
-      var errEl = document.getElementById('insc-email-error');
-
-      var emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-      if (!emailOk) {
+      var errEl = document.getElementById('insc-error');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         errEl.style.display = 'block';
         document.getElementById('insc-email').focus();
         return;
       }
       errEl.style.display = 'none';
-
       subscribeToMailerLite(email, nom);
       login(email, nom);
-
       window.location.href = 'affaires.html';
     }
 
     document.getElementById('insc-btn').addEventListener('click', inscSubmit);
-    document.getElementById('insc-nom').addEventListener('keydown', function(e) {
+    document.getElementById('insc-nom').addEventListener('keydown', function (e) {
       if (e.key === 'Enter') document.getElementById('insc-email').focus();
     });
-    document.getElementById('insc-email').addEventListener('keydown', function(e) {
+    document.getElementById('insc-email').addEventListener('keydown', function (e) {
       if (e.key === 'Enter') inscSubmit();
+    });
+
+    /* ── Reconnexion ── */
+    document.getElementById('toggle-reconnect').addEventListener('click', function () {
+      var form = document.getElementById('reconnect-form');
+      form.classList.toggle('open');
+      if (form.classList.contains('open')) document.getElementById('rc-email').focus();
+    });
+
+    function rcSubmit() {
+      var email = document.getElementById('rc-email').value.trim();
+      var errEl = document.getElementById('rc-error');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errEl.textContent = 'Email invalide.';
+        errEl.style.display = 'block';
+        return;
+      }
+      var stored = null;
+      try { stored = JSON.parse(localStorage.getItem('ec_user')); } catch(e) {}
+      if (stored && stored.email && stored.email.toLowerCase() === email.toLowerCase()) {
+        errEl.style.display = 'none';
+        window.location.href = 'affaires.html';
+      } else {
+        errEl.textContent = 'Aucun compte trouvé pour cet email.';
+        errEl.style.display = 'block';
+      }
+    }
+
+    document.getElementById('rc-btn').addEventListener('click', rcSubmit);
+    document.getElementById('rc-email').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') rcSubmit();
     });
   </script>
 

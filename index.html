@@ -6,21 +6,72 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>Énigmes Criminelles — Accueil</title>
+  <title>Énigmes Criminelles</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Dancing+Script:wght@600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.4rem;
+      text-align: center;
+      max-width: 600px;
+    }
+    .hero h1 {
+      font-size: clamp(2.4rem, 7vw, 5rem);
+      letter-spacing: 0.08em;
+      line-height: 1.05;
+    }
+    .hero-sub {
+      font-family: var(--font-corps);
+      font-size: clamp(1rem, 1.8vw, 1.2rem);
+      font-style: italic;
+      color: var(--or-clair);
+      opacity: 0.85;
+      max-width: 42ch;
+      line-height: 1.6;
+    }
+    .hero-btns {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.8rem;
+      margin-top: 0.4rem;
+    }
+    .btn-primary {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--bg);
+      background: var(--or);
+      border: 1px solid var(--or);
+      padding: 0.7em 2em;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.22s, color 0.22s;
+    }
+    .btn-primary:hover { background: var(--or-clair); border-color: var(--or-clair); }
+    .hero-badge {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.22em;
+      color: var(--or);
+      opacity: 0.45;
+      text-transform: uppercase;
+    }
+  </style>
 </head>
 <body>
 
-  <!-- Ornements de coin -->
   <div class="corner tl"></div>
   <div class="corner tr"></div>
   <div class="corner bl"></div>
   <div class="corner br"></div>
 
-  <!-- Navigation -->
   <nav id="top-nav">
     <a class="brand" href="index.html">ÉNIGMES CRIMINELLES</a>
     <div class="links">
@@ -31,154 +82,51 @@
     </div>
   </nav>
 
-  <!-- Contenu -->
-  <main id="main-home" class="page-home">
+  <main class="page-home">
+    <div class="hero">
 
-    <!-- Tampon animé -->
-    <div class="s1-stamp">
-      <span class="s1-stamp-text">CONFIDENTIEL</span>
-    </div>
+      <span class="hero-badge">// Dossier classifié — Accès restreint //</span>
 
-    <!-- Titre -->
-    <h1>DOSSIER N°00</h1>
-    <h3>Affaires Non Résolues</h3>
-    <div class="divider"></div>
+      <h1>ÉNIGMES<br/>CRIMINELLES</h1>
 
-    <!-- Zone non connecté -->
-    <div id="zone-login">
-      <!-- Texte d'intro -->
-      <p class="s1-intro">
-        Ce dossier n'était pas censé quitter les archives.<br />
-        Il est maintenant entre vos mains.
+      <p class="hero-sub">
+        20 affaires criminelles à résoudre.<br/>
+        Trouvez le tueur, la méthode et le lieu.
       </p>
 
-      <!-- Formulaire -->
-      <div class="s1-form">
-        <input
-          type="text"
-          id="s1-input"
-          placeholder="Votre nom de code"
-          autocomplete="off"
-          maxlength="40"
-        />
-        <input
-          type="email"
-          id="s1-email"
-          placeholder="Votre adresse email"
-          autocomplete="email"
-          maxlength="120"
-        />
-        <p id="s1-email-error" class="s1-email-error" style="display:none;">
-          Une adresse email valide est requise pour accéder au dossier.
-        </p>
-        <button class="s1-btn-open" id="s1-btn">
-          &#9654;&nbsp; Ouvrir le dossier
-        </button>
-      </div>
-    </div>
-
-    <!-- Zone connecté -->
-    <div id="zone-welcome" style="display:none;" class="s1-welcome">
-      <h2 id="welcome-nom">Bienvenue</h2>
-      <p id="welcome-grade"></p>
       <div class="divider"></div>
-      <a class="btn" href="affaires.html">Accéder aux affaires &rarr;</a>
-    </div>
 
+      <div class="hero-btns" id="hero-btns">
+        <!-- injecté par JS selon état connexion -->
+      </div>
+
+    </div>
   </main>
 
-  <script src="js/mailerlite.js"></script>
   <script src="js/auth.js"></script>
   <script>
-    /* ── Favicon loupe ─────────────────────────────────────────── */
     (function () {
-      var fc = document.createElement('canvas');
-      fc.width = fc.height = 32;
+      var fc = document.createElement('canvas'); fc.width = fc.height = 32;
       var x = fc.getContext('2d');
-      x.fillStyle = '#0a0a0a';
-      x.fillRect(0, 0, 32, 32);
-      x.strokeStyle = '#c9a84c';
-      x.lineWidth = 2.5;
-      x.lineCap = 'round';
+      x.fillStyle = '#0a0a0a'; x.fillRect(0, 0, 32, 32);
+      x.strokeStyle = '#c9a84c'; x.lineWidth = 2.5; x.lineCap = 'round';
       x.beginPath(); x.arc(13, 13, 7, 0, Math.PI * 2); x.stroke();
       x.beginPath(); x.moveTo(18, 18); x.lineTo(26, 26); x.stroke();
-      var lk = document.createElement('link');
-      lk.rel = 'icon'; lk.href = fc.toDataURL();
+      var lk = document.createElement('link'); lk.rel = 'icon'; lk.href = fc.toDataURL();
       document.head.appendChild(lk);
     }());
 
-    /* ── Son tampon ─────────────────────────────────────────────── */
-    function playStampSound() {
-      try {
-        var ac = new (window.AudioContext || window.webkitAudioContext)();
-        var t  = ac.currentTime;
-        var osc  = ac.createOscillator();
-        var gain = ac.createGain();
-        osc.connect(gain); gain.connect(ac.destination);
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(90, t);
-        osc.frequency.exponentialRampToValueAtTime(38, t + 0.18);
-        gain.gain.setValueAtTime(0, t);
-        gain.gain.linearRampToValueAtTime(0.75, t + 0.008);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
-        osc.start(t); osc.stop(t + 0.22);
-        var sr  = ac.sampleRate;
-        var buf = ac.createBuffer(1, sr * 0.07, sr);
-        var d   = buf.getChannelData(0);
-        for (var i = 0; i < d.length; i++) { d[i] = Math.random() * 2 - 1; }
-        var ns  = ac.createBufferSource();
-        ns.buffer = buf;
-        var flt = ac.createBiquadFilter();
-        flt.type = 'lowpass'; flt.frequency.value = 380;
-        var ng  = ac.createGain();
-        ns.connect(flt); flt.connect(ng); ng.connect(ac.destination);
-        ng.gain.setValueAtTime(0.28, t);
-        ng.gain.exponentialRampToValueAtTime(0.001, t + 0.07);
-        ns.start(t); ns.stop(t + 0.07);
-      } catch (e) {}
-    }
-
-    /* ── Affichage selon état connexion ─────────────────────────── */
-    document.addEventListener('DOMContentLoaded', function() {
-      var user = getUser();
-      if (user) {
-        document.getElementById('zone-login').style.display = 'none';
-        var zw = document.getElementById('zone-welcome');
-        zw.style.display = 'flex';
-        document.getElementById('welcome-nom').textContent = 'Bienvenue, ' + user.nom;
-        document.getElementById('welcome-grade').textContent = user.grade;
+    document.addEventListener('DOMContentLoaded', function () {
+      var btns = document.getElementById('hero-btns');
+      if (isLoggedIn()) {
+        btns.innerHTML =
+          '<a class="btn-primary" href="affaires.html">Continuer l\'enquête &rarr;</a>' +
+          '<a class="btn" href="livres.html">Voir les livres &rarr;</a>';
+      } else {
+        btns.innerHTML =
+          '<a class="btn-primary" href="inscription.html">Commencer l\'enquête &rarr;</a>' +
+          '<a class="btn" href="livres.html">Voir les livres &rarr;</a>';
       }
-    });
-
-    /* ── Formulaire screen-1 ──────────────────────────────────── */
-    function s1Submit() {
-      var nom   = document.getElementById('s1-input').value.trim() || 'Inconnu';
-      var email = document.getElementById('s1-email').value.trim();
-      var errEl = document.getElementById('s1-email-error');
-
-      var emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-      if (!emailOk) {
-        errEl.style.display = 'block';
-        document.getElementById('s1-email').focus();
-        return;
-      }
-      errEl.style.display = 'none';
-
-      subscribeToMailerLite(email, nom);
-      login(email, nom);
-      playStampSound();
-
-      setTimeout(function() {
-        window.location.href = 'affaires.html';
-      }, 350);
-    }
-
-    document.getElementById('s1-btn').addEventListener('click', s1Submit);
-    document.getElementById('s1-input').addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') { document.getElementById('s1-email').focus(); }
-    });
-    document.getElementById('s1-email').addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') { s1Submit(); }
     });
   </script>
 
