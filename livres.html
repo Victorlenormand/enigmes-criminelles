@@ -11,16 +11,221 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Dancing+Script:wght@600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ── Page livres ── */
+    .page-livres {
+      padding: 6rem 2rem 4rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      min-height: 100vh;
+      overflow-y: auto;
+    }
+    .livres-header {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 1rem;
+    }
+    .livres-header h1 {
+      font-size: clamp(1.6rem, 4vw, 2.8rem);
+      letter-spacing: 0.06em;
+    }
+    .livres-header p {
+      font-style: italic;
+      color: var(--or-clair);
+      opacity: 0.8;
+    }
+
+    /* ── Grille de cartes ── */
+    .livres-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 320px));
+      gap: 2rem;
+      justify-content: center;
+      width: 100%;
+      max-width: 1060px;
+      margin-top: 1.5rem;
+    }
+
+    /* ── Carte livre ── */
+    .livre-card {
+      background: #1a1510;
+      border: 1px solid rgba(201, 168, 76, 0.25);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      position: relative;
+      transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+      overflow: hidden;
+    }
+    .livre-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(201, 168, 76, 0.7);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    }
+    .livre-card.indisponible {
+      opacity: 0.55;
+    }
+    .livre-card.indisponible:hover {
+      transform: none;
+      border-color: rgba(201, 168, 76, 0.25);
+      box-shadow: none;
+    }
+
+    /* Badge coin supérieur droit */
+    .livre-badge {
+      position: absolute;
+      top: 0;
+      right: 0;
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 0.35em 0.8em;
+    }
+    .livre-badge.disponible {
+      background: var(--or);
+      color: #0a0a0a;
+    }
+    .livre-badge.a-paraitre {
+      background: rgba(255,255,255,0.08);
+      color: rgba(245,240,232,0.35);
+    }
+
+    /* Image placeholder */
+    .livre-cover {
+      width: 100%;
+      aspect-ratio: 2/3;
+      background: #0f0d0a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid rgba(201, 168, 76, 0.12);
+      flex-shrink: 0;
+    }
+
+    /* Corps texte */
+    .livre-body {
+      padding: 1.4rem 1.4rem 1.6rem;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+      width: 100%;
+      flex: 1;
+    }
+    .livre-vol {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.22em;
+      color: var(--or);
+      opacity: 0.55;
+      text-transform: uppercase;
+    }
+    .livre-titre {
+      font-family: var(--font-titre);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--creme);
+      line-height: 1.3;
+    }
+    .livre-auteur {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      color: var(--or-clair);
+      opacity: 0.6;
+    }
+    .livre-sous-titre {
+      font-family: var(--font-corps);
+      font-style: italic;
+      font-size: 0.82rem;
+      color: var(--or-clair);
+      opacity: 0.75;
+      line-height: 1.4;
+    }
+    .livre-desc {
+      font-family: var(--font-corps);
+      font-size: 0.85rem;
+      color: var(--creme);
+      opacity: 0.65;
+      line-height: 1.55;
+      margin-top: 0.2rem;
+    }
+    .livre-sep {
+      width: 40px;
+      height: 1px;
+      background: linear-gradient(90deg, var(--or), transparent);
+      margin: 0.4rem 0;
+    }
+    .livre-btn {
+      display: inline-block;
+      margin-top: auto;
+      padding-top: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--or);
+      background: transparent;
+      border: 1px solid rgba(201, 168, 76, 0.5);
+      padding: 0.55em 1.3em;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+      align-self: stretch;
+      text-align: center;
+    }
+    .livre-btn:hover {
+      background: var(--or);
+      color: var(--bg);
+    }
+    .livre-btn.disabled {
+      color: rgba(245,240,232,0.2);
+      border-color: rgba(245,240,232,0.1);
+      cursor: default;
+      pointer-events: none;
+    }
+
+    /* ── Section avis ── */
+    .livres-avis {
+      margin-top: 3rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      padding: 2rem;
+      border-top: 1px solid rgba(201, 168, 76, 0.1);
+      width: 100%;
+      max-width: 560px;
+    }
+    .livres-avis p {
+      font-family: var(--font-corps);
+      font-style: italic;
+      font-size: 1rem;
+      color: var(--or-clair);
+      opacity: 0.75;
+    }
+
+    @media (max-width: 600px) {
+      .livres-grid { grid-template-columns: 1fr; max-width: 340px; }
+    }
+  </style>
 </head>
 <body>
 
-  <!-- Ornements de coin -->
   <div class="corner tl"></div>
   <div class="corner tr"></div>
   <div class="corner bl"></div>
   <div class="corner br"></div>
 
-  <!-- Navigation -->
   <nav id="top-nav">
     <a class="brand" href="index.html">ÉNIGMES CRIMINELLES</a>
     <div class="links">
@@ -31,56 +236,95 @@
     </div>
   </nav>
 
-  <main class="page-content">
+  <main class="page-livres">
 
-    <span class="stamp-label">Catalogue</span>
-    <h2>La Série</h2>
-    <h3>Trois affaires. Un coupable. Saurez-vous le trouver ?</h3>
-    <div class="divider"></div>
+    <div class="livres-header">
+      <span class="stamp-label">Catalogue</span>
+      <h1>LA SÉRIE ÉNIGMES CRIMINELLES</h1>
+      <p>Des enquêtes sur papier pour aller encore plus loin.</p>
+      <div class="divider"></div>
+    </div>
 
     <div class="livres-grid">
 
-      <!-- Livre 1 -->
+      <!-- ── Livre 1 — Disponible ── -->
       <div class="livre-card">
-        <div class="livre-num">Livre N°01</div>
-        <div class="livre-titre">La Nuit du Palais Royal</div>
         <span class="livre-badge disponible">Disponible</span>
-        <a class="livre-amazon" href="#" target="_blank" rel="noopener">
-          &#9654; Voir sur Amazon
-        </a>
+        <div class="livre-cover">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="27" cy="27" r="14" stroke="#c9a84c" stroke-width="3" fill="none" opacity="0.7"/>
+            <line x1="37" y1="37" x2="54" y2="54" stroke="#c9a84c" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+          </svg>
+        </div>
+        <div class="livre-body">
+          <span class="livre-vol">Volume I</span>
+          <div class="livre-titre">ÉNIGMES CRIMINELLES — Volume I</div>
+          <div class="livre-auteur">Victor Lenormand</div>
+          <div class="livre-sep"></div>
+          <div class="livre-sous-titre">100 casse-têtes d'enquêtes policières</div>
+          <p class="livre-desc">100 affaires. 3 niveaux. Trouvez le tueur, la méthode et le lieu en combinant mots mêlés et déduction pure.</p>
+          <a class="livre-btn" href="https://www.amazon.fr/dp/B0GZK93B5F" target="_blank" rel="noopener noreferrer">
+            Commander sur Amazon →
+          </a>
+        </div>
       </div>
 
-      <!-- Livre 2 -->
-      <div class="livre-card">
-        <div class="livre-num">Livre N°02</div>
-        <div class="livre-titre">Le Dernier Train de Lyon</div>
-        <span class="livre-badge a-venir">À Venir</span>
+      <!-- ── Livre 2 — À paraître ── -->
+      <div class="livre-card indisponible">
+        <span class="livre-badge a-paraitre">À paraître</span>
+        <div class="livre-cover">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="27" cy="27" r="14" stroke="#c9a84c" stroke-width="3" fill="none" opacity="0.25"/>
+            <line x1="37" y1="37" x2="54" y2="54" stroke="#c9a84c" stroke-width="3" stroke-linecap="round" opacity="0.25"/>
+          </svg>
+        </div>
+        <div class="livre-body">
+          <span class="livre-vol">Volume II</span>
+          <div class="livre-titre">ÉNIGMES CRIMINELLES — Volume II</div>
+          <div class="livre-sep"></div>
+          <button class="livre-btn disabled" disabled>Bientôt disponible</button>
+        </div>
       </div>
 
-      <!-- Livre 3 -->
-      <div class="livre-card">
-        <div class="livre-num">Livre N°03</div>
-        <div class="livre-titre">Rue des Orfèvres</div>
-        <span class="livre-badge a-venir">À Venir</span>
+      <!-- ── Livre 3 — À paraître ── -->
+      <div class="livre-card indisponible">
+        <span class="livre-badge a-paraitre">À paraître</span>
+        <div class="livre-cover">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="27" cy="27" r="14" stroke="#c9a84c" stroke-width="3" fill="none" opacity="0.25"/>
+            <line x1="37" y1="37" x2="54" y2="54" stroke="#c9a84c" stroke-width="3" stroke-linecap="round" opacity="0.25"/>
+          </svg>
+        </div>
+        <div class="livre-body">
+          <span class="livre-vol">Volume III</span>
+          <div class="livre-titre">ÉNIGMES CRIMINELLES — Volume III</div>
+          <div class="livre-sep"></div>
+          <button class="livre-btn disabled" disabled>Bientôt disponible</button>
+        </div>
       </div>
 
+    </div>
+
+    <!-- ── Section avis ── -->
+    <div class="livres-avis">
+      <p>Vous aimez la série ? Laissez un avis sur Amazon.</p>
+      <a class="btn" href="https://www.amazon.fr/dp/B0GZK93B5F" target="_blank" rel="noopener noreferrer">
+        Laisser un avis →
+      </a>
     </div>
 
   </main>
 
   <script src="js/auth.js"></script>
   <script>
-    /* ── Favicon ─────────────────────────────────────────────── */
     (function () {
-      var fc = document.createElement('canvas');
-      fc.width = fc.height = 32;
+      var fc = document.createElement('canvas'); fc.width = fc.height = 32;
       var x = fc.getContext('2d');
       x.fillStyle = '#0a0a0a'; x.fillRect(0, 0, 32, 32);
       x.strokeStyle = '#c9a84c'; x.lineWidth = 2.5; x.lineCap = 'round';
       x.beginPath(); x.arc(13, 13, 7, 0, Math.PI * 2); x.stroke();
       x.beginPath(); x.moveTo(18, 18); x.lineTo(26, 26); x.stroke();
-      var lk = document.createElement('link');
-      lk.rel = 'icon'; lk.href = fc.toDataURL();
+      var lk = document.createElement('link'); lk.rel = 'icon'; lk.href = fc.toDataURL();
       document.head.appendChild(lk);
     }());
   </script>
