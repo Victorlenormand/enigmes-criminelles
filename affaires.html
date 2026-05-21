@@ -131,6 +131,16 @@
         }
         container.appendChild(card);
       });
+
+      // URL param ?affaire=X — ouvrir directement une affaire
+      var params = new URLSearchParams(window.location.search);
+      var affaireParam = params.get('affaire');
+      if (affaireParam) {
+        var targetId = parseInt(affaireParam, 10);
+        var targetAff = AFFAIRES.find(function(a) { return a.id === targetId; });
+        var verrou = targetAff && targetAff.id > 1 && resolues.indexOf(targetAff.id - 1) === -1 && resolues.indexOf(targetAff.id) === -1;
+        if (targetAff && !verrou) ouvrirAffaire(targetAff);
+      }
     });
 
     function ouvrirAffaire(aff) {
