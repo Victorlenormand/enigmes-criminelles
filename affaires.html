@@ -33,67 +33,49 @@
 
   <main class="page-content">
 
-    <!-- ══ AFFAIRE 1 ══════════════════════════════════════════ -->
-    <div id="affaire-1" class="affaire-screen">
-      <!-- Jeu -->
-      <div class="affaire-game">
-        <div class="ws-header" id="ws-hdr-1"></div>
-        <div class="ws-body">
-          <div class="ws-grid" id="ws-grid-1"></div>
-          <div class="ws-side">
-            <div id="ws-wlist-1"></div>
-            <div class="ws-answer-section" id="ws-ans-1"></div>
-          </div>
-        </div>
+    <!-- Vue sélection (par défaut) -->
+    <div id="vue-selection">
+      <div class="sel-header">
+        <h2>DOSSIERS CLASSIFIÉS</h2>
+        <p id="sel-progression">0 / 20 affaires résolues</p>
       </div>
-      <!-- Verrouillé (affiché si non débloqué) -->
-      <div class="affaire-locked" style="display:none;">
-        <div class="affaire-locked-icon">🔒</div>
-        <h3>Affaire N°1</h3>
-        <p>Résolvez l'affaire précédente pour débloquer celle-ci.</p>
+      <div class="sel-niveaux">
+        <!-- Niveau 1 -->
+        <div class="sel-niveau">
+          <div class="sel-niveau-header">
+            <span class="sel-badge bronze">★☆☆</span>
+            <h3>NIVEAU 1 — INSPECTEUR</h3>
+            <p class="sel-niveau-desc">Mots horizontaux et verticaux</p>
+          </div>
+          <div class="sel-grid" id="sel-n1"></div>
+        </div>
+        <!-- Niveau 2 -->
+        <div class="sel-niveau">
+          <div class="sel-niveau-header">
+            <span class="sel-badge argent">★★☆</span>
+            <h3>NIVEAU 2 — COMMISSAIRE</h3>
+            <p class="sel-niveau-desc">+ Mots en diagonale</p>
+          </div>
+          <div class="sel-grid" id="sel-n2"></div>
+        </div>
+        <!-- Niveau 3 -->
+        <div class="sel-niveau">
+          <div class="sel-niveau-header">
+            <span class="sel-badge or">★★★</span>
+            <h3>NIVEAU 3 — DÉTECTIVE</h3>
+            <p class="sel-niveau-desc">+ Toutes directions et inversés</p>
+          </div>
+          <div class="sel-grid" id="sel-n3"></div>
+        </div>
       </div>
     </div>
 
-    <!-- ══ AFFAIRE 2 ══════════════════════════════════════════ -->
-    <div id="affaire-2" class="affaire-screen">
-      <!-- Jeu -->
-      <div class="affaire-game">
-        <div class="ws-header" id="ws-hdr-2"></div>
-        <div class="ws-body">
-          <div class="ws-grid" id="ws-grid-2"></div>
-          <div class="ws-side">
-            <div id="ws-wlist-2"></div>
-            <div class="ws-answer-section" id="ws-ans-2"></div>
-          </div>
-        </div>
+    <!-- Vue jeu (cachée par défaut, affichée au clic) -->
+    <div id="vue-jeu" style="display:none;">
+      <div class="jeu-back">
+        <button id="btn-retour" class="btn">← Retour aux dossiers</button>
       </div>
-      <!-- Verrouillé -->
-      <div class="affaire-locked" style="display:none;">
-        <div class="affaire-locked-icon">🔒</div>
-        <h3>Affaire N°2 — Le Dernier Train de Lyon</h3>
-        <p>Résolvez l'affaire N°1 pour débloquer celle-ci.</p>
-      </div>
-    </div>
-
-    <!-- ══ AFFAIRE 3 ══════════════════════════════════════════ -->
-    <div id="affaire-3" class="affaire-screen">
-      <!-- Jeu -->
-      <div class="affaire-game">
-        <div class="ws-header" id="ws-hdr-3"></div>
-        <div class="ws-body">
-          <div class="ws-grid" id="ws-grid-3"></div>
-          <div class="ws-side">
-            <div id="ws-wlist-3"></div>
-            <div class="ws-answer-section" id="ws-ans-3"></div>
-          </div>
-        </div>
-      </div>
-      <!-- Verrouillé -->
-      <div class="affaire-locked" style="display:none;">
-        <div class="affaire-locked-icon">🔒</div>
-        <h3>Affaire N°3 — Rue des Orfèvres</h3>
-        <p>Résolvez l'affaire N°2 pour débloquer celle-ci.</p>
-      </div>
+      <div id="jeu-affaire-container"></div>
     </div>
 
   </main>
@@ -117,6 +99,66 @@
       lk.rel = 'icon'; lk.href = fc.toDataURL();
       document.head.appendChild(lk);
     }());
+
+    /* ── Vue sélection ───────────────────────────────────────── */
+    document.addEventListener('DOMContentLoaded', function() {
+      var user = getUser();
+      var resolues = user ? (user.affairesResolues || []) : [];
+
+      // Afficher progression
+      document.getElementById('sel-progression').textContent = resolues.length + ' / 20 affaires résolues';
+
+      // Remplir les grilles de niveaux
+      var n1 = document.getElementById('sel-n1');
+      var n2 = document.getElementById('sel-n2');
+      var n3 = document.getElementById('sel-n3');
+
+      AFFAIRES.forEach(function(aff) {
+        var container = aff.niveau === 1 ? n1 : aff.niveau === 2 ? n2 : n3;
+        var resolue = resolues.indexOf(aff.id) !== -1;
+        var verrouillee = !resolue && aff.id > 1 && resolues.indexOf(aff.id - 1) === -1;
+
+        var card = document.createElement('div');
+        card.className = 'sel-card' + (resolue ? ' resolue' : '') + (verrouillee ? ' verrouillee' : '');
+        card.innerHTML =
+          '<div class="sel-num">N°' + String(aff.id).padStart(2,'0') + '</div>' +
+          '<div class="sel-titre">' + aff.titre + '</div>' +
+          '<div class="sel-statut ' + (resolue ? 'resolu' : 'ouvert') + '">' + (resolue ? '✓ Résolu' : 'Ouvert') + '</div>' +
+          (resolue ? '<div class="sel-stamp-resolu"><span>RÉSOLU</span></div>' : '');
+
+        if (!verrouillee) {
+          card.addEventListener('click', function() { ouvrirAffaire(aff); });
+        }
+        container.appendChild(card);
+      });
+    });
+
+    function ouvrirAffaire(aff) {
+      document.getElementById('vue-selection').style.display = 'none';
+      var jeu = document.getElementById('vue-jeu');
+      jeu.style.display = 'block';
+
+      var container = document.getElementById('jeu-affaire-container');
+      container.innerHTML =
+        '<div class="affaire-game">' +
+          '<div class="ws-header" id="ws-hdr-' + aff.id + '"></div>' +
+          '<div class="ws-body">' +
+            '<div class="ws-grid" id="ws-grid-' + aff.id + '"></div>' +
+            '<div class="ws-side">' +
+              '<div id="ws-wlist-' + aff.id + '"></div>' +
+              '<div class="ws-answer-section" id="ws-ans-' + aff.id + '"></div>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+
+      wsInitAffaire(aff);
+    }
+
+    document.getElementById('btn-retour').addEventListener('click', function() {
+      document.getElementById('vue-jeu').style.display = 'none';
+      document.getElementById('vue-selection').style.display = 'block';
+      location.reload();
+    });
   </script>
 
 </body>

@@ -787,3 +787,30 @@ p {
 
   .carte-placeholder { padding: 2rem 1.5rem; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Vue sélection des affaires
+═══════════════════════════════════════════════════════════ */
+.sel-header { text-align:center; margin-bottom:2rem; }
+#sel-progression { font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.15em; color:var(--or); opacity:0.6; margin-top:0.4rem; }
+.sel-niveaux { display:flex; flex-direction:column; gap:2.5rem; width:100%; max-width:960px; }
+.sel-niveau-header { display:flex; align-items:center; gap:1rem; margin-bottom:1rem; border-bottom:1px solid rgba(201,168,76,0.15); padding-bottom:0.6rem; }
+.sel-badge { font-family:var(--font-mono); font-size:0.75rem; padding:0.3em 0.8em; letter-spacing:0.1em; }
+.sel-badge.bronze { color:#cd7f32; border:1px solid #cd7f32; }
+.sel-badge.argent { color:#aaa; border:1px solid #aaa; }
+.sel-badge.or     { color:var(--or); border:1px solid var(--or); }
+.sel-niveau-desc  { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:0.1em; color:var(--creme); opacity:0.4; margin-left:auto; }
+.sel-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:0.75rem; }
+.sel-card { background:#111; border:1px solid rgba(201,168,76,0.2); padding:1rem 0.8rem; cursor:pointer; position:relative; transition:border-color 0.2s,transform 0.2s; display:flex; flex-direction:column; gap:0.4rem; min-height:120px; }
+.sel-card:hover { border-color:rgba(201,168,76,0.6); transform:translateY(-2px); }
+.sel-card.resolue { border-color:rgba(60,180,100,0.4); }
+.sel-card.verrouillee { opacity:0.4; cursor:not-allowed; }
+.sel-card.verrouillee:hover { transform:none; border-color:rgba(201,168,76,0.2); }
+.sel-num { font-family:var(--font-titre); font-size:1.6rem; color:var(--or); opacity:0.5; line-height:1; }
+.sel-titre { font-family:var(--font-corps); font-style:italic; font-size:0.78rem; color:var(--creme); opacity:0.75; line-height:1.3; flex:1; }
+.sel-statut { font-family:var(--font-mono); font-size:0.55rem; letter-spacing:0.15em; text-transform:uppercase; }
+.sel-statut.ouvert { color:var(--or); opacity:0.5; }
+.sel-statut.resolu { color:#3cb464; }
+.sel-stamp-resolu { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.55); }
+.sel-stamp-resolu span { font-family:var(--font-mono); font-size:0.7rem; font-weight:700; letter-spacing:0.2em; color:#3cb464; border:2px solid #3cb464; padding:0.3em 0.8em; transform:rotate(-12deg); }
+.jeu-back { margin-bottom:1rem; }

@@ -29,6 +29,14 @@ function logout() {
   window.location.href = 'index.html';
 }
 
+function getGrade(n) {
+  if (n >= 20) return 'Détective en Chef ★★★★★';
+  if (n >= 15) return 'Commissaire Divisionnaire ★★★★';
+  if (n >= 10) return 'Commissaire ★★★';
+  if (n >= 5)  return 'Inspecteur ★★';
+  return 'Inspecteur Stagiaire ★';
+}
+
 function updateUser(data) {
   var user = getUser() || {};
   Object.assign(user, data);

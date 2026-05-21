@@ -13,10 +13,21 @@ function generateGrid(placements, residualSeq) {
   }
   placements.forEach(function(p) {
     for (i = 0; i < p.mot.length; i++) {
-      pr = p.dir === 'V' ? p.row + i : p.row;
-      pc = p.dir === 'H' ? p.col + i : p.col;
-      grid[pr][pc] = p.mot[i];
-      wordCells[pr][pc] = true;
+      switch(p.dir) {
+        case 'H':   pr = p.row;     pc = p.col + i; break;
+        case 'HR':  pr = p.row;     pc = p.col - i; break;
+        case 'V':   pr = p.row + i; pc = p.col;     break;
+        case 'VR':  pr = p.row - i; pc = p.col;     break;
+        case 'DH':  pr = p.row + i; pc = p.col + i; break;
+        case 'DB':  pr = p.row + i; pc = p.col - i; break;
+        case 'DHR': pr = p.row - i; pc = p.col - i; break;
+        case 'DBR': pr = p.row - i; pc = p.col + i; break;
+        default:    pr = p.row;     pc = p.col + i;
+      }
+      if (pr >= 0 && pr < 10 && pc >= 0 && pc < 10) {
+        grid[pr][pc] = p.mot[i];
+        wordCells[pr][pc] = true;
+      }
     }
   });
   var residuels = [], seqIdx = 0;
@@ -33,9 +44,9 @@ function generateGrid(placements, residualSeq) {
 }
 
 var AFFAIRES = [
+  /* ── AFFAIRE 1 ─────────────────────────────────────────── */
   {
-    id: 1,
-    affaireNum: 1,
+    id: 1, affaireNum: 1, niveau: 1,
     titre: 'La Nuit du Palais Royal',
     ghost: {mot: 'GRENIER', cat: 'LIEU'},
     wordPlacements: [
@@ -58,9 +69,10 @@ var AFFAIRES = [
     solution: {tueur:'MARC', methode:'POISON', lieu:'GRENIER'},
     nextAffaire: 2
   },
+
+  /* ── AFFAIRE 2 ─────────────────────────────────────────── */
   {
-    id: 2,
-    affaireNum: 2,
+    id: 2, affaireNum: 2, niveau: 1,
     titre: 'Le Dernier Train de Lyon',
     ghost: {mot: 'LAME', cat: 'METHODE'},
     wordPlacements: [
@@ -84,9 +96,10 @@ var AFFAIRES = [
     solution: {tueur:'VICTOR', methode:'LAME', lieu:'QUAI'},
     nextAffaire: 3
   },
+
+  /* ── AFFAIRE 3 ─────────────────────────────────────────── */
   {
-    id: 3,
-    affaireNum: 3,
+    id: 3, affaireNum: 3, niveau: 1,
     titre: 'Rue des Orfèvres',
     ghost: {mot: 'BLANCHE', cat: 'TUEUR'},
     wordPlacements: [
@@ -107,6 +120,455 @@ var AFFAIRES = [
     ],
     residualSeq: 'ARSENICCAVE',
     solution: {tueur:'BLANCHE', methode:'ARSENIC', lieu:'CAVE'},
+    nextAffaire: 4
+  },
+
+  /* ── AFFAIRE 4 — Le Bal Masqué ─────────────────────────── */
+  {
+    id: 4, affaireNum: 4, niveau: 1,
+    titre: 'Le Bal Masqué',
+    ghost: {mot: 'HUGO', cat: 'TUEUR'},
+    wordPlacements: [
+      {mot:'MASQUERADE', row:0, col:0, dir:'H'},
+      {mot:'VALSE',      row:1, col:0, dir:'H'},
+      {mot:'MIROIR',     row:2, col:0, dir:'H'},
+      {mot:'BOUGIE',     row:3, col:0, dir:'H'},
+      {mot:'RIDEAU',     row:4, col:0, dir:'H'},
+      {mot:'INVITE',     row:5, col:0, dir:'H'},
+      {mot:'COULOIR',    row:6, col:0, dir:'H'},
+      {mot:'CARTON',     row:7, col:0, dir:'H'},
+      {mot:'CAPES',      row:8, col:0, dir:'H'},
+      {mot:'BAL',        row:9, col:0, dir:'H'},
+      {mot:'BAISER',     row:1, col:6, dir:'V'},
+      {mot:'NOCTURNE',   row:1, col:7, dir:'V'},
+      {mot:'EVENTAIL',   row:1, col:8, dir:'V'},
+      {mot:'FENETRE',    row:1, col:9, dir:'V'},
+      {mot:'FEE',        row:7, col:6, dir:'V'}
+    ],
+    residualSeq: 'LACETLOGE',
+    solution: {tueur:'HUGO', methode:'LACET', lieu:'LOGE'},
+    nextAffaire: 5
+  },
+
+  /* ── AFFAIRE 5 — La Chambre Froide ─────────────────────── */
+  {
+    id: 5, affaireNum: 5, niveau: 1,
+    titre: 'La Chambre Froide',
+    ghost: {mot: 'GEL', cat: 'METHODE'},
+    wordPlacements: [
+      {mot:'CONGELE',  row:0, col:0, dir:'H'},
+      {mot:'FRISSON',  row:1, col:0, dir:'H'},
+      {mot:'CADAVRE',  row:2, col:0, dir:'H'},
+      {mot:'BANQUISE', row:3, col:0, dir:'H'},
+      {mot:'GIVRE',    row:4, col:0, dir:'H'},
+      {mot:'GLACE',    row:5, col:0, dir:'H'},
+      {mot:'NEIGE',    row:6, col:0, dir:'H'},
+      {mot:'FROID',    row:7, col:0, dir:'H'},
+      {mot:'TUNDRA',   row:8, col:0, dir:'H'},
+      {mot:'ARCTIQUE', row:9, col:0, dir:'H'},
+      {mot:'BRUME',    row:4, col:7, dir:'V'},
+      {mot:'RONCE',    row:0, col:8, dir:'V'},
+      {mot:'LIEN',     row:0, col:9, dir:'V'},
+      {mot:'VAGUE',    row:5, col:8, dir:'V'},
+      {mot:'DRAME',    row:5, col:9, dir:'V'}
+    ],
+    residualSeq: 'EDMONDRESERVE',
+    solution: {tueur:'EDMOND', methode:'GEL', lieu:'RESERVE'},
+    nextAffaire: 6
+  },
+
+  /* ── AFFAIRE 6 — Le Cabinet du Docteur ─────────────────── */
+  {
+    id: 6, affaireNum: 6, niveau: 1,
+    titre: 'Le Cabinet du Docteur',
+    ghost: {mot: 'BUREAU', cat: 'LIEU'},
+    wordPlacements: [
+      {mot:'ORDONNANCE', row:0, col:0, dir:'H'},
+      {mot:'PATIENT',    row:1, col:0, dir:'H'},
+      {mot:'DOSSIER',    row:2, col:0, dir:'H'},
+      {mot:'CABINET',    row:3, col:0, dir:'H'},
+      {mot:'SCALPEL',    row:4, col:0, dir:'H'},
+      {mot:'DIAGNOSE',   row:5, col:0, dir:'H'},
+      {mot:'MEDECINE',   row:6, col:0, dir:'H'},
+      {mot:'PANSEMENT',  row:7, col:0, dir:'H'},
+      {mot:'REMEDIER',   row:8, col:0, dir:'H'},
+      {mot:'CHIRURGIE',  row:9, col:0, dir:'H'},
+      {mot:'SOI',        row:1, col:7, dir:'V'},
+      {mot:'RAP',        row:1, col:8, dir:'V'}
+    ],
+    residualSeq: 'CLAIRESERINGUE',
+    solution: {tueur:'CLAIRE', methode:'SERINGUE', lieu:'BUREAU'},
+    nextAffaire: 7
+  },
+
+  /* ── AFFAIRE 7 — L'Incendie du Théâtre ─────────────────── */
+  {
+    id: 7, affaireNum: 7, niveau: 1,
+    titre: "L'Incendie du Théâtre",
+    ghost: {mot: 'FEU', cat: 'METHODE'},
+    wordPlacements: [
+      {mot:'RIDEAU',    row:0, col:0, dir:'H'},
+      {mot:'MACHINERIE',row:1, col:0, dir:'H'},
+      {mot:'COULISSE',  row:2, col:0, dir:'H'},
+      {mot:'DECOR',     row:3, col:0, dir:'H'},
+      {mot:'LOGE',      row:4, col:0, dir:'H'},
+      {mot:'ACTEUR',    row:5, col:0, dir:'H'},
+      {mot:'COMEDIEN',  row:6, col:0, dir:'H'},
+      {mot:'PLATEAU',   row:7, col:0, dir:'H'},
+      {mot:'COULOIR',   row:8, col:0, dir:'H'},
+      {mot:'RAMPE',     row:9, col:0, dir:'H'},
+      {mot:'PATIENCE',  row:2, col:8, dir:'V'},
+      {mot:'BALCON',    row:2, col:9, dir:'V'},
+      {mot:'TOR',       row:3, col:7, dir:'V'},
+      {mot:'SIT',       row:7, col:7, dir:'V'},
+      {mot:'ODE',       row:3, col:6, dir:'V'}
+    ],
+    residualSeq: 'GASTONSCENE',
+    solution: {tueur:'GASTON', methode:'FEU', lieu:'SCENE'},
+    nextAffaire: 8
+  },
+
+  /* ── AFFAIRE 8 — Le Port de Marseille ──────────────────── */
+  {
+    id: 8, affaireNum: 8, niveau: 2,
+    titre: 'Le Port de Marseille',
+    ghost: {mot: 'RAFAEL', cat: 'TUEUR'},
+    wordPlacements: [
+      {mot:'ANCRE',     row:0, col:0, dir:'H'},
+      {mot:'BATEAU',    row:1, col:0, dir:'H'},
+      {mot:'CAPITAINE', row:2, col:0, dir:'H'},
+      {mot:'DRAPEAU',   row:3, col:0, dir:'H'},
+      {mot:'ESCALE',    row:4, col:0, dir:'H'},
+      {mot:'FILET',     row:5, col:0, dir:'H'},
+      {mot:'GOELETTE',  row:6, col:0, dir:'H'},
+      {mot:'HUBLOT',    row:7, col:0, dir:'H'},
+      {mot:'JETEE',     row:8, col:0, dir:'H'},
+      {mot:'QUAI',      row:9, col:0, dir:'H'},
+      {mot:'CANAL',     row:0, col:5, dir:'DH'},
+      {mot:'SON',       row:0, col:9, dir:'DB'},
+      {mot:'ABORD',     row:5, col:8, dir:'V'},
+      {mot:'EMERI',     row:5, col:9, dir:'V'},
+      {mot:'GRE',       row:7, col:7, dir:'V'},
+      {mot:'ODE',       row:7, col:6, dir:'V'},
+      {mot:'SEL',       row:5, col:5, dir:'H'},
+      {mot:'MAT',       row:4, col:6, dir:'H'},
+      {mot:'UN',        row:3, col:6, dir:'H'}
+    ],
+    residualSeq: 'NOYADECALE',
+    solution: {tueur:'RAFAEL', methode:'NOYADE', lieu:'CALE'},
+    nextAffaire: 9
+  },
+
+  /* ── AFFAIRE 9 — La Pension du Lac ─────────────────────── */
+  {
+    id: 9, affaireNum: 9, niveau: 2,
+    titre: 'La Pension du Lac',
+    ghost: {mot: 'POISON', cat: 'METHODE'},
+    wordPlacements: [
+      {mot:'PENSION',   row:0, col:0, dir:'H'},
+      {mot:'CHAMBRE',   row:1, col:0, dir:'H'},
+      {mot:'COULOIR',   row:2, col:0, dir:'H'},
+      {mot:'BALCON',    row:3, col:0, dir:'H'},
+      {mot:'JARDINET',  row:4, col:0, dir:'H'},
+      {mot:'ESCALIER',  row:5, col:0, dir:'H'},
+      {mot:'VERANDA',   row:6, col:0, dir:'H'},
+      {mot:'PORTAIL',   row:7, col:0, dir:'H'},
+      {mot:'TERRASSE',  row:8, col:0, dir:'H'},
+      {mot:'FONTAINE',  row:9, col:0, dir:'H'},
+      {mot:'BRUME',     row:0, col:8, dir:'V'},
+      {mot:'ETUDE',     row:0, col:9, dir:'V'},
+      {mot:'ARC',       row:6, col:7, dir:'DH'}
+    ],
+    residualSeq: 'SUZANNEGRENIER',
+    solution: {tueur:'SUZANNE', methode:'POISON', lieu:'GRENIER'},
+    nextAffaire: 10
+  },
+
+  /* ── AFFAIRE 10 — La Galerie des Glaces ────────────────── */
+  {
+    id: 10, affaireNum: 10, niveau: 2,
+    titre: 'La Galerie des Glaces',
+    ghost: {mot: 'SALON', cat: 'LIEU'},
+    wordPlacements: [
+      {mot:'GALERIE',   row:0, col:0, dir:'H'},
+      {mot:'MIROIR',    row:1, col:0, dir:'H'},
+      {mot:'LUSTRE',    row:2, col:0, dir:'H'},
+      {mot:'PARQUET',   row:3, col:0, dir:'H'},
+      {mot:'RIDEAU',    row:4, col:0, dir:'H'},
+      {mot:'TABLEAUX',  row:5, col:0, dir:'H'},
+      {mot:'SCULPTURE', row:6, col:0, dir:'H'},
+      {mot:'PORTRAIT',  row:7, col:0, dir:'H'},
+      {mot:'ORNEMENT',  row:8, col:0, dir:'H'},
+      {mot:'VERRIERE',  row:9, col:0, dir:'H'},
+      {mot:'MARBRE',    row:0, col:8, dir:'V'},
+      {mot:'ANCIEN',    row:0, col:9, dir:'V'},
+      {mot:'OR',        row:0, col:7, dir:'V'},
+      {mot:'MOB',       row:1, col:6, dir:'DH'}
+    ],
+    residualSeq: 'ARMANDCABLE',
+    solution: {tueur:'ARMAND', methode:'CABLE', lieu:'SALON'},
+    nextAffaire: 11
+  },
+
+  /* ── AFFAIRE 11 — Le Monastère des Brumes ──────────────── */
+  {
+    id: 11, affaireNum: 11, niveau: 2,
+    titre: 'Le Monastère des Brumes',
+    ghost: {mot: 'BENOIT', cat: 'TUEUR'},
+    wordPlacements: [
+      {mot:'MONASTERE', row:0, col:0, dir:'H'},
+      {mot:'CLOITRE',   row:1, col:0, dir:'H'},
+      {mot:'CHAPELLE',  row:2, col:0, dir:'H'},
+      {mot:'CLOCHE',    row:3, col:0, dir:'H'},
+      {mot:'NUIT',      row:4, col:0, dir:'H'},
+      {mot:'BRUME',     row:5, col:0, dir:'H'},
+      {mot:'CELLULE',   row:6, col:0, dir:'H'},
+      {mot:'PRIEUR',    row:7, col:0, dir:'H'},
+      {mot:'ENLUMINURE',row:8, col:0, dir:'H'},
+      {mot:'RELIQUE',   row:9, col:0, dir:'H'},
+      {mot:'CHANOINE',  row:0, col:9, dir:'V'},
+      {mot:'LECTEUR',   row:1, col:8, dir:'V'},
+      {mot:'NUEE',      row:4, col:4, dir:'DH'},
+      {mot:'EU',        row:1, col:6, dir:'H'}
+    ],
+    residualSeq: 'PIERRECRYPTE',
+    solution: {tueur:'BENOIT', methode:'PIERRE', lieu:'CRYPTE'},
+    nextAffaire: 12
+  },
+
+  /* ── AFFAIRE 12 — La Villa des Roses ───────────────────── */
+  {
+    id: 12, affaireNum: 12, niveau: 2,
+    titre: 'La Villa des Roses',
+    ghost: {mot: 'TASSE', cat: 'METHODE'},
+    wordPlacements: [
+      {mot:'ROSIER',    row:0, col:0, dir:'H'},
+      {mot:'VIOLETTE',  row:1, col:0, dir:'H'},
+      {mot:'PIVOINE',   row:2, col:0, dir:'H'},
+      {mot:'LAVANDE',   row:3, col:0, dir:'H'},
+      {mot:'GLORIETTE', row:4, col:0, dir:'H'},
+      {mot:'FONTAINE',  row:5, col:0, dir:'H'},
+      {mot:'BALUSTRADE',row:6, col:0, dir:'H'},
+      {mot:'PERGOLA',   row:7, col:0, dir:'H'},
+      {mot:'TREILLE',   row:8, col:0, dir:'H'},
+      {mot:'PARTERRE',  row:9, col:0, dir:'H'},
+      {mot:'GELE',      row:0, col:6, dir:'DH'},
+      {mot:'GALE',      row:0, col:9, dir:'V'},
+      {mot:'NE',        row:3, col:8, dir:'V'},
+      {mot:'LA',        row:7, col:8, dir:'V'},
+      {mot:'IL',        row:2, col:7, dir:'H'}
+    ],
+    residualSeq: 'MATHIEUJARDIN',
+    solution: {tueur:'MATHIEU', methode:'TASSE', lieu:'JARDIN'},
+    nextAffaire: 13
+  },
+
+  /* ── AFFAIRE 13 — L'Exposition Universelle ──────────────── */
+  {
+    id: 13, affaireNum: 13, niveau: 2,
+    titre: "L'Exposition Universelle",
+    ghost: {mot: 'LEOPOLD', cat: 'TUEUR'},
+    wordPlacements: [
+      {mot:'EXPOSITION', row:0, col:0, dir:'H'},
+      {mot:'GALERIE',    row:1, col:0, dir:'H'},
+      {mot:'MACHINE',    row:2, col:0, dir:'H'},
+      {mot:'INDUSTRIE',  row:3, col:0, dir:'H'},
+      {mot:'VAPEUR',     row:4, col:0, dir:'H'},
+      {mot:'PROGRES',    row:5, col:0, dir:'H'},
+      {mot:'TELEGRAPH',  row:6, col:0, dir:'H'},
+      {mot:'LOCOMOTIVE', row:7, col:0, dir:'H'},
+      {mot:'DIRIGEABLE', row:8, col:0, dir:'H'},
+      {mot:'INVENTION',  row:9, col:0, dir:'H'},
+      {mot:'BIC',        row:1, col:7, dir:'DH'},
+      {mot:'EN',         row:8, col:9, dir:'V'}
+    ],
+    residualSeq: 'ARMEPAVILLON',
+    solution: {tueur:'LEOPOLD', methode:'ARME', lieu:'PAVILLON'},
+    nextAffaire: 14
+  },
+
+  /* ── AFFAIRE 14 — Le Cirque d'Hiver ────────────────────── */
+  {
+    id: 14, affaireNum: 14, niveau: 2,
+    titre: "Le Cirque d'Hiver",
+    ghost: {mot: 'COUTEAU', cat: 'METHODE'},
+    wordPlacements: [
+      {mot:'ACROBATE',  row:0, col:0, dir:'H'},
+      {mot:'TRAPEZE',   row:1, col:0, dir:'H'},
+      {mot:'JONGLEUR',  row:2, col:0, dir:'H'},
+      {mot:'ECUYER',    row:3, col:0, dir:'H'},
+      {mot:'CLOWN',     row:4, col:0, dir:'H'},
+      {mot:'LION',      row:5, col:0, dir:'H'},
+      {mot:'ELEPHANT',  row:6, col:0, dir:'H'},
+      {mot:'DRESSEUR',  row:7, col:0, dir:'H'},
+      {mot:'CHAPITEAU', row:8, col:0, dir:'H'},
+      {mot:'SPECTACLE', row:9, col:0, dir:'H'},
+      {mot:'FESTIVAL',  row:0, col:8, dir:'V'},
+      {mot:'CORDE',     row:0, col:9, dir:'V'},
+      {mot:'HAIE',      row:5, col:9, dir:'V'},
+      {mot:'AN',        row:5, col:5, dir:'DH'}
+    ],
+    residualSeq: 'MARCOPISTE',
+    solution: {tueur:'MARCO', methode:'COUTEAU', lieu:'PISTE'},
+    nextAffaire: 15
+  },
+
+  /* ── AFFAIRE 15 — Les Catacombes ────────────────────────── */
+  {
+    id: 15, affaireNum: 15, niveau: 3,
+    titre: 'Les Catacombes',
+    ghost: {mot: 'LAME', cat: 'METHODE'},
+    wordPlacements: [
+      {mot:'CATACOMBE', row:0, col:0, dir:'H'},
+      {mot:'OSSUAIRE',  row:1, col:0, dir:'H'},
+      {mot:'GALERIE',   row:2, col:0, dir:'H'},
+      {mot:'TOMBEAU',   row:3, col:0, dir:'H'},
+      {mot:'SARCOPHAGE',row:4, col:0, dir:'H'},
+      {mot:'CRYPTE',    row:5, col:0, dir:'H'},
+      {mot:'LANTERNE',  row:6, col:0, dir:'H'},
+      {mot:'PASSAGE',   row:7, col:0, dir:'H'},
+      {mot:'ESCALIER',  row:8, col:0, dir:'H'},
+      {mot:'NICHE',     row:9, col:0, dir:'H'},
+      {mot:'FOSSE',     row:9, col:9, dir:'HR'},
+      {mot:'ARCS',      row:8, col:9, dir:'VR'},
+      {mot:'AIR',       row:3, col:8, dir:'DHR'},
+      {mot:'EL',        row:0, col:8, dir:'V'}
+    ],
+    residualSeq: 'VICTORCOULOIR',
+    solution: {tueur:'VICTOR', methode:'LAME', lieu:'COULOIR'},
+    nextAffaire: 16
+  },
+
+  /* ── AFFAIRE 16 — Le Bal de la Préfecture ───────────────── */
+  {
+    id: 16, affaireNum: 16, niveau: 3,
+    titre: 'Le Bal de la Préfecture',
+    ghost: {mot: 'CAMILLE', cat: 'TUEUR'},
+    wordPlacements: [
+      {mot:'PREFECTURE', row:0, col:0, dir:'H'},
+      {mot:'DANSEUR',    row:1, col:0, dir:'H'},
+      {mot:'ORCHESTRE',  row:2, col:0, dir:'H'},
+      {mot:'INVITATION', row:3, col:0, dir:'H'},
+      {mot:'ROBE',       row:4, col:0, dir:'H'},
+      {mot:'CRAVATE',    row:5, col:0, dir:'H'},
+      {mot:'WALTZ',      row:6, col:0, dir:'H'},
+      {mot:'BUFFET',     row:7, col:0, dir:'H'},
+      {mot:'FLACONS',    row:8, col:0, dir:'H'},
+      {mot:'CHAMPAGNE',  row:9, col:0, dir:'H'},
+      {mot:'MER',        row:1, col:9, dir:'HR'},
+      {mot:'TO',         row:4, col:9, dir:'DHR'},
+      {mot:'ATOM',       row:4, col:4, dir:'DH'},
+      {mot:'BRUME',      row:5, col:9, dir:'V'},
+      {mot:'BEL',        row:5, col:8, dir:'V'}
+    ],
+    residualSeq: 'POISONSALON',
+    solution: {tueur:'CAMILLE', methode:'POISON', lieu:'SALON'},
+    nextAffaire: 17
+  },
+
+  /* ── AFFAIRE 17 — Le Quai des Brumes ───────────────────── */
+  {
+    id: 17, affaireNum: 17, niveau: 3,
+    titre: 'Le Quai des Brumes',
+    ghost: {mot: 'BERGE', cat: 'LIEU'},
+    wordPlacements: [
+      {mot:'BROUILLARD', row:0, col:0, dir:'H'},
+      {mot:'CAPITAINE',  row:1, col:0, dir:'H'},
+      {mot:'REMORQUEUR', row:2, col:0, dir:'H'},
+      {mot:'SIRENE',     row:3, col:0, dir:'H'},
+      {mot:'ANCRE',      row:4, col:0, dir:'H'},
+      {mot:'FILET',      row:5, col:0, dir:'H'},
+      {mot:'MOUETTE',    row:6, col:0, dir:'H'},
+      {mot:'BRUME',      row:7, col:0, dir:'H'},
+      {mot:'VAPEUR',     row:8, col:0, dir:'H'},
+      {mot:'HORIZON',    row:9, col:0, dir:'H'},
+      {mot:'PORT',       row:3, col:9, dir:'HR'},
+      {mot:'MOTEUR',     row:9, col:9, dir:'VR'},
+      {mot:'ED',         row:1, col:9, dir:'VR'},
+      {mot:'AERAS',      row:4, col:7, dir:'V'},
+      {mot:'TU',         row:4, col:8, dir:'V'}
+    ],
+    residualSeq: 'PASCALNOYADE',
+    solution: {tueur:'PASCAL', methode:'NOYADE', lieu:'BERGE'},
+    nextAffaire: 18
+  },
+
+  /* ── AFFAIRE 18 — L'Atelier du Sculpteur ───────────────── */
+  {
+    id: 18, affaireNum: 18, niveau: 3,
+    titre: "L'Atelier du Sculpteur",
+    ghost: {mot: 'BERNARD', cat: 'TUEUR'},
+    wordPlacements: [
+      {mot:'SCULPTURE',  row:0, col:0, dir:'H'},
+      {mot:'CISEAU',     row:1, col:0, dir:'H'},
+      {mot:'ARGILE',     row:2, col:0, dir:'H'},
+      {mot:'MARBRE',     row:3, col:0, dir:'H'},
+      {mot:'BRONZE',     row:4, col:0, dir:'H'},
+      {mot:'PIEDESTAL',  row:5, col:0, dir:'H'},
+      {mot:'BURIN',      row:6, col:0, dir:'H'},
+      {mot:'GALERIE',    row:7, col:0, dir:'H'},
+      {mot:'VERNISSAGE', row:8, col:0, dir:'H'},
+      {mot:'EXPOSITION', row:9, col:0, dir:'H'},
+      {mot:'LE',         row:1, col:9, dir:'DHR'},
+      {mot:'IDE',        row:2, col:9, dir:'V'},
+      {mot:'PE',         row:6, col:9, dir:'VR'},
+      {mot:'OVNI',       row:1, col:8, dir:'V'},
+      {mot:'ID',         row:1, col:7, dir:'V'}
+    ],
+    residualSeq: 'MARTEAUATELIER',
+    solution: {tueur:'BERNARD', methode:'MARTEAU', lieu:'ATELIER'},
+    nextAffaire: 19
+  },
+
+  /* ── AFFAIRE 19 — La Librairie Fantôme ─────────────────── */
+  {
+    id: 19, affaireNum: 19, niveau: 3,
+    titre: 'La Librairie Fantôme',
+    ghost: {mot: 'LACET', cat: 'METHODE'},
+    wordPlacements: [
+      {mot:'LIBRAIRIE',  row:0, col:0, dir:'H'},
+      {mot:'CATALOGUE',  row:1, col:0, dir:'H'},
+      {mot:'MANUSCRIT',  row:2, col:0, dir:'H'},
+      {mot:'PARCHEMIN',  row:3, col:0, dir:'H'},
+      {mot:'RELIURE',    row:4, col:0, dir:'H'},
+      {mot:'INCUNABLE',  row:5, col:0, dir:'H'},
+      {mot:'GRIMOIRE',   row:6, col:0, dir:'H'},
+      {mot:'CODEX',      row:7, col:0, dir:'H'},
+      {mot:'ENLUMINURE', row:8, col:0, dir:'H'},
+      {mot:'SCRIPTEUR',  row:9, col:0, dir:'H'},
+      {mot:'COR',        row:7, col:7, dir:'HR'}
+    ],
+    residualSeq: 'SIMONERESERVE',
+    solution: {tueur:'SIMONE', methode:'LACET', lieu:'RESERVE'},
+    nextAffaire: 20
+  },
+
+  /* ── AFFAIRE 20 — Le Dernier Acte ──────────────────────── */
+  {
+    id: 20, affaireNum: 20, niveau: 3,
+    titre: 'Le Dernier Acte',
+    ghost: {mot: 'THEODORE', cat: 'TUEUR'},
+    wordPlacements: [
+      {mot:'DRAMATURGE', row:0, col:0, dir:'H'},
+      {mot:'COMEDIE',    row:1, col:0, dir:'H'},
+      {mot:'TRAGEDIE',   row:2, col:0, dir:'H'},
+      {mot:'MELODRAME',  row:3, col:0, dir:'H'},
+      {mot:'RIDEAU',     row:4, col:0, dir:'H'},
+      {mot:'COSTUMES',   row:5, col:0, dir:'H'},
+      {mot:'ECLAIRAGE',  row:6, col:0, dir:'H'},
+      {mot:'DECORS',     row:7, col:0, dir:'H'},
+      {mot:'MISE',       row:8, col:0, dir:'H'},
+      {mot:'CLAP',       row:9, col:0, dir:'H'},
+      {mot:'LU',         row:1, col:8, dir:'V'},
+      {mot:'TRO',        row:1, col:9, dir:'V'},
+      {mot:'CORDE',      row:8, col:9, dir:'VR'},
+      {mot:'BOIS',       row:8, col:4, dir:'H'},
+      {mot:'ARC',        row:7, col:6, dir:'H'},
+      {mot:'IR',         row:4, col:6, dir:'DHR'},
+      {mot:'NE',         row:4, col:7, dir:'DBR'}
+    ],
+    residualSeq: 'POISONLOGE',
+    solution: {tueur:'THEODORE', methode:'POISON', lieu:'LOGE'},
     nextAffaire: null
   }
 ];
@@ -145,14 +607,7 @@ function wsInitAffaire(aff) {
   var hdr = document.getElementById('ws-hdr-' + aff.id);
   if (hdr) {
     hdr.innerHTML =
-      '<div class="s2-progress">' +
-        wsStep('Affaire 1', aff.affaireNum >= 1) +
-        '<div class="s2-connector"></div>' +
-        wsStep('Affaire 2', aff.affaireNum >= 2) +
-        '<div class="s2-connector"></div>' +
-        wsStep('Affaire 3', aff.affaireNum >= 3) +
-      '</div>' +
-      '<p class="ws-titre">' + aff.titre + '</p>' +
+      '<p class="ws-titre">N°' + String(aff.id).padStart(2,'0') + ' — ' + aff.titre + '</p>' +
       '<div class="divider"></div>';
   }
 
@@ -172,16 +627,18 @@ function wsExtendSel(aff, r, c) {
   var st = wsStates[aff.id];
   if (!st.startCell) return;
   var sr = st.startCell[0], sc = st.startCell[1];
-  if (r === sr && c === sc) { wsClearSel(aff); st.endCell = [r, c]; return; }
+  var dr = r - sr, dc = c - sc;
   if (!st.axis) {
-    if (r === sr) st.axis = 'H';
-    else if (c === sc) st.axis = 'V';
-    else st.axis = (Math.abs(r - sr) >= Math.abs(c - sc)) ? 'V' : 'H';
+    if (dr === 0 && dc !== 0) st.axis = 'H';
+    else if (dc === 0 && dr !== 0) st.axis = 'V';
+    else if (Math.abs(dr) === Math.abs(dc)) st.axis = (dc > 0 ? 'DH' : 'DB');
+    else {
+      if (Math.abs(dr) > Math.abs(dc)) st.axis = 'V';
+      else st.axis = 'H';
+    }
   }
-  st.endCell = (st.axis === 'H') ? [sr, c] : [r, sc];
-  var cells = (st.axis === 'H')
-    ? wsGetCellsBetween(sr, sc, sr, c)
-    : wsGetCellsBetween(sr, sc, r, sc);
+  st.endCell = [r, c];
+  var cells = wsSelRange(st);
   wsClearSel(aff);
   cells.forEach(function(pos) {
     var cell = wsGetCell(aff.id, pos[0], pos[1]);
@@ -280,11 +737,29 @@ function wsSelRange(st) {
   if (!st.startCell || !st.endCell) return [];
   var sr = st.startCell[0], sc = st.startCell[1];
   var er = st.endCell[0],   ec = st.endCell[1];
-  if (st.axis === 'H') return wsGetCellsBetween(sr, sc, sr, ec);
-  if (st.axis === 'V') return wsGetCellsBetween(sr, sc, er, sc);
-  if (sr === er) return wsGetCellsBetween(sr, sc, sr, ec);
-  if (sc === ec) return wsGetCellsBetween(sr, sc, er, sc);
-  return [];
+  var cells = [], i, n;
+  var axis = st.axis;
+  if (!axis) {
+    if (sr === er) axis = 'H';
+    else if (sc === ec) axis = 'V';
+    else axis = (ec > sc ? 'DH' : 'DB');
+  }
+  if (axis === 'H') {
+    var mn = Math.min(sc, ec), mx = Math.max(sc, ec);
+    for (i = mn; i <= mx; i++) cells.push([sr, i]);
+  } else if (axis === 'V') {
+    var mn2 = Math.min(sr, er), mx2 = Math.max(sr, er);
+    for (i = mn2; i <= mx2; i++) cells.push([i, sc]);
+  } else if (axis === 'DH') {
+    n = Math.abs(er - sr);
+    var rdir = er > sr ? 1 : -1, cdir = ec > sc ? 1 : -1;
+    for (i = 0; i <= n; i++) cells.push([sr + i*rdir, sc + i*cdir]);
+  } else if (axis === 'DB') {
+    n = Math.abs(er - sr);
+    var rdir2 = er > sr ? 1 : -1, cdir2 = ec > sc ? 1 : -1;
+    for (i = 0; i <= n; i++) cells.push([sr + i*rdir2, sc + i*cdir2]);
+  }
+  return cells;
 }
 
 function wsCheckMatch(aff, cells) {
@@ -338,6 +813,15 @@ function wsRevealGhost(aff) {
     msg.textContent = 'Ce mot est introuvable dans la grille. Il constitue votre premier indice.';
     ghostItem.parentNode.insertBefore(msg, ghostItem.nextSibling);
   }
+  // Mise à jour du profil utilisateur
+  var user = getUser();
+  if (user) {
+    var resolues = user.affairesResolues || [];
+    if (resolues.indexOf(aff.id) === -1) {
+      resolues.push(aff.id);
+      updateUser({ affairesResolues: resolues, grade: getGrade(resolues.length) });
+    }
+  }
   setTimeout(function() { wsIlluminateResiduals(aff); }, 1800);
 }
 
@@ -345,11 +829,21 @@ function verifyGrid(aff) {
   var wordCells = {};
   aff.wordPlacements.forEach(function(p) {
     for (var i = 0; i < p.mot.length; i++) {
-      var r = p.dir === 'V' ? p.row + i : p.row;
-      var c = p.dir === 'H' ? p.col + i : p.col;
+      var r, c;
+      switch(p.dir) {
+        case 'H':   r = p.row;     c = p.col + i; break;
+        case 'HR':  r = p.row;     c = p.col - i; break;
+        case 'V':   r = p.row + i; c = p.col;     break;
+        case 'VR':  r = p.row - i; c = p.col;     break;
+        case 'DH':  r = p.row + i; c = p.col + i; break;
+        case 'DB':  r = p.row + i; c = p.col - i; break;
+        case 'DHR': r = p.row - i; c = p.col - i; break;
+        case 'DBR': r = p.row - i; c = p.col + i; break;
+        default:    r = p.row;     c = p.col + i;
+      }
       var key = r + ',' + c;
       if (wordCells[key] && wordCells[key] !== p.mot[i]) {
-        console.error('[verifyGrid] Affaire ' + aff.affaireNum + ': conflit cellule (' + r + ',' + c + ') entre "' + wordCells[key] + '" et "' + p.mot[i] + '"');
+        console.error('[verifyGrid] Affaire ' + aff.id + ': conflit cellule (' + r + ',' + c + ') entre "' + wordCells[key] + '" et "' + p.mot[i] + '"');
       }
       wordCells[key] = p.mot[i];
     }
@@ -358,7 +852,7 @@ function verifyGrid(aff) {
   var residualCount = aff.residuels.length;
   var total = uniqueWordCount + residualCount;
   if (total !== 100) {
-    console.error('[verifyGrid] Affaire ' + aff.affaireNum + ': total=' + total + ' (attendu 100). mots=' + uniqueWordCount + ', res=' + residualCount);
+    console.error('[verifyGrid] Affaire ' + aff.id + ': total=' + total + ' (attendu 100). mots=' + uniqueWordCount + ', res=' + residualCount);
   }
   var ghost = aff.ghost.cat;
   var expected = '';
@@ -369,9 +863,9 @@ function verifyGrid(aff) {
   var rSorted = residualLetters.split('').sort().join('');
   var eSorted = expected.split('').sort().join('');
   if (rSorted !== eSorted) {
-    console.error('[verifyGrid] Affaire ' + aff.affaireNum + ': residuels="' + residualLetters + '" != attendu="' + expected + '"');
+    console.error('[verifyGrid] Affaire ' + aff.id + ': residuels="' + residualLetters + '" != attendu="' + expected + '"');
   } else {
-    console.log('[verifyGrid] Affaire ' + aff.affaireNum + ' OK — ' + uniqueWordCount + ' mots + ' + residualCount + ' res = 100');
+    console.log('[verifyGrid] Affaire ' + aff.id + ' OK — ' + uniqueWordCount + ' mots + ' + residualCount + ' res = 100');
   }
 }
 
@@ -407,11 +901,7 @@ function wsShowAnswerForm(aff) {
   });
   html += '<button class="btn ws-sub-btn" id="ws-sub-' + aff.id + '">Refermer le dossier</button>';
   html += '<div class="ws-stamp-wrap" id="ws-sw-' + aff.id + '"></div>';
-  if (aff.nextAffaire) {
-    html += '<div id="ws-nxt-' + aff.id + '" style="display:none"><button class="btn" id="ws-nxt-btn-' + aff.id + '">Affaire suivante &rarr;</button></div>';
-  } else {
-    html += '<div id="ws-nxt-' + aff.id + '" style="display:none"><p style="font-family:var(--font-corps);font-style:italic;color:var(--or-clair);font-size:0.9rem;margin-top:0.5rem;">Vous avez résolu les trois affaires.</p></div>';
-  }
+  html += '<div id="ws-nxt-' + aff.id + '" style="display:none"><button class="btn" id="ws-nxt-btn-' + aff.id + '">← Retour aux dossiers</button></div>';
   sec.innerHTML = html;
 
   fields.forEach(function(f) {
@@ -437,11 +927,9 @@ function wsShowAnswerForm(aff) {
   document.getElementById('ws-sub-' + aff.id).addEventListener('click', function() {
     wsValidate(aff);
   });
-  if (aff.nextAffaire) {
-    document.getElementById('ws-nxt-btn-' + aff.id).addEventListener('click', function() {
-      showAffaire(aff.nextAffaire);
-    });
-  }
+  document.getElementById('ws-nxt-btn-' + aff.id).addEventListener('click', function() {
+    location.reload();
+  });
 }
 
 function wsValidate(aff) {
@@ -455,19 +943,6 @@ function wsValidate(aff) {
   var okM = readField('methode') === wsNorm(aff.solution.methode);
   var okL = readField('lieu')    === wsNorm(aff.solution.lieu);
   var ok = okT && okM && okL;
-
-  // Mise à jour du score utilisateur
-  if (ok) {
-    var user = getUser();
-    if (user && user.affairesResolues.indexOf(aff.id) === -1) {
-      user.affairesResolues.push(aff.id);
-      var total = user.affairesResolues.length;
-      if (total >= 3) user.grade = 'Commissaire Divisionnaire';
-      else if (total >= 2) user.grade = 'Commissaire';
-      else if (total >= 1) user.grade = 'Inspecteur';
-      updateUser(user);
-    }
-  }
 
   var wrap = document.getElementById('ws-sw-' + aff.id);
   var stamp = document.createElement('div');
@@ -497,54 +972,4 @@ document.addEventListener('mouseup', function() {
   st.endCell = null;
   st.axis = null;
   if (selCells.length >= 2) wsCheckMatch(aff, selCells);
-});
-
-/* ═══════════════════════════════════════════════════════════
-   Navigation entre affaires (séquentielle)
-═══════════════════════════════════════════════════════════ */
-var currentAffaireId = 1;
-
-function showAffaire(id) {
-  // Masquer toutes les affaires
-  document.querySelectorAll('.affaire-screen').forEach(function(el) {
-    el.classList.remove('active');
-  });
-  // Afficher la demandée
-  var target = document.getElementById('affaire-' + id);
-  if (target) {
-    target.classList.add('active');
-    currentAffaireId = id;
-    var aff = AFFAIRES.find(function(a) { return a.id === id; });
-    if (aff) wsInitAffaire(aff);
-  }
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-  var user = getUser();
-  var resolues = user ? user.affairesResolues : [];
-
-  // Déverrouiller les affaires résolues + la suivante
-  AFFAIRES.forEach(function(aff, idx) {
-    var lockedEl = document.getElementById('affaire-locked-' + aff.id);
-    var screenEl = document.getElementById('affaire-' + aff.id);
-
-    var unlocked = (aff.id === 1) || (idx > 0 && resolues.indexOf(AFFAIRES[idx-1].id) !== -1);
-
-    if (lockedEl) {
-      lockedEl.style.display = unlocked ? 'none' : 'flex';
-    }
-    if (screenEl) {
-      if (!unlocked) {
-        screenEl.querySelector('.affaire-game').style.display = 'none';
-        screenEl.querySelector('.affaire-locked').style.display = 'flex';
-      }
-    }
-  });
-
-  // Afficher la première affaire non résolue
-  var firstUnresolved = AFFAIRES.find(function(a) {
-    return resolues.indexOf(a.id) === -1;
-  }) || AFFAIRES[0];
-
-  showAffaire(firstUnresolved.id);
 });
