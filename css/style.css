@@ -814,3 +814,81 @@ p {
 .sel-stamp-resolu { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.55); }
 .sel-stamp-resolu span { font-family:var(--font-mono); font-size:0.7rem; font-weight:700; letter-spacing:0.2em; color:#3cb464; border:2px solid #3cb464; padding:0.3em 0.8em; transform:rotate(-12deg); }
 .jeu-back { margin-bottom:1rem; }
+
+/* ═══════════════════════════════════════════════════════════
+   Sélection de grille — états interactifs
+═══════════════════════════════════════════════════════════ */
+.ws-cell.selected-start {
+  background: #c9a84c !important;
+  color: #0a0a0a !important;
+  transform: scale(1.15);
+  transition: transform 0.1s;
+  z-index: 2;
+  position: relative;
+}
+.ws-cell.preview-valid {
+  background: rgba(201, 168, 76, 0.35) !important;
+  transition: background 0.05s;
+}
+.ws-cell.preview-invalid {
+  background: rgba(139, 26, 26, 0.35) !important;
+  transition: background 0.05s;
+}
+.ws-cell.ws-flash-error {
+  background: rgba(139, 26, 26, 0.6) !important;
+  transition: background 0.05s;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Hamburger menu mobile
+═══════════════════════════════════════════════════════════ */
+#nav-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem;
+  color: var(--or);
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+#nav-mobile-panel {
+  display: none;
+  position: fixed;
+  top: 3.2rem;
+  left: 0;
+  right: 0;
+  background: rgba(10, 10, 10, 0.98);
+  border-bottom: 1px solid rgba(201, 168, 76, 0.2);
+  z-index: 199;
+  padding: 1rem 2rem;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+#nav-mobile-panel.open {
+  display: flex;
+}
+
+#nav-mobile-panel a {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--or-clair);
+  text-decoration: none;
+  opacity: 0.6;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid rgba(201,168,76,0.08);
+  transition: opacity 0.2s;
+}
+
+#nav-mobile-panel a:last-child { border-bottom: none; }
+#nav-mobile-panel a:hover,
+#nav-mobile-panel a.active-link { opacity: 1; }
+
+@media (max-width: 600px) {
+  #nav-hamburger { display: block; }
+  #top-nav .links { display: none; }
+}

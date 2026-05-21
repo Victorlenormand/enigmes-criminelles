@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta name="description" content="Énigmes Criminelles — 20 affaires policières à résoudre en ligne. Mots mêlés, déduction, logique.">
+  <meta name="robots" content="index, follow">
   <title>Énigmes Criminelles — Accès</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -574,26 +576,26 @@
           window.location.href = redirectTo;
         } catch(e) {
           btn.disabled = false; btn.textContent = 'Accéder aux affaires';
-          failedAttempts++;
-          errEl.textContent = 'Email ou mot de passe incorrect.';
-          errEl.classList.add('visible');
-          if (failedAttempts >= 3) {
-            lockedUntil = Date.now() + 30000;
-            failedAttempts = 0;
+          if (e.message && e.message.startsWith('BLOCKED_')) {
+            var sec = parseInt(e.message.split('_')[1]) || 30;
             btn.disabled = true;
             var lockMsg = document.getElementById('lockout-msg');
-            lockMsg.classList.add('visible');
-            var remaining = 30;
-            lockMsg.textContent = 'Trop de tentatives. Réessayez dans ' + remaining + 's.';
-            var timer = setInterval(function() {
-              remaining--;
-              lockMsg.textContent = 'Trop de tentatives. Réessayez dans ' + remaining + 's.';
-              if (remaining <= 0) {
-                clearInterval(timer);
-                btn.disabled = false;
-                lockMsg.classList.remove('visible');
-              }
-            }, 1000);
+            if (lockMsg) {
+              lockMsg.classList.add('visible');
+              lockMsg.textContent = 'Trop de tentatives. Réessayez dans ' + sec + 's.';
+              var timer = setInterval(function() {
+                sec--;
+                lockMsg.textContent = 'Trop de tentatives. Réessayez dans ' + sec + 's.';
+                if (sec <= 0) {
+                  clearInterval(timer);
+                  btn.disabled = false;
+                  lockMsg.classList.remove('visible');
+                }
+              }, 1000);
+            }
+          } else {
+            errEl.textContent = 'Email ou mot de passe incorrect.';
+            errEl.classList.add('visible');
           }
         }
       }

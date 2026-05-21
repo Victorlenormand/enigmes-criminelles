@@ -595,6 +595,185 @@ function wsGetCellsBetween(sr, sc, er, ec) {
   return cells;
 }
 
+class GridSelector {
+  constructor(gridElement, onWordSelected) {
+    this.grid = gridElement;
+    this.onWordSelected = onWordSelected;
+    this.startCell = null;
+    this.previewCells = [];
+    this.handleCellClick = this.handleCellClick.bind(this);
+    this.handleMouseOver = this.handleMouseOver.bind(this);
+    this.handleRightClick = this.handleRightClick.bind(this);
+    this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.handleTouchStart = this.handleTouchStart.bind(this);
+    this.handleTouchMove = this.handleTouchMove.bind(this);
+    this.handleTouchEnd = this.handleTouchEnd.bind(this);
+    this.attachEvents();
+  }
+
+  attachEvents() {
+    this.grid.addEventListener('click', this.handleCellClick);
+    this.grid.addEventListener('mouseover', this.handleMouseOver);
+    this.grid.addEventListener('contextmenu', this.handleRightClick);
+    document.addEventListener('keydown', this.handleKeyDown);
+    this.grid.addEventListener('touchstart', this.handleTouchStart, { passive: false });
+    this.grid.addEventListener('touchmove', this.handleTouchMove, { passive: false });
+    this.grid.addEventListener('touchend', this.handleTouchEnd, { passive: false });
+  }
+
+  getCellAt(row, col) {
+    return this.grid.querySelector('[data-row="' + row + '"][data-col="' + col + '"]');
+  }
+
+  getCellFromPoint(x, y) {
+    const el = document.elementFromPoint(x, y);
+    if (!el) return null;
+    const cell = el.closest('[data-row][data-col]');
+    if (!cell) return null;
+    return { row: parseInt(cell.dataset.row), col: parseInt(cell.dataset.col), el: cell };
+  }
+
+  getPath(start, end) {
+    const dr = end.row - start.row;
+    const dc = end.col - start.col;
+    const isH = dr === 0 && dc !== 0;
+    const isV = dc === 0 && dr !== 0;
+    const isDiag = Math.abs(dr) === Math.abs(dc) && dr !== 0;
+    if (!isH && !isV && !isDiag) return null;
+    const steps = Math.max(Math.abs(dr), Math.abs(dc));
+    const stepR = dr === 0 ? 0 : dr / Math.abs(dr);
+    const stepC = dc === 0 ? 0 : dc / Math.abs(dc);
+    const path = [];
+    for (let i = 0; i <= steps; i++) {
+      path.push({ row: start.row + i * stepR, col: start.col + i * stepC });
+    }
+    return path;
+  }
+
+  clearPreview() {
+    this.previewCells.forEach(c => { if (c.el) { c.el.classList.remove('preview-valid', 'preview-invalid'); } });
+    this.previewCells = [];
+  }
+
+  showPreview(start, end) {
+    this.clearPreview();
+    const path = this.getPath(start, end);
+    if (!path) {
+      const endEl = this.getCellAt(end.row, end.col);
+      if (endEl) { endEl.classList.add('preview-invalid'); this.previewCells = [{ el: endEl }]; }
+      return;
+    }
+    path.forEach(p => {
+      const el = this.getCellAt(p.row, p.col);
+      if (el) { el.classList.add('preview-valid'); this.previewCells.push({ el }); }
+    });
+  }
+
+  cancel() {
+    this.clearPreview();
+    if (this.startCell) {
+      const el = this.getCellAt(this.startCell.row, this.startCell.col);
+      if (el) el.classList.remove('selected-start');
+    }
+    this.startCell = null;
+    this.updateHint('');
+  }
+
+  updateHint(msg) {
+    const hint = document.getElementById('grid-hint');
+    if (hint) hint.textContent = msg;
+  }
+
+  handleCellClick(e) {
+    const cell = e.target.closest('[data-row][data-col]');
+    if (!cell) return;
+    const row = parseInt(cell.dataset.row);
+    const col = parseInt(cell.dataset.col);
+    if (!this.startCell) {
+      this.startCell = { row, col };
+      cell.classList.add('selected-start');
+      this.updateHint('Cliquez sur la dernière lettre du mot');
+      return;
+    }
+    if (this.startCell.row === row && this.startCell.col === col) { this.cancel(); return; }
+    const path = this.getPath(this.startCell, { row, col });
+    if (!path) {
+      this.cancel();
+      this.startCell = { row, col };
+      cell.classList.add('selected-start');
+      this.updateHint('Cliquez sur la dernière lettre du mot');
+      return;
+    }
+    const word = path.map(p => { const c = this.getCellAt(p.row, p.col); return c ? (c.dataset.letter || c.textContent) : ''; }).join('');
+    this.clearPreview();
+    const startEl = this.getCellAt(this.startCell.row, this.startCell.col);
+    if (startEl) startEl.classList.remove('selected-start');
+    this.startCell = null;
+    this.updateHint('');
+    this.onWordSelected(word, path);
+  }
+
+  handleMouseOver(e) {
+    if (!this.startCell) return;
+    const cell = e.target.closest('[data-row][data-col]');
+    if (!cell) return;
+    const row = parseInt(cell.dataset.row);
+    const col = parseInt(cell.dataset.col);
+    if (row === this.startCell.row && col === this.startCell.col) return;
+    this.showPreview(this.startCell, { row, col });
+  }
+
+  handleRightClick(e) { e.preventDefault(); this.cancel(); }
+  handleKeyDown(e) { if (e.key === 'Escape') this.cancel(); }
+
+  handleTouchStart(e) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const cell = this.getCellFromPoint(touch.clientX, touch.clientY);
+    if (!cell) return;
+    this.cancel();
+    this.startCell = { row: cell.row, col: cell.col };
+    cell.el.classList.add('selected-start');
+    this.updateHint('Glissez vers la dernière lettre du mot');
+  }
+
+  handleTouchMove(e) {
+    e.preventDefault();
+    if (!this.startCell) return;
+    const touch = e.touches[0];
+    const cell = this.getCellFromPoint(touch.clientX, touch.clientY);
+    if (!cell) return;
+    this.showPreview(this.startCell, { row: cell.row, col: cell.col });
+  }
+
+  handleTouchEnd(e) {
+    e.preventDefault();
+    if (!this.startCell) return;
+    const touch = e.changedTouches[0];
+    const cell = this.getCellFromPoint(touch.clientX, touch.clientY);
+    if (!cell) { this.cancel(); return; }
+    const path = this.getPath(this.startCell, { row: cell.row, col: cell.col });
+    if (!path) { this.cancel(); return; }
+    const word = path.map(p => { const c = this.getCellAt(p.row, p.col); return c ? (c.dataset.letter || c.textContent) : ''; }).join('');
+    const startEl = this.getCellAt(this.startCell.row, this.startCell.col);
+    if (startEl) startEl.classList.remove('selected-start');
+    this.clearPreview();
+    this.startCell = null;
+    this.updateHint('');
+    this.onWordSelected(word, path);
+  }
+
+  destroy() {
+    this.grid.removeEventListener('click', this.handleCellClick);
+    this.grid.removeEventListener('mouseover', this.handleMouseOver);
+    this.grid.removeEventListener('contextmenu', this.handleRightClick);
+    document.removeEventListener('keydown', this.handleKeyDown);
+    this.grid.removeEventListener('touchstart', this.handleTouchStart);
+    this.grid.removeEventListener('touchmove', this.handleTouchMove);
+    this.grid.removeEventListener('touchend', this.handleTouchEnd);
+  }
+}
+
 function wsInitAffaire(aff) {
   if (!aff.grid) {
     var result = generateGrid(aff.wordPlacements, aff.residualSeq);
@@ -618,47 +797,6 @@ function wsInitAffaire(aff) {
   if (ans) { ans.innerHTML = ''; ans.style.display = 'none'; }
 }
 
-function wsStep(label, lit) {
-  return '<div class="s2-step'+(lit?' lit':'')+'"><div class="s2-dot"></div><span class="s2-step-label">'+label+'</span></div>';
-}
-
-function wsClearPreview(affId) {
-  var g = document.getElementById('ws-grid-' + affId);
-  if (!g) return;
-  g.querySelectorAll('.ws-preview, .ws-preview-invalid').forEach(function(c) {
-    c.classList.remove('ws-preview', 'ws-preview-invalid');
-  });
-}
-
-function wsPreviewPath(aff, er, ec) {
-  var st = wsStates[aff.id];
-  wsClearPreview(aff.id);
-  if (!st.startCell) return;
-  var cells = wsGetCellsBetween(st.startCell[0], st.startCell[1], er, ec);
-  if (!cells) return;
-  var cls = cells.length >= 2 ? 'ws-preview' : '';
-  if (!cls) return;
-  cells.forEach(function(pos) {
-    var cell = wsGetCell(aff.id, pos[0], pos[1]);
-    if (cell && !cell.classList.contains('ws-found')) cell.classList.add(cls);
-  });
-}
-
-function wsCancelSelection(aff) {
-  var st = wsStates[aff.id];
-  st.startCell = null;
-  st.clickPhase = 0;
-  wsActiveAffaire = null;
-  wsClearSel(aff);
-  wsClearPreview(aff.id);
-  wsShowHint(aff.id, false);
-}
-
-function wsShowHint(affId, show) {
-  var hint = document.getElementById('ws-hint-' + affId);
-  if (hint) hint.style.display = show ? 'block' : 'none';
-}
-
 function wsRenderGrid(aff) {
   var gridEl = document.getElementById('ws-grid-' + aff.id);
   if (!gridEl) return;
@@ -669,147 +807,29 @@ function wsRenderGrid(aff) {
       cell.className = 'ws-cell';
       cell.dataset.r = r;
       cell.dataset.c = c;
+      cell.dataset.row = r;
+      cell.dataset.col = c;
+      cell.dataset.letter = aff.grid[r][c];
       cell.textContent = aff.grid[r][c];
       gridEl.appendChild(cell);
     }
   }
 
-  // ── Clic-clic desktop ──
-  gridEl.addEventListener('click', function(e) {
-    var st = wsStates[aff.id];
-    if (st.done) return;
-    var t = e.target.closest('.ws-cell');
-    if (!t) return;
-    var r = parseInt(t.dataset.r), c = parseInt(t.dataset.c);
-    if (st.clickPhase === 0) {
-      wsActiveAffaire = aff;
-      st.startCell = [r, c];
-      st.clickPhase = 1;
-      wsClearSel(aff);
-      wsClearPreview(aff.id);
-      t.classList.add('ws-sel');
-      wsShowHint(aff.id, true);
-    } else {
-      var cells = wsGetCellsBetween(st.startCell[0], st.startCell[1], r, c);
-      if (!cells || cells.length < 2) {
-        // Direction invalide ou même cellule : recommencer depuis ce clic
-        wsClearSel(aff);
-        wsClearPreview(aff.id);
-        st.startCell = [r, c];
-        st.clickPhase = 1;
-        t.classList.add('ws-sel');
-      } else {
-        wsClearSel(aff);
-        wsClearPreview(aff.id);
-        st.startCell = null;
-        st.clickPhase = 0;
-        wsActiveAffaire = null;
-        wsShowHint(aff.id, false);
-        wsCheckMatch(aff, cells);
-      }
-    }
-  });
-
-  // ── Prévisualisation mousemove ──
-  gridEl.addEventListener('mousemove', function(e) {
-    var st = wsStates[aff.id];
-    if (st.clickPhase !== 1) return;
-    var t = e.target.closest('.ws-cell');
-    if (!t) return;
-    wsPreviewPath(aff, parseInt(t.dataset.r), parseInt(t.dataset.c));
-  });
-
-  // ── Clic droit : annuler ──
-  gridEl.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-    wsCancelSelection(aff);
-  });
-
-  // ── Touch ──
-  gridEl.addEventListener('touchstart', function(e) {
-    e.preventDefault();
-    var st = wsStates[aff.id];
-    if (st.done) return;
-    var touch = e.touches[0];
-    var el = document.elementFromPoint(touch.clientX, touch.clientY);
-    var cell = el && el.closest('.ws-cell');
-    if (!cell) return;
-    wsActiveAffaire = aff;
-    st.startCell = [parseInt(cell.dataset.r), parseInt(cell.dataset.c)];
-    st.clickPhase = 1;
-    wsClearSel(aff);
-    wsClearPreview(aff.id);
-    cell.classList.add('ws-sel');
-    wsShowHint(aff.id, true);
-  }, {passive:false});
-
-  gridEl.addEventListener('touchmove', function(e) {
-    e.preventDefault();
-    var st = wsStates[aff.id];
-    if (st.clickPhase !== 1) return;
-    var touch = e.touches[0];
-    var el = document.elementFromPoint(touch.clientX, touch.clientY);
-    var cell = el && el.closest('.ws-cell');
-    if (!cell) return;
-    wsPreviewPath(aff, parseInt(cell.dataset.r), parseInt(cell.dataset.c));
-  }, {passive:false});
-
-  gridEl.addEventListener('touchend', function(e) {
-    e.preventDefault();
-    var st = wsStates[aff.id];
-    if (st.clickPhase !== 1) return;
-    var touch = e.changedTouches[0];
-    var el = document.elementFromPoint(touch.clientX, touch.clientY);
-    var cell = el && el.closest('.ws-cell');
-    var startSaved = st.startCell;
-    wsClearSel(aff);
-    wsClearPreview(aff.id);
-    st.startCell = null;
-    st.clickPhase = 0;
-    wsActiveAffaire = null;
-    wsShowHint(aff.id, false);
-    if (!cell || !startSaved) return;
-    var r = parseInt(cell.dataset.r), c = parseInt(cell.dataset.c);
-    var cells = wsGetCellsBetween(startSaved[0], startSaved[1], r, c);
-    if (cells && cells.length >= 2) wsCheckMatch(aff, cells);
-  }, {passive:false});
-}
-
-function wsClearSel(aff) {
-  var g = document.getElementById('ws-grid-' + aff.id);
-  if (!g) return;
-  g.querySelectorAll('.ws-sel').forEach(function(c) {
-    c.classList.remove('ws-sel');
-  });
-}
-
-function wsSelRange(st) {
-  if (!st.startCell || !st.endCell) return [];
-  var sr = st.startCell[0], sc = st.startCell[1];
-  var er = st.endCell[0],   ec = st.endCell[1];
-  var cells = [], i, n;
-  var axis = st.axis;
-  if (!axis) {
-    if (sr === er) axis = 'H';
-    else if (sc === ec) axis = 'V';
-    else axis = (ec > sc ? 'DH' : 'DB');
+  // Hint element
+  var existingHint = document.getElementById('grid-hint');
+  if (!existingHint) {
+    var hintEl = document.createElement('p');
+    hintEl.id = 'grid-hint';
+    hintEl.style.cssText = "font-family:'EB Garamond',serif;font-style:italic;color:#c9a84c;text-align:center;height:20px;font-size:14px;margin-top:8px;";
+    if (gridEl.parentNode) gridEl.parentNode.insertBefore(hintEl, gridEl.nextSibling);
   }
-  if (axis === 'H') {
-    var mn = Math.min(sc, ec), mx = Math.max(sc, ec);
-    for (i = mn; i <= mx; i++) cells.push([sr, i]);
-  } else if (axis === 'V') {
-    var mn2 = Math.min(sr, er), mx2 = Math.max(sr, er);
-    for (i = mn2; i <= mx2; i++) cells.push([i, sc]);
-  } else if (axis === 'DH') {
-    n = Math.abs(er - sr);
-    var rdir = er > sr ? 1 : -1, cdir = ec > sc ? 1 : -1;
-    for (i = 0; i <= n; i++) cells.push([sr + i*rdir, sc + i*cdir]);
-  } else if (axis === 'DB') {
-    n = Math.abs(er - sr);
-    var rdir2 = er > sr ? 1 : -1, cdir2 = ec > sc ? 1 : -1;
-    for (i = 0; i <= n; i++) cells.push([sr + i*rdir2, sc + i*cdir2]);
-  }
-  return cells;
+
+  var selector = new GridSelector(gridEl, function(word, path) {
+    var cells = path.map(function(p) { return [p.row, p.col]; });
+    wsCheckMatch(aff, cells);
+  });
+
+  wsStates[aff.id].selector = selector;
 }
 
 function wsCheckMatch(aff, cells) {
@@ -1012,6 +1032,4 @@ function wsValidate(aff) {
   document.getElementById('ws-nxt-' + aff.id).style.display = 'block';
 }
 
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape' && wsActiveAffaire) wsCancelSelection(wsActiveAffaire);
-});
+// Escape key handling is now managed by GridSelector
