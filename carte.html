@@ -216,8 +216,34 @@
       return 'Inspecteur Stagiaire ★';
     }
 
-    /* ── Init carte ── */
-    document.addEventListener('DOMContentLoaded', function() {
+    /* ── Marqueur ── */
+    function createMarqueur(numero, statut) {
+      var bg, border, content;
+      if (statut === 'resolu') {
+        bg = '#2d5a27'; border = 'rgba(74,154,64,0.6)'; content = '✓';
+      } else if (statut === 'verrouille') {
+        bg = 'rgba(80,80,80,0.7)'; border = 'rgba(255,255,255,0.15)'; content = '🔒';
+      } else {
+        bg = '#c9a84c'; border = 'rgba(245,240,232,0.4)'; content = numero;
+      }
+      var div = document.createElement('div');
+      div.style.cssText = [
+        'width:28px', 'height:28px', 'border-radius:50%',
+        'border:1.5px solid ' + border,
+        'background:' + bg,
+        'display:flex', 'align-items:center', 'justify-content:center',
+        'font-family:\'Courier Prime\',monospace', 'font-size:10px', 'font-weight:700',
+        'color:#fff', 'box-shadow:0 2px 8px rgba(0,0,0,0.6)',
+        'cursor:pointer', 'transition:transform 0.15s'
+      ].join(';');
+      div.textContent = content;
+      div.addEventListener('mouseover', function() { div.style.transform = 'scale(1.2)'; });
+      div.addEventListener('mouseout',  function() { div.style.transform = ''; });
+      return div.outerHTML;
+    }
+
+    /* ── Marqueurs ── */
+    function initMarqueurs(map) {
       var prog = getProgression();
       var resolues = prog.affairesResolues || [];
 
@@ -225,31 +251,14 @@
       document.getElementById('leg-progress').textContent = resolues.length + ' / 20 résolues';
       document.getElementById('leg-grade').textContent = getGrade(resolues.length);
 
-      var map = L.map('map-paris', {
-        center: [48.8566, 2.3522],
-        zoom: 13,
-        zoomControl: true,
-        attributionControl: true
-      });
-
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '© OpenStreetMap © CARTO',
-        subdomains: 'abcd',
-        maxZoom: 19
-      }).addTo(map);
-
-      setTimeout(function() { map.invalidateSize(); }, 100);
-
       POINTS.forEach(function(p) {
-        var resolue    = resolues.indexOf(p.id) !== -1;
+        var resolue     = resolues.indexOf(p.id) !== -1;
         var verrouillee = !resolue && p.id > 1 && resolues.indexOf(p.id - 1) === -1;
-
-        var cls = resolue ? 'marker-resolu' : verrouillee ? 'marker-verrouille' : 'marker-ouvert';
-        var inner = resolue ? '✓' : verrouillee ? '🔒' : p.id;
+        var statut      = resolue ? 'resolu' : verrouillee ? 'verrouille' : 'ouvert';
 
         var icon = L.divIcon({
           className: '',
-          html: '<div class="marker-pin ' + cls + '">' + inner + '</div>',
+          html: createMarqueur(p.id, statut),
           iconSize: [28, 28],
           iconAnchor: [14, 14],
           popupAnchor: [0, -16],
@@ -295,6 +304,23 @@
           closeButton: false
         });
       });
+    }
+
+    /* ── Init carte ── */
+    document.addEventListener('DOMContentLoaded', function() {
+      var map = L.map('map-paris', {
+        center: [48.8566, 2.3522],
+        zoom: 13,
+        zoomControl: true,
+        attributionControl: true
+      });
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap © CARTO',
+        subdomains: 'abcd',
+        maxZoom: 19
+      }).addTo(map);
+      setTimeout(function() { map.invalidateSize(); }, 100);
+      initMarqueurs(map);
     });
   </script>
 
