@@ -13,16 +13,20 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
   <link rel="stylesheet" href="css/style.css" />
   <style>
-    html, body { overflow: hidden; }
+    html, body { overflow: hidden; margin: 0; padding: 0; height: 100%; }
 
     #map-wrap {
       position: fixed;
-      inset: 3.2rem 0 0 0;
+      top: 3.2rem;
+      left: 0;
+      right: 0;
+      bottom: 0;
       z-index: 0;
     }
     #map {
       width: 100%;
       height: 100%;
+      min-height: calc(100vh - 3.2rem);
       background: #0a0a0a;
     }
 
@@ -241,6 +245,8 @@
         subdomains: 'abcd',
         maxZoom: 19
       }).addTo(map);
+
+      setTimeout(function() { map.invalidateSize(); }, 100);
 
       POINTS.forEach(function(p) {
         var resolue    = resolues.indexOf(p.id) !== -1;
