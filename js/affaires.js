@@ -813,14 +813,12 @@ function wsRevealGhost(aff) {
     msg.textContent = 'Ce mot est introuvable dans la grille. Il constitue votre premier indice.';
     ghostItem.parentNode.insertBefore(msg, ghostItem.nextSibling);
   }
-  // Mise à jour du profil utilisateur
-  var user = getUser();
-  if (user) {
-    var resolues = user.affairesResolues || [];
-    if (resolues.indexOf(aff.id) === -1) {
-      resolues.push(aff.id);
-      updateUser({ affairesResolues: resolues, grade: getGrade(resolues.length) });
-    }
+  // Mise à jour de la progression
+  var prog = getProgression();
+  var resolues = prog.affairesResolues || [];
+  if (resolues.indexOf(aff.id) === -1) {
+    resolues.push(aff.id);
+    updateProgression({ affairesResolues: resolues, grade: getGrade(resolues.length) });
   }
   setTimeout(function() { wsIlluminateResiduals(aff); }, 1800);
 }

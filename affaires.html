@@ -102,10 +102,9 @@
 
     /* ── Vue sélection ───────────────────────────────────────── */
     document.addEventListener('DOMContentLoaded', function() {
-      var user = getUser();
-      var resolues = user ? (user.affairesResolues || []) : [];
+      var prog = getProgression();
+      var resolues = prog.affairesResolues || [];
 
-      // Afficher progression
       document.getElementById('sel-progression').textContent = resolues.length + ' / 20 affaires résolues';
 
       // Remplir les grilles de niveaux

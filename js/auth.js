@@ -1,32 +1,121 @@
 /* ═══════════════════════════════════════════════════════════
-   auth.js — Gestion de session Énigmes Criminelles
+   auth.js — Authentification Énigmes Criminelles (RGPD)
 ═══════════════════════════════════════════════════════════ */
 
-var EC_USER_KEY = 'ec_user';
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function register(pseudo, email, password) {
+  const users = JSON.parse(localStorage.getItem('ec_users') || '[]');
+
+  if (users.find(u => u.email === email.toLowerCase().trim())) {
+    throw new Error('EMAIL_EXISTS');
+  }
+  if (users.find(u => u.pseudo.toLowerCase() === pseudo.toLowerCase().trim())) {
+    throw new Error('PSEUDO_EXISTS');
+  }
+
+  const newUser = {
+    id: crypto.randomUUID(),
+    pseudo: pseudo.trim(),
+    email: email.toLowerCase().trim(),
+    passwordHash: await hashPassword(password),
+    dateInscription: new Date().toISOString(),
+    consentement: true,
+    consentementDate: new Date().toISOString()
+  };
+
+  users.push(newUser);
+  localStorage.setItem('ec_users', JSON.stringify(users));
+
+  subscribeToMailerLite(newUser.email, newUser.pseudo);
+
+  return newUser;
+}
+
+async function login(email, password, remember) {
+  const users = JSON.parse(localStorage.getItem('ec_users') || '[]');
+  const hash = await hashPassword(password);
+  const user = users.find(u =>
+    u.email === email.toLowerCase().trim() &&
+    u.passwordHash === hash
+  );
+
+  if (!user) throw new Error('INVALID_CREDENTIALS');
+
+  const session = {
+    userId: user.id,
+    pseudo: user.pseudo,
+    email: user.email,
+    loginDate: new Date().toISOString(),
+    remember: remember
+  };
+
+  if (remember) {
+    localStorage.setItem('ec_session', JSON.stringify(session));
+  } else {
+    sessionStorage.setItem('ec_session', JSON.stringify(session));
+  }
+
+  return session;
+}
+
+function getSession() {
+  try {
+    const ls = localStorage.getItem('ec_session');
+    const ss = sessionStorage.getItem('ec_session');
+    return ls ? JSON.parse(ls) : ss ? JSON.parse(ss) : null;
+  } catch(e) { return null; }
+}
 
 function isLoggedIn() {
-  return !!localStorage.getItem(EC_USER_KEY);
-}
-
-function getUser() {
-  try { return JSON.parse(localStorage.getItem(EC_USER_KEY)); } catch(e) { return null; }
-}
-
-function login(email, nom) {
-  var user = {
-    nom: nom || 'Enquêteur',
-    email: email,
-    dateInscription: new Date().toISOString(),
-    affairesResolues: [],
-    grade: 'Inspecteur Stagiaire'
-  };
-  localStorage.setItem(EC_USER_KEY, JSON.stringify(user));
-  return user;
+  return getSession() !== null;
 }
 
 function logout() {
-  localStorage.removeItem(EC_USER_KEY);
+  localStorage.removeItem('ec_session');
+  sessionStorage.removeItem('ec_session');
   window.location.href = 'index.html';
+}
+
+function deleteAccount() {
+  const session = getSession();
+  if (!session) return;
+
+  localStorage.removeItem('ec_progression_' + session.userId);
+
+  const users = JSON.parse(localStorage.getItem('ec_users') || '[]');
+  localStorage.setItem('ec_users', JSON.stringify(users.filter(u => u.id !== session.userId)));
+
+  logout();
+}
+
+function getProgression() {
+  const session = getSession();
+  if (!session) return { affairesResolues: [], grade: 'Inspecteur Stagiaire' };
+  const key = 'ec_progression_' + session.userId;
+  try {
+    return JSON.parse(localStorage.getItem(key) || JSON.stringify({
+      affairesResolues: [],
+      grade: 'Inspecteur Stagiaire',
+      derniereConnexion: new Date().toISOString()
+    }));
+  } catch(e) {
+    return { affairesResolues: [], grade: 'Inspecteur Stagiaire' };
+  }
+}
+
+function updateProgression(data) {
+  const session = getSession();
+  if (!session) return;
+  const key = 'ec_progression_' + session.userId;
+  const current = getProgression();
+  localStorage.setItem(key, JSON.stringify(Object.assign({}, current, data)));
 }
 
 function getGrade(n) {
@@ -37,60 +126,31 @@ function getGrade(n) {
   return 'Inspecteur Stagiaire ★';
 }
 
-function updateUser(data) {
-  var user = getUser() || {};
-  Object.assign(user, data);
-  localStorage.setItem(EC_USER_KEY, JSON.stringify(user));
-}
-
 function requireLogin() {
-  if (!isLoggedIn()) window.location.href = 'inscription.html';
-}
-
-function showProfilePanel() {
-  var user = getUser();
-  if (!user) return;
-  var existing = document.getElementById('profile-panel');
-  if (existing) { existing.remove(); return; }
-  var panel = document.createElement('div');
-  panel.id = 'profile-panel';
-  panel.innerHTML =
-    '<div class="pp-name">' + user.nom + '</div>' +
-    '<div class="pp-email">' + user.email + '</div>' +
-    '<div class="pp-grade">' + user.grade + '</div>' +
-    '<div class="pp-affaires">Affaires résolues : ' + user.affairesResolues.length + '</div>' +
-    '<button onclick="logout()">Se déconnecter</button>';
-  document.body.appendChild(panel);
-
-  // Fermer le panel en cliquant ailleurs
-  setTimeout(function() {
-    document.addEventListener('click', function closePanelOnClick(e) {
-      var p = document.getElementById('profile-panel');
-      if (p && !p.contains(e.target)) {
-        p.remove();
-        document.removeEventListener('click', closePanelOnClick);
-      }
-    });
-  }, 50);
+  if (!isLoggedIn()) {
+    window.location.href = 'inscription.html?redirect=' + encodeURIComponent(window.location.pathname);
+  }
 }
 
 function initNav() {
-  var user = getUser();
-  var navCompte = document.getElementById('nav-compte');
+  const session = getSession();
+  const navCompte = document.getElementById('nav-compte');
   if (navCompte) {
-    if (user) {
-      navCompte.textContent = user.nom;
-      navCompte.href = '#';
-      navCompte.onclick = function(e) { e.preventDefault(); showProfilePanel(); };
+    if (session) {
+      navCompte.textContent = session.pseudo;
+      navCompte.href = 'profil.html';
+    } else {
+      navCompte.textContent = 'Mon compte';
+      navCompte.href = 'inscription.html';
     }
   }
   document.querySelectorAll('[data-locked]').forEach(function(link) {
-    if (!user) {
+    if (!session) {
       link.innerHTML = link.textContent + ' <span class="lock-icon">🔒</span>';
-      link.onclick = function(e) {
+      link.addEventListener('click', function(e) {
         e.preventDefault();
-        window.location.href = 'inscription.html?from=' + link.dataset.page;
-      };
+        window.location.href = 'inscription.html?redirect=' + encodeURIComponent(link.getAttribute('href'));
+      });
     }
   });
 }

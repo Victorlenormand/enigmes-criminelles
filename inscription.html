@@ -4,50 +4,64 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-  <title>Énigmes Criminelles — Inscription</title>
+  <title>Énigmes Criminelles — Accès</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Dancing+Script:wght@600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./css/style.css" />
   <style>
-    .insc-wrap {
+    .auth-wrap {
       width: 100%;
-      max-width: 480px;
+      max-width: 460px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 1rem;
+      gap: 1.4rem;
+      padding: 0 1rem;
     }
-    .insc-subtitle {
-      font-family: var(--font-corps);
-      font-style: italic;
-      font-size: clamp(0.9rem, 1.4vw, 1.05rem);
-      color: var(--or-clair);
-      opacity: 0.8;
-      text-align: center;
-      max-width: 38ch;
-      line-height: 1.5;
+    .auth-tabs {
+      display: flex;
+      width: 100%;
+      border-bottom: 1px solid rgba(201,168,76,0.25);
     }
-    .insc-context {
+    .auth-tab {
+      flex: 1;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      padding: 0.7em 0;
       font-family: var(--font-mono);
-      font-size: 0.7rem;
-      letter-spacing: 0.08em;
-      color: var(--or);
-      border: 1px solid rgba(201,168,76,0.3);
-      padding: 0.5em 1.2em;
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(245,240,232,0.35);
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .auth-tab.active { color: var(--or); border-bottom-color: var(--or); }
+    .auth-tab:hover:not(.active) { color: rgba(245,240,232,0.6); }
+    .auth-panel { width: 100%; display: none; }
+    .auth-panel.active { display: flex; flex-direction: column; gap: 1rem; }
+    .auth-title {
+      font-family: var(--font-titre);
+      font-size: clamp(1.1rem, 3vw, 1.5rem);
+      font-style: italic;
       text-align: center;
-      max-width: 38ch;
+      color: var(--creme);
     }
-    .insc-form {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.85rem;
+    .field-group { display: flex; flex-direction: column; gap: 0.3rem; width: 100%; }
+    .field-label {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--or);
+      opacity: 0.6;
+    }
+    .field-input-wrap { position: relative; width: 100%; }
+    .field-input {
       width: 100%;
-    }
-    .insc-form input {
       background: transparent;
       border: none;
       border-bottom: 1px solid rgba(201,168,76,0.3);
@@ -55,77 +69,194 @@
       font-family: var(--font-titre);
       font-style: italic;
       font-size: 1rem;
-      padding: 0.45rem 0.3rem;
-      width: 100%;
-      max-width: 340px;
+      padding: 0.45rem 2rem 0.45rem 0.3rem;
       outline: none;
-      text-align: center;
+      box-sizing: border-box;
       transition: border-color 0.2s;
     }
-    .insc-form input:focus {
-      border-bottom-color: var(--or);
+    .field-input:focus { border-bottom-color: var(--or); }
+    .field-input::placeholder { color: rgba(245,240,232,0.25); }
+    .field-help {
+      font-family: var(--font-mono);
+      font-size: 0.57rem;
+      letter-spacing: 0.06em;
+      color: var(--creme);
+      opacity: 0.35;
     }
-    .insc-form input::placeholder { color: rgba(245,240,232,0.3); }
-    .insc-note {
+    .field-error {
       font-family: var(--font-mono);
       font-size: 0.6rem;
-      letter-spacing: 0.1em;
-      color: var(--creme);
-      opacity: 0.3;
-    }
-    .insc-login-link {
-      font-family: var(--font-mono);
-      font-size: 0.65rem;
-      letter-spacing: 0.1em;
-      color: var(--or-clair);
-      opacity: 0.6;
-      cursor: pointer;
-      background: none;
-      border: none;
-      padding: 0;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-      transition: opacity 0.2s;
-    }
-    .insc-login-link:hover { opacity: 1; }
-    .insc-reconnect {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.75rem;
-      width: 100%;
-      padding: 1rem 0 0;
-      border-top: 1px solid rgba(201,168,76,0.12);
-    }
-    .insc-reconnect.open { display: flex; }
-    .insc-reconnect-label {
-      font-family: var(--font-mono);
-      font-size: 0.62rem;
-      letter-spacing: 0.12em;
-      color: var(--or-clair);
-      opacity: 0.6;
-      text-transform: uppercase;
-    }
-    .insc-reconnect-error {
-      font-family: var(--font-mono);
-      font-size: 0.65rem;
       color: #c97a7a;
       display: none;
-      text-align: center;
     }
-    .insc-reconnect-btn {
+    .field-error.visible { display: block; }
+    .eye-toggle {
+      position: absolute;
+      right: 0.3rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: rgba(245,240,232,0.35);
+      font-size: 0.9rem;
+      padding: 0;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+    .eye-toggle:hover { color: var(--or); }
+    .pw-strength-bar {
+      height: 3px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 0.3rem;
+    }
+    .pw-strength-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 2px;
+      transition: width 0.3s, background 0.3s;
+    }
+    .pw-criteria { display: flex; flex-direction: column; gap: 0.2rem; margin-top: 0.4rem; }
+    .crit {
+      font-family: var(--font-mono);
+      font-size: 0.57rem;
+      letter-spacing: 0.06em;
+      color: rgba(245,240,232,0.35);
+      transition: color 0.2s;
+    }
+    .crit.ok { color: #4a9a40; }
+    .pw-match {
+      font-family: var(--font-mono);
+      font-size: 0.57rem;
+      letter-spacing: 0.06em;
+      margin-top: 0.3rem;
+      display: none;
+    }
+    .pw-match.ok { display: block; color: #4a9a40; }
+    .pw-match.ko { display: block; color: #c97a7a; }
+    .check-group { display: flex; align-items: flex-start; gap: 0.7rem; width: 100%; }
+    .check-group input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      min-width: 14px;
+      border: 1px solid rgba(201,168,76,0.5);
+      background: transparent;
+      cursor: pointer;
+      margin-top: 2px;
+      position: relative;
+      transition: background 0.2s;
+    }
+    .check-group input[type="checkbox"]:checked { background: var(--or); }
+    .check-group input[type="checkbox"]:checked::after {
+      content: '✓';
+      position: absolute;
+      top: -1px;
+      left: 1px;
+      font-size: 10px;
+      color: #0a0a0a;
+      font-weight: 700;
+    }
+    .check-label {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.06em;
+      color: var(--creme);
+      opacity: 0.6;
+      line-height: 1.5;
+      cursor: pointer;
+    }
+    .auth-btn {
+      width: 100%;
+      background: transparent;
+      border: 1px solid rgba(201,168,76,0.5);
+      color: var(--or);
       font-family: var(--font-mono);
       font-size: 0.68rem;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: var(--or);
-      background: transparent;
-      border: 1px solid rgba(201,168,76,0.4);
-      padding: 0.45em 1.4em;
+      padding: 0.8em 1em;
       cursor: pointer;
       transition: background 0.2s, color 0.2s;
+      margin-top: 0.4rem;
     }
-    .insc-reconnect-btn:hover { background: var(--or); color: var(--bg); }
+    .auth-btn:hover:not(:disabled) { background: var(--or); color: var(--bg); }
+    .auth-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .legal-mention {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.04em;
+      color: var(--creme);
+      opacity: 0.4;
+      line-height: 1.6;
+      text-align: center;
+    }
+    .lockout-msg {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      color: #c97a7a;
+      text-align: center;
+      display: none;
+    }
+    .lockout-msg.visible { display: block; }
+    .forgot-link {
+      background: none;
+      border: none;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      color: var(--or-clair);
+      opacity: 0.5;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      padding: 0;
+      transition: opacity 0.2s;
+      align-self: center;
+    }
+    .forgot-link:hover { opacity: 1; }
+    .forgot-msg {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.05em;
+      color: var(--creme);
+      opacity: 0.55;
+      line-height: 1.6;
+      text-align: center;
+      display: none;
+      border: 1px solid rgba(201,168,76,0.15);
+      padding: 0.8em 1em;
+    }
+    .forgot-msg.visible { display: block; }
+    .stamp-overlay {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      pointer-events: none;
+    }
+    .stamp-text {
+      font-family: var(--font-mono);
+      font-size: clamp(2rem, 8vw, 3.5rem);
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: #2d5a27;
+      border: 4px solid #2d5a27;
+      padding: 0.3em 0.6em;
+      opacity: 0;
+      transform: scale(3) rotate(-15deg);
+      animation: stampIn 0.5s cubic-bezier(0.17,0.89,0.32,1.28) forwards;
+    }
+    @keyframes stampIn {
+      0%   { transform: scale(3) rotate(-15deg); opacity: 0; }
+      60%  { transform: scale(0.95) rotate(-3deg); opacity: 1; }
+      100% { transform: scale(1) rotate(-5deg); opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -146,48 +277,123 @@
   </nav>
 
   <main class="page-home">
+    <div class="auth-wrap">
 
-    <div class="insc-wrap">
+      <div class="s1-stamp"><span class="s1-stamp-text">CONFIDENTIEL</span></div>
 
-      <div class="s1-stamp">
-        <span class="s1-stamp-text">CONFIDENTIEL</span>
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="register">Créer un compte</button>
+        <button class="auth-tab" data-tab="login">Se connecter</button>
       </div>
 
-      <h2>Accédez aux dossiers classifiés</h2>
-      <p class="insc-subtitle">Inscription gratuite.<br/>20 affaires vous attendent.</p>
-      <div class="divider"></div>
+      <!-- ── ONGLET INSCRIPTION ── -->
+      <div class="auth-panel active" id="panel-register">
+        <p class="auth-title">Créez votre dossier d'enquêteur</p>
 
-      <p id="context-msg" class="insc-context" style="display:none;"></p>
+        <div class="field-group">
+          <label class="field-label" for="reg-pseudo">Nom de code</label>
+          <div class="field-input-wrap">
+            <input class="field-input" type="text" id="reg-pseudo"
+              placeholder="Votre nom de code" autocomplete="off" maxlength="20" />
+          </div>
+          <span class="field-help">3 à 20 caractères, lettres, chiffres et tirets.</span>
+          <span class="field-error" id="err-pseudo"></span>
+        </div>
 
-      <div class="insc-form">
-        <input type="text" id="insc-nom" placeholder="Votre nom de code" autocomplete="off" maxlength="40" />
-        <input type="email" id="insc-email" placeholder="Votre adresse email" autocomplete="email" maxlength="120" required />
-        <p id="insc-error" class="s1-email-error" style="display:none;">
-          Une adresse email valide est requise pour accéder au dossier.
+        <div class="field-group">
+          <label class="field-label" for="reg-email">Adresse email</label>
+          <div class="field-input-wrap">
+            <input class="field-input" type="email" id="reg-email"
+              placeholder="votre@email.com" autocomplete="email" maxlength="120" />
+          </div>
+          <span class="field-error" id="err-email"></span>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="reg-password">Mot de passe</label>
+          <div class="field-input-wrap">
+            <input class="field-input" type="password" id="reg-password"
+              placeholder="••••••••••••" autocomplete="new-password" maxlength="128" />
+            <button class="eye-toggle" type="button" data-target="reg-password" aria-label="Afficher">👁</button>
+          </div>
+          <div class="pw-strength-bar"><div class="pw-strength-fill" id="pw-fill"></div></div>
+          <div class="pw-criteria">
+            <span class="crit" id="crit-len">✗ 8 caractères minimum</span>
+            <span class="crit" id="crit-maj">✗ Une majuscule</span>
+            <span class="crit" id="crit-num">✗ Un chiffre</span>
+          </div>
+          <span class="field-error" id="err-password"></span>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="reg-confirm">Confirmer le mot de passe</label>
+          <div class="field-input-wrap">
+            <input class="field-input" type="password" id="reg-confirm"
+              placeholder="••••••••••••" autocomplete="new-password" maxlength="128" />
+            <button class="eye-toggle" type="button" data-target="reg-confirm" aria-label="Afficher">👁</button>
+          </div>
+          <div class="pw-match" id="pw-match"></div>
+        </div>
+
+        <div class="check-group">
+          <input type="checkbox" id="reg-consent" />
+          <label class="check-label" for="reg-consent">
+            J'ai lu et j'accepte que mes données (pseudo et email) soient utilisées
+            pour gérer mon accès au site et me tenir informé(e) des nouveautés
+            de la série Énigmes Criminelles, conformément au RGPD.
+          </label>
+        </div>
+        <span class="field-error" id="err-consent"></span>
+
+        <button class="auth-btn" id="btn-register">Créer mon compte d'enquêteur</button>
+
+        <p class="legal-mention">
+          Données stockées sur votre appareil. Responsable du traitement : Victor Lenormand.<br/>
+          Finalité : accès au site et information sur la série.<br/>
+          Base légale : intérêt légitime (Art. 6.1.f RGPD).<br/>
+          Droit d'accès et de suppression : rubrique Mon Compte.
         </p>
-        <button class="s1-btn-open" id="insc-btn">
-          &#9654;&nbsp; Accéder aux affaires
-        </button>
       </div>
 
-      <p class="insc-note">Accès gratuit. Aucune carte bleue requise.</p>
+      <!-- ── ONGLET CONNEXION ── -->
+      <div class="auth-panel" id="panel-login">
+        <p class="auth-title">Accédez à vos dossiers</p>
 
-      <!-- Lien déjà inscrit -->
-      <button class="insc-login-link" id="toggle-reconnect">
-        Déjà inscrit ? Saisir mon email →
-      </button>
+        <div class="field-group">
+          <label class="field-label" for="log-email">Adresse email</label>
+          <div class="field-input-wrap">
+            <input class="field-input" type="email" id="log-email"
+              placeholder="votre@email.com" autocomplete="email" maxlength="120" />
+          </div>
+        </div>
 
-      <!-- Mini-formulaire reconnexion -->
-      <div class="insc-reconnect" id="reconnect-form">
-        <span class="insc-reconnect-label">Reconnecter mon compte</span>
-        <input class="insc-form" type="email" id="rc-email" placeholder="Votre adresse email" autocomplete="email" maxlength="120"
-          style="background:transparent;border:none;border-bottom:1px solid rgba(201,168,76,0.3);color:var(--creme);font-family:var(--font-titre);font-style:italic;font-size:1rem;padding:0.45rem 0.3rem;width:100%;max-width:340px;outline:none;text-align:center;" />
-        <p id="rc-error" class="insc-reconnect-error">Aucun compte trouvé pour cet email.</p>
-        <button class="insc-reconnect-btn" id="rc-btn">Me reconnecter</button>
+        <div class="field-group">
+          <label class="field-label" for="log-password">Mot de passe</label>
+          <div class="field-input-wrap">
+            <input class="field-input" type="password" id="log-password"
+              placeholder="••••••••••••" autocomplete="current-password" maxlength="128" />
+            <button class="eye-toggle" type="button" data-target="log-password" aria-label="Afficher">👁</button>
+          </div>
+          <span class="field-error" id="err-login"></span>
+        </div>
+
+        <div class="check-group">
+          <input type="checkbox" id="log-remember" checked />
+          <label class="check-label" for="log-remember">Se souvenir de moi</label>
+        </div>
+
+        <button class="auth-btn" id="btn-login">Accéder aux affaires</button>
+        <span class="lockout-msg" id="lockout-msg"></span>
+
+        <button class="forgot-link" id="btn-forgot">Mot de passe oublié ?</button>
+        <div class="forgot-msg" id="forgot-msg">
+          Les mots de passe sont stockés localement sur votre appareil et ne peuvent pas être
+          récupérés à distance. Si vous avez perdu votre mot de passe, créez un nouveau compte
+          avec le même email.
+        </div>
       </div>
 
     </div>
-
   </main>
 
   <script src="./js/mailerlite.js"></script>
@@ -208,71 +414,200 @@
       if (isLoggedIn()) { window.location.href = 'affaires.html'; return; }
 
       var params = new URLSearchParams(window.location.search);
-      var from = params.get('from');
-      var msgs = {
-        affaires: 'Créez votre compte gratuit pour accéder aux affaires.',
-        carte: 'Créez votre compte gratuit pour accéder à la carte des lieux.'
-      };
-      if (from && msgs[from]) {
-        var el = document.getElementById('context-msg');
-        el.textContent = msgs[from];
-        el.style.display = 'block';
+      var redirectTo = params.get('redirect') || 'affaires.html';
+
+      // ── Onglets ──
+      document.querySelectorAll('.auth-tab').forEach(function(tab) {
+        tab.addEventListener('click', function() {
+          document.querySelectorAll('.auth-tab').forEach(function(t) { t.classList.remove('active'); });
+          document.querySelectorAll('.auth-panel').forEach(function(p) { p.classList.remove('active'); });
+          tab.classList.add('active');
+          document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+        });
+      });
+
+      // ── Toggle œil ──
+      document.querySelectorAll('.eye-toggle').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var input = document.getElementById(btn.dataset.target);
+          input.type = input.type === 'password' ? 'text' : 'password';
+        });
+      });
+
+      // ── Force mot de passe ──
+      var pwInput  = document.getElementById('reg-password');
+      var pwFill   = document.getElementById('pw-fill');
+      var critLen  = document.getElementById('crit-len');
+      var critMaj  = document.getElementById('crit-maj');
+      var critNum  = document.getElementById('crit-num');
+
+      function checkStrength(val) {
+        var len = val.length >= 8;
+        var maj = /[A-Z]/.test(val);
+        var num = /[0-9]/.test(val);
+        critLen.className = 'crit' + (len ? ' ok' : '');
+        critLen.textContent = (len ? '✓' : '✗') + ' 8 caractères minimum';
+        critMaj.className = 'crit' + (maj ? ' ok' : '');
+        critMaj.textContent = (maj ? '✓' : '✗') + ' Une majuscule';
+        critNum.className = 'crit' + (num ? ' ok' : '');
+        critNum.textContent = (num ? '✓' : '✗') + ' Un chiffre';
+        var score = [len, maj, num].filter(Boolean).length;
+        var colors = ['', '#c97a7a', '#c9a84c', '#4a9a40'];
+        var widths  = ['0%', '33%', '66%', '100%'];
+        pwFill.style.width = widths[score];
+        pwFill.style.background = colors[score];
+        return len && maj && num;
       }
-    });
 
-    /* ── Inscription ── */
-    function inscSubmit() {
-      var nom   = document.getElementById('insc-nom').value.trim() || 'Enquêteur';
-      var email = document.getElementById('insc-email').value.trim();
-      var errEl = document.getElementById('insc-error');
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        errEl.style.display = 'block';
-        document.getElementById('insc-email').focus();
-        return;
+      pwInput.addEventListener('input', function() { checkStrength(this.value); checkConfirm(); });
+
+      // ── Confirmation ──
+      var confirmInput = document.getElementById('reg-confirm');
+      var pwMatchEl    = document.getElementById('pw-match');
+
+      function checkConfirm() {
+        var a = pwInput.value, b = confirmInput.value;
+        if (!b) { pwMatchEl.className = 'pw-match'; return false; }
+        if (a === b) {
+          pwMatchEl.className = 'pw-match ok';
+          pwMatchEl.textContent = 'Les mots de passe correspondent ✓';
+          return true;
+        }
+        pwMatchEl.className = 'pw-match ko';
+        pwMatchEl.textContent = 'Les mots de passe ne correspondent pas ✗';
+        return false;
       }
-      errEl.style.display = 'none';
-      subscribeToMailerLite(email, nom);
-      login(email, nom);
-      window.location.href = 'affaires.html';
-    }
 
-    document.getElementById('insc-btn').addEventListener('click', inscSubmit);
-    document.getElementById('insc-nom').addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') document.getElementById('insc-email').focus();
-    });
-    document.getElementById('insc-email').addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') inscSubmit();
-    });
+      confirmInput.addEventListener('input', checkConfirm);
 
-    /* ── Reconnexion ── */
-    document.getElementById('toggle-reconnect').addEventListener('click', function () {
-      var form = document.getElementById('reconnect-form');
-      form.classList.toggle('open');
-      if (form.classList.contains('open')) document.getElementById('rc-email').focus();
-    });
+      // ── Inscription ──
+      document.getElementById('btn-register').addEventListener('click', async function() {
+        var pseudo   = document.getElementById('reg-pseudo').value.trim();
+        var email    = document.getElementById('reg-email').value.trim();
+        var password = document.getElementById('reg-password').value;
+        var confirm  = document.getElementById('reg-confirm').value;
+        var consent  = document.getElementById('reg-consent').checked;
 
-    function rcSubmit() {
-      var email = document.getElementById('rc-email').value.trim();
-      var errEl = document.getElementById('rc-error');
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        errEl.textContent = 'Email invalide.';
-        errEl.style.display = 'block';
-        return;
+        ['pseudo','email','password','consent'].forEach(function(k) {
+          var el = document.getElementById('err-' + k);
+          if (el) { el.textContent = ''; el.classList.remove('visible'); }
+        });
+
+        var ok = true;
+        if (!/^[a-zA-Z0-9\-]{3,20}$/.test(pseudo)) {
+          var ep = document.getElementById('err-pseudo');
+          ep.textContent = 'Nom de code invalide (3–20 caractères, lettres, chiffres, tirets).';
+          ep.classList.add('visible'); ok = false;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          var ee = document.getElementById('err-email');
+          ee.textContent = 'Adresse email invalide.';
+          ee.classList.add('visible'); ok = false;
+        }
+        if (!checkStrength(password)) {
+          var epw = document.getElementById('err-password');
+          epw.textContent = 'Le mot de passe ne respecte pas les critères requis.';
+          epw.classList.add('visible'); ok = false;
+        } else if (password !== confirm) {
+          var epw2 = document.getElementById('err-password');
+          epw2.textContent = 'Les mots de passe ne correspondent pas.';
+          epw2.classList.add('visible'); ok = false;
+        }
+        if (!consent) {
+          var ec = document.getElementById('err-consent');
+          ec.textContent = 'Vous devez accepter les conditions pour continuer.';
+          ec.classList.add('visible'); ok = false;
+        }
+        if (!ok) return;
+
+        var btn = document.getElementById('btn-register');
+        btn.disabled = true;
+        btn.textContent = 'Création en cours…';
+
+        try {
+          await register(pseudo, email, password);
+          await login(email, password, true);
+          var overlay = document.createElement('div');
+          overlay.className = 'stamp-overlay';
+          overlay.innerHTML = '<div class="stamp-text">DOSSIER CRÉÉ</div>';
+          document.body.appendChild(overlay);
+          setTimeout(function() { window.location.href = redirectTo; }, 1500);
+        } catch(e) {
+          btn.disabled = false;
+          btn.textContent = "Créer mon compte d'enquêteur";
+          if (e.message === 'EMAIL_EXISTS') {
+            var el = document.getElementById('err-email');
+            el.textContent = 'Cet email est déjà utilisé. Connectez-vous plutôt.';
+            el.classList.add('visible');
+          } else if (e.message === 'PSEUDO_EXISTS') {
+            var el2 = document.getElementById('err-pseudo');
+            el2.textContent = 'Ce nom de code est déjà pris. Choisissez-en un autre.';
+            el2.classList.add('visible');
+          } else {
+            var el3 = document.getElementById('err-email');
+            el3.textContent = 'Une erreur est survenue. Réessayez.';
+            el3.classList.add('visible');
+          }
+        }
+      });
+
+      // ── Connexion ──
+      var failedAttempts = 0;
+      var lockedUntil = 0;
+
+      async function doLogin() {
+        if (Date.now() < lockedUntil) return;
+        var email    = document.getElementById('log-email').value.trim();
+        var password = document.getElementById('log-password').value;
+        var remember = document.getElementById('log-remember').checked;
+        var errEl    = document.getElementById('err-login');
+        errEl.textContent = ''; errEl.classList.remove('visible');
+        var btn = document.getElementById('btn-login');
+        btn.disabled = true; btn.textContent = 'Vérification…';
+        try {
+          await login(email, password, remember);
+          window.location.href = redirectTo;
+        } catch(e) {
+          btn.disabled = false; btn.textContent = 'Accéder aux affaires';
+          failedAttempts++;
+          errEl.textContent = 'Email ou mot de passe incorrect.';
+          errEl.classList.add('visible');
+          if (failedAttempts >= 3) {
+            lockedUntil = Date.now() + 30000;
+            failedAttempts = 0;
+            btn.disabled = true;
+            var lockMsg = document.getElementById('lockout-msg');
+            lockMsg.classList.add('visible');
+            var remaining = 30;
+            lockMsg.textContent = 'Trop de tentatives. Réessayez dans ' + remaining + 's.';
+            var timer = setInterval(function() {
+              remaining--;
+              lockMsg.textContent = 'Trop de tentatives. Réessayez dans ' + remaining + 's.';
+              if (remaining <= 0) {
+                clearInterval(timer);
+                btn.disabled = false;
+                lockMsg.classList.remove('visible');
+              }
+            }, 1000);
+          }
+        }
       }
-      var stored = null;
-      try { stored = JSON.parse(localStorage.getItem('ec_user')); } catch(e) {}
-      if (stored && stored.email && stored.email.toLowerCase() === email.toLowerCase()) {
-        errEl.style.display = 'none';
-        window.location.href = 'affaires.html';
-      } else {
-        errEl.textContent = 'Aucun compte trouvé pour cet email.';
-        errEl.style.display = 'block';
-      }
-    }
 
-    document.getElementById('rc-btn').addEventListener('click', rcSubmit);
-    document.getElementById('rc-email').addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') rcSubmit();
+      document.getElementById('btn-login').addEventListener('click', doLogin);
+      document.getElementById('log-email').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') document.getElementById('log-password').focus();
+      });
+      document.getElementById('log-password').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') doLogin();
+      });
+      document.getElementById('reg-confirm').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') document.getElementById('btn-register').click();
+      });
+
+      // ── Mot de passe oublié ──
+      document.getElementById('btn-forgot').addEventListener('click', function() {
+        document.getElementById('forgot-msg').classList.toggle('visible');
+      });
     });
   </script>
 

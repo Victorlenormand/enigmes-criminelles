@@ -228,8 +228,8 @@
 
     /* ── Init carte ── */
     document.addEventListener('DOMContentLoaded', function() {
-      var user = getUser();
-      var resolues = user ? (user.affairesResolues || []) : [];
+      var prog = getProgression();
+      var resolues = prog.affairesResolues || [];
 
       // Légende
       document.getElementById('leg-progress').textContent = resolues.length + ' / 20 résolues';
