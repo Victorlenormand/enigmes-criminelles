@@ -15,15 +15,7 @@
   <style>
     html, body { overflow: hidden; }
 
-    #map-wrap {
-      position: fixed;
-      top: 3.2rem;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 0;
-    }
-    #map {
+    #map-paris {
       position: fixed;
       top: 3.2rem;
       left: 0;
@@ -160,9 +152,7 @@
   </nav>
 
   <!-- Carte plein écran -->
-  <div id="map-wrap">
-    <div id="map"></div>
-  </div>
+  <div id="map-paris"></div>
 
   <!-- Légende -->
   <div id="carte-legende">
@@ -235,7 +225,7 @@
       document.getElementById('leg-progress').textContent = resolues.length + ' / 20 résolues';
       document.getElementById('leg-grade').textContent = getGrade(resolues.length);
 
-      var map = L.map('map', {
+      var map = L.map('map-paris', {
         center: [48.8566, 2.3522],
         zoom: 13,
         zoomControl: true,
@@ -243,13 +233,12 @@
       });
 
       L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://carto.com/">CartoDB</a>',
+        attribution: '© OpenStreetMap © CARTO',
         subdomains: 'abcd',
         maxZoom: 19
       }).addTo(map);
 
-      setTimeout(function() { map.invalidateSize(); }, 200);
-      window.addEventListener('resize', function() { map.invalidateSize(); });
+      setTimeout(function() { map.invalidateSize(); }, 100);
 
       POINTS.forEach(function(p) {
         var resolue    = resolues.indexOf(p.id) !== -1;

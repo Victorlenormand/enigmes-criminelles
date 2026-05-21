@@ -584,15 +584,16 @@ function wsGetCell(affId, r, c) {
   return g ? g.querySelector('[data-r="'+r+'"][data-c="'+c+'"]') : null;
 }
 
-function wsGetCellsBetween(r1,c1,r2,c2) {
+function wsGetCellsBetween(sr, sc, er, ec) {
+  if (sr === er && sc === ec) return [[sr, sc]];
+  var dr = er - sr, dc = ec - sc;
+  var steps, rdir, cdir;
+  if (dr === 0) { steps = Math.abs(dc); rdir = 0; cdir = dc > 0 ? 1 : -1; }
+  else if (dc === 0) { steps = Math.abs(dr); rdir = dr > 0 ? 1 : -1; cdir = 0; }
+  else if (Math.abs(dr) === Math.abs(dc)) { steps = Math.abs(dr); rdir = dr > 0 ? 1 : -1; cdir = dc > 0 ? 1 : -1; }
+  else return null;
   var cells = [];
-  if (r1 === r2) {
-    var mn = Math.min(c1,c2), mx = Math.max(c1,c2);
-    for (var c = mn; c <= mx; c++) cells.push([r1,c]);
-  } else if (c1 === c2) {
-    var mn2 = Math.min(r1,r2), mx2 = Math.max(r1,r2);
-    for (var r = mn2; r <= mx2; r++) cells.push([r,c1]);
-  }
+  for (var i = 0; i <= steps; i++) cells.push([sr + i*rdir, sc + i*cdir]);
   return cells;
 }
 
@@ -602,7 +603,7 @@ function wsInitAffaire(aff) {
     aff.grid = result.grid;
     aff.residuels = result.residuels;
   }
-  wsStates[aff.id] = {found:[], done:false, mouseDown:false, startCell:null, endCell:null, axis:null};
+  wsStates[aff.id] = {found:[], done:false, clickPhase:0, startCell:null};
 
   var hdr = document.getElementById('ws-hdr-' + aff.id);
   if (hdr) {
@@ -612,6 +613,13 @@ function wsInitAffaire(aff) {
   }
 
   wsRenderGrid(aff);
+  var hintEl = document.createElement('div');
+  hintEl.id = 'ws-hint-' + aff.id;
+  hintEl.className = 'ws-hint';
+  hintEl.textContent = 'Cliquez sur la dernière lettre du mot';
+  hintEl.style.display = 'none';
+  var gridContainer = document.getElementById('ws-grid-' + aff.id);
+  if (gridContainer && gridContainer.parentNode) gridContainer.parentNode.insertBefore(hintEl, gridContainer.nextSibling);
   wsRenderWordList(aff);
 
   verifyGrid(aff);
@@ -623,27 +631,41 @@ function wsStep(label, lit) {
   return '<div class="s2-step'+(lit?' lit':'')+'"><div class="s2-dot"></div><span class="s2-step-label">'+label+'</span></div>';
 }
 
-function wsExtendSel(aff, r, c) {
+function wsClearPreview(affId) {
+  var g = document.getElementById('ws-grid-' + affId);
+  if (!g) return;
+  g.querySelectorAll('.ws-preview, .ws-preview-invalid').forEach(function(c) {
+    c.classList.remove('ws-preview', 'ws-preview-invalid');
+  });
+}
+
+function wsPreviewPath(aff, er, ec) {
   var st = wsStates[aff.id];
+  wsClearPreview(aff.id);
   if (!st.startCell) return;
-  var sr = st.startCell[0], sc = st.startCell[1];
-  var dr = r - sr, dc = c - sc;
-  if (!st.axis) {
-    if (dr === 0 && dc !== 0) st.axis = 'H';
-    else if (dc === 0 && dr !== 0) st.axis = 'V';
-    else if (Math.abs(dr) === Math.abs(dc)) st.axis = (dc > 0 ? 'DH' : 'DB');
-    else {
-      if (Math.abs(dr) > Math.abs(dc)) st.axis = 'V';
-      else st.axis = 'H';
-    }
-  }
-  st.endCell = [r, c];
-  var cells = wsSelRange(st);
-  wsClearSel(aff);
+  var cells = wsGetCellsBetween(st.startCell[0], st.startCell[1], er, ec);
+  if (!cells) return;
+  var cls = cells.length >= 2 ? 'ws-preview' : '';
+  if (!cls) return;
   cells.forEach(function(pos) {
     var cell = wsGetCell(aff.id, pos[0], pos[1]);
-    if (cell && !cell.classList.contains('ws-found')) cell.classList.add('ws-sel');
+    if (cell && !cell.classList.contains('ws-found')) cell.classList.add(cls);
   });
+}
+
+function wsCancelSelection(aff) {
+  var st = wsStates[aff.id];
+  st.startCell = null;
+  st.clickPhase = 0;
+  wsActiveAffaire = null;
+  wsClearSel(aff);
+  wsClearPreview(aff.id);
+  wsShowHint(aff.id, false);
+}
+
+function wsShowHint(affId, show) {
+  var hint = document.getElementById('ws-hint-' + affId);
+  if (hint) hint.style.display = show ? 'block' : 'none';
 }
 
 function wsRenderGrid(aff) {
@@ -661,28 +683,58 @@ function wsRenderGrid(aff) {
     }
   }
 
-  gridEl.addEventListener('mousedown', function(e) {
-    e.preventDefault();
+  // ── Clic-clic desktop ──
+  gridEl.addEventListener('click', function(e) {
     var st = wsStates[aff.id];
     if (st.done) return;
     var t = e.target.closest('.ws-cell');
     if (!t) return;
-    st.mouseDown = true;
-    st.startCell = [parseInt(t.dataset.r), parseInt(t.dataset.c)];
-    st.endCell = st.startCell;
-    st.axis = null;
-    wsActiveAffaire = aff;
-    wsClearSel(aff);
-    if (!t.classList.contains('ws-found')) t.classList.add('ws-sel');
+    var r = parseInt(t.dataset.r), c = parseInt(t.dataset.c);
+    if (st.clickPhase === 0) {
+      wsActiveAffaire = aff;
+      st.startCell = [r, c];
+      st.clickPhase = 1;
+      wsClearSel(aff);
+      wsClearPreview(aff.id);
+      t.classList.add('ws-sel');
+      wsShowHint(aff.id, true);
+    } else {
+      var cells = wsGetCellsBetween(st.startCell[0], st.startCell[1], r, c);
+      if (!cells || cells.length < 2) {
+        // Direction invalide ou même cellule : recommencer depuis ce clic
+        wsClearSel(aff);
+        wsClearPreview(aff.id);
+        st.startCell = [r, c];
+        st.clickPhase = 1;
+        t.classList.add('ws-sel');
+      } else {
+        wsClearSel(aff);
+        wsClearPreview(aff.id);
+        st.startCell = null;
+        st.clickPhase = 0;
+        wsActiveAffaire = null;
+        wsShowHint(aff.id, false);
+        wsCheckMatch(aff, cells);
+      }
+    }
   });
 
-  gridEl.addEventListener('mouseover', function(e) {
+  // ── Prévisualisation mousemove ──
+  gridEl.addEventListener('mousemove', function(e) {
     var st = wsStates[aff.id];
-    if (!st.mouseDown) return;
+    if (st.clickPhase !== 1) return;
     var t = e.target.closest('.ws-cell');
-    if (t) wsExtendSel(aff, parseInt(t.dataset.r), parseInt(t.dataset.c));
+    if (!t) return;
+    wsPreviewPath(aff, parseInt(t.dataset.r), parseInt(t.dataset.c));
   });
 
+  // ── Clic droit : annuler ──
+  gridEl.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    wsCancelSelection(aff);
+  });
+
+  // ── Touch ──
   gridEl.addEventListener('touchstart', function(e) {
     e.preventDefault();
     var st = wsStates[aff.id];
@@ -691,37 +743,44 @@ function wsRenderGrid(aff) {
     var el = document.elementFromPoint(touch.clientX, touch.clientY);
     var cell = el && el.closest('.ws-cell');
     if (!cell) return;
-    st.mouseDown = true;
-    st.startCell = [parseInt(cell.dataset.r), parseInt(cell.dataset.c)];
-    st.endCell = st.startCell;
-    st.axis = null;
     wsActiveAffaire = aff;
+    st.startCell = [parseInt(cell.dataset.r), parseInt(cell.dataset.c)];
+    st.clickPhase = 1;
     wsClearSel(aff);
-    if (!cell.classList.contains('ws-found')) cell.classList.add('ws-sel');
+    wsClearPreview(aff.id);
+    cell.classList.add('ws-sel');
+    wsShowHint(aff.id, true);
   }, {passive:false});
 
   gridEl.addEventListener('touchmove', function(e) {
     e.preventDefault();
     var st = wsStates[aff.id];
-    if (!st.mouseDown) return;
+    if (st.clickPhase !== 1) return;
     var touch = e.touches[0];
     var el = document.elementFromPoint(touch.clientX, touch.clientY);
     var cell = el && el.closest('.ws-cell');
-    if (cell) wsExtendSel(aff, parseInt(cell.dataset.r), parseInt(cell.dataset.c));
+    if (!cell) return;
+    wsPreviewPath(aff, parseInt(cell.dataset.r), parseInt(cell.dataset.c));
   }, {passive:false});
 
   gridEl.addEventListener('touchend', function(e) {
     e.preventDefault();
     var st = wsStates[aff.id];
-    if (!st.mouseDown) return;
-    st.mouseDown = false;
-    wsActiveAffaire = null;
-    var selCells = wsSelRange(st);
+    if (st.clickPhase !== 1) return;
+    var touch = e.changedTouches[0];
+    var el = document.elementFromPoint(touch.clientX, touch.clientY);
+    var cell = el && el.closest('.ws-cell');
+    var startSaved = st.startCell;
     wsClearSel(aff);
+    wsClearPreview(aff.id);
     st.startCell = null;
-    st.endCell = null;
-    st.axis = null;
-    if (selCells.length >= 2) wsCheckMatch(aff, selCells);
+    st.clickPhase = 0;
+    wsActiveAffaire = null;
+    wsShowHint(aff.id, false);
+    if (!cell || !startSaved) return;
+    var r = parseInt(cell.dataset.r), c = parseInt(cell.dataset.c);
+    var cells = wsGetCellsBetween(startSaved[0], startSaved[1], r, c);
+    if (cells && cells.length >= 2) wsCheckMatch(aff, cells);
   }, {passive:false});
 }
 
@@ -783,6 +842,11 @@ function wsCheckMatch(aff, cells) {
       st.done = true;
       setTimeout(function() { wsRevealGhost(aff); }, 400);
     }
+  } else {
+    cells.forEach(function(p) {
+      var c = wsGetCell(aff.id, p[0], p[1]);
+      if (c) { c.classList.add('ws-flash-error'); setTimeout(function() { c.classList.remove('ws-flash-error'); }, 400); }
+    });
   }
 }
 
@@ -957,17 +1021,6 @@ function wsValidate(aff) {
   document.getElementById('ws-nxt-' + aff.id).style.display = 'block';
 }
 
-document.addEventListener('mouseup', function() {
-  if (!wsActiveAffaire) return;
-  var aff = wsActiveAffaire;
-  var st = wsStates[aff.id];
-  if (!st || !st.mouseDown) return;
-  st.mouseDown = false;
-  wsActiveAffaire = null;
-  var selCells = wsSelRange(st);
-  wsClearSel(aff);
-  st.startCell = null;
-  st.endCell = null;
-  st.axis = null;
-  if (selCells.length >= 2) wsCheckMatch(aff, selCells);
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && wsActiveAffaire) wsCancelSelection(wsActiveAffaire);
 });
