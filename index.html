@@ -74,13 +74,18 @@
 
   <nav id="top-nav">
     <a class="brand" href="index.html">ÉNIGMES CRIMINELLES</a>
-    <div class="links">
-      <a data-page="affaires" data-locked="true" href="affaires.html">Affaires</a>
-      <a data-page="carte" data-locked="true" href="carte.html">Carte</a>
+    <div class="links" id="nav-links">
+      <a data-page="affaires" href="affaires.html">Affaires</a>
       <a data-page="livres" href="livres.html">Livres</a>
       <a data-page="compte" id="nav-compte" href="inscription.html">Mon compte</a>
     </div>
+    <button id="nav-hamburger" aria-label="Menu" aria-expanded="false">☰</button>
   </nav>
+  <div id="nav-mobile-panel">
+    <a href="affaires.html">Affaires</a>
+    <a href="livres.html">Livres</a>
+    <a id="nav-mobile-compte" href="inscription.html">Mon compte</a>
+  </div>
 
   <main class="page-home">
     <div class="hero">

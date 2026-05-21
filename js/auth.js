@@ -2,6 +2,24 @@
    auth.js — Authentification Énigmes Criminelles (RGPD)
 ═══════════════════════════════════════════════════════════ */
 
+/* ── Utilitaires ── */
+function sanitize(str) {
+  return String(str).trim().replace(/[<>"'`]/g, '').slice(0, 200);
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.toLowerCase().trim());
+}
+
+function isValidPassword(password) {
+  return password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password);
+}
+
+function isValidPseudo(pseudo) {
+  return /^[a-zA-Z0-9\-_àâäéèêëîïôùûüç ]{3,20}$/.test(pseudo.trim());
+}
+
+/* ── Hachage SHA-256 ── */
 async function hashPassword(password) {
   const encoder = new TextEncoder();
   const data = encoder.encode(password);
@@ -10,20 +28,52 @@ async function hashPassword(password) {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+/* ── Anti-brute-force (sessionStorage) ── */
+function checkLoginAttempts() {
+  const key = 'ec_attempts';
+  const data = JSON.parse(sessionStorage.getItem(key) || '{"count":0,"lastAttempt":0,"blockedUntil":0}');
+  const now = Date.now();
+  if (data.blockedUntil > now) {
+    const secondes = Math.ceil((data.blockedUntil - now) / 1000);
+    throw new Error('BLOCKED_' + secondes);
+  }
+  return data;
+}
+
+function recordFailedAttempt() {
+  const key = 'ec_attempts';
+  const data = JSON.parse(sessionStorage.getItem(key) || '{"count":0,"lastAttempt":0,"blockedUntil":0}');
+  data.count += 1;
+  data.lastAttempt = Date.now();
+  if (data.count >= 3) {
+    data.blockedUntil = Date.now() + 30000;
+    data.count = 0;
+  }
+  sessionStorage.setItem(key, JSON.stringify(data));
+}
+
+function resetLoginAttempts() {
+  sessionStorage.removeItem('ec_attempts');
+}
+
+/* ── Inscription ── */
 async function register(pseudo, email, password) {
+  const cleanPseudo = sanitize(pseudo);
+  const cleanEmail = sanitize(email).toLowerCase();
+
+  if (!isValidPseudo(cleanPseudo)) throw new Error('INVALID_PSEUDO');
+  if (!isValidEmail(cleanEmail)) throw new Error('INVALID_EMAIL');
+  if (!isValidPassword(password)) throw new Error('INVALID_PASSWORD');
+
   const users = JSON.parse(localStorage.getItem('ec_users') || '[]');
 
-  if (users.find(u => u.email === email.toLowerCase().trim())) {
-    throw new Error('EMAIL_EXISTS');
-  }
-  if (users.find(u => u.pseudo.toLowerCase() === pseudo.toLowerCase().trim())) {
-    throw new Error('PSEUDO_EXISTS');
-  }
+  if (users.find(u => u.email === cleanEmail)) throw new Error('EMAIL_EXISTS');
+  if (users.find(u => u.pseudo.toLowerCase() === cleanPseudo.toLowerCase())) throw new Error('PSEUDO_EXISTS');
 
   const newUser = {
     id: crypto.randomUUID(),
-    pseudo: pseudo.trim(),
-    email: email.toLowerCase().trim(),
+    pseudo: cleanPseudo,
+    email: cleanEmail,
     passwordHash: await hashPassword(password),
     dateInscription: new Date().toISOString(),
     consentement: true,
@@ -33,27 +83,37 @@ async function register(pseudo, email, password) {
   users.push(newUser);
   localStorage.setItem('ec_users', JSON.stringify(users));
 
-  subscribeToMailerLite(newUser.email, newUser.pseudo);
+  if (typeof subscribeToMailerLite === 'function') {
+    subscribeToMailerLite(newUser.email, newUser.pseudo);
+  }
 
   return newUser;
 }
 
+/* ── Connexion ── */
 async function login(email, password, remember) {
+  checkLoginAttempts();
+
+  const cleanEmail = sanitize(email).toLowerCase();
   const users = JSON.parse(localStorage.getItem('ec_users') || '[]');
   const hash = await hashPassword(password);
-  const user = users.find(u =>
-    u.email === email.toLowerCase().trim() &&
-    u.passwordHash === hash
-  );
+  const user = users.find(u => u.email === cleanEmail && u.passwordHash === hash);
 
-  if (!user) throw new Error('INVALID_CREDENTIALS');
+  if (!user) {
+    recordFailedAttempt();
+    throw new Error('INVALID_CREDENTIALS');
+  }
 
+  resetLoginAttempts();
+
+  const now = Date.now();
   const session = {
     userId: user.id,
     pseudo: user.pseudo,
     email: user.email,
     loginDate: new Date().toISOString(),
-    remember: remember
+    remember: remember,
+    expiry: remember ? now + 30 * 24 * 60 * 60 * 1000 : now + 2 * 60 * 60 * 1000
   };
 
   if (remember) {
@@ -65,6 +125,7 @@ async function login(email, password, remember) {
   return session;
 }
 
+/* ── Session ── */
 function getSession() {
   try {
     const ls = localStorage.getItem('ec_session');
@@ -74,7 +135,13 @@ function getSession() {
 }
 
 function isLoggedIn() {
-  return getSession() !== null;
+  const session = getSession();
+  if (!session) return false;
+  if (session.expiry && Date.now() > session.expiry) {
+    logout();
+    return false;
+  }
+  return true;
 }
 
 function logout() {
@@ -86,15 +153,13 @@ function logout() {
 function deleteAccount() {
   const session = getSession();
   if (!session) return;
-
   localStorage.removeItem('ec_progression_' + session.userId);
-
   const users = JSON.parse(localStorage.getItem('ec_users') || '[]');
   localStorage.setItem('ec_users', JSON.stringify(users.filter(u => u.id !== session.userId)));
-
   logout();
 }
 
+/* ── Progression ── */
 function getProgression() {
   const session = getSession();
   if (!session) return { affairesResolues: [], grade: 'Inspecteur Stagiaire' };
@@ -126,17 +191,19 @@ function getGrade(n) {
   return 'Inspecteur Stagiaire ★';
 }
 
+/* ── Protection des pages ── */
 function requireLogin() {
   if (!isLoggedIn()) {
     window.location.href = 'inscription.html?redirect=' + encodeURIComponent(window.location.pathname);
   }
 }
 
+/* ── Navigation dynamique ── */
 function initNav() {
   const session = getSession();
   const navCompte = document.getElementById('nav-compte');
   if (navCompte) {
-    if (session) {
+    if (session && isLoggedIn()) {
       navCompte.textContent = session.pseudo;
       navCompte.href = 'profil.html';
     } else {
@@ -144,15 +211,31 @@ function initNav() {
       navCompte.href = 'inscription.html';
     }
   }
-  document.querySelectorAll('[data-locked]').forEach(function(link) {
-    if (!session) {
-      link.innerHTML = link.textContent + ' <span class="lock-icon">🔒</span>';
-      link.addEventListener('click', function(e) {
-        e.preventDefault();
-        window.location.href = 'inscription.html?redirect=' + encodeURIComponent(link.getAttribute('href'));
-      });
+
+  // Hamburger
+  const hamburger = document.getElementById('nav-hamburger');
+  const mobilePanel = document.getElementById('nav-mobile-panel');
+  const mobileCompte = document.getElementById('nav-mobile-compte');
+  if (hamburger && mobilePanel) {
+    hamburger.addEventListener('click', function() {
+      const isOpen = mobilePanel.classList.toggle('open');
+      hamburger.setAttribute('aria-expanded', isOpen);
+      hamburger.textContent = isOpen ? '✕' : '☰';
+    });
+    document.addEventListener('click', function(e) {
+      if (!hamburger.contains(e.target) && !mobilePanel.contains(e.target)) {
+        mobilePanel.classList.remove('open');
+        hamburger.setAttribute('aria-expanded', 'false');
+        hamburger.textContent = '☰';
+      }
+    }, { capture: true });
+  }
+  if (mobileCompte) {
+    if (session && isLoggedIn()) {
+      mobileCompte.textContent = session.pseudo;
+      mobileCompte.href = 'profil.html';
     }
-  });
+  }
 }
 
 document.addEventListener('DOMContentLoaded', function() { initNav(); });

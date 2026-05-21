@@ -2,8 +2,6 @@
    affaires.js — Moteur mots mêlés & données AFFAIRES
 ═══════════════════════════════════════════════════════════ */
 
-var wsActiveAffaire = null;
-
 function generateGrid(placements, residualSeq) {
   var r, c, i, pr, pc;
   var grid = [], wordCells = [];
@@ -603,7 +601,7 @@ function wsInitAffaire(aff) {
     aff.grid = result.grid;
     aff.residuels = result.residuels;
   }
-  wsStates[aff.id] = {found:[], done:false, clickPhase:0, startCell:null};
+  wsStates[aff.id] = {found:[], done:false, selector:null};
 
   var hdr = document.getElementById('ws-hdr-' + aff.id);
   if (hdr) {
@@ -613,13 +611,6 @@ function wsInitAffaire(aff) {
   }
 
   wsRenderGrid(aff);
-  var hintEl = document.createElement('div');
-  hintEl.id = 'ws-hint-' + aff.id;
-  hintEl.className = 'ws-hint';
-  hintEl.textContent = 'Cliquez sur la dernière lettre du mot';
-  hintEl.style.display = 'none';
-  var gridContainer = document.getElementById('ws-grid-' + aff.id);
-  if (gridContainer && gridContainer.parentNode) gridContainer.parentNode.insertBefore(hintEl, gridContainer.nextSibling);
   wsRenderWordList(aff);
 
   verifyGrid(aff);
