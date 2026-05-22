@@ -161,6 +161,14 @@ function afficherResultat(aff, scoreData) {
 
   overlay.classList.remove('hidden');
 
+  /* Badges */
+  if (typeof verifierBadges === 'function') {
+    var nouveauxBadges = verifierBadges();
+    if (nouveauxBadges.length > 0 && typeof notifierNouveauxBadges === 'function') {
+      setTimeout(function() { notifierNouveauxBadges(nouveauxBadges); }, 1500);
+    }
+  }
+
   /* Bouton affaire suivante */
   var btnSuiv = document.getElementById('btn-affaire-suivante');
   if (btnSuiv) {

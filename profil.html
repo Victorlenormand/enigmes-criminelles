@@ -379,6 +379,60 @@
       background: #c9a84c;
       box-shadow: 0 0 8px rgba(201,168,76,0.5);
     }
+
+    /* ── Badges ── */
+    #section-badges {
+      width: 100%;
+    }
+    .badges-section-title {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.22em;
+      color: var(--or);
+      opacity: 0.5;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    #badges-compteur {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--or-clair);
+      opacity: 0.6;
+      margin-bottom: 14px;
+    }
+    #grille-badges {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
+    }
+    .badge-item {
+      background: #0f0d0a;
+      border: 1px solid #2a2018;
+      padding: 14px 8px;
+      text-align: center;
+      cursor: default;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .badge-item.badge-obtenu { border-color: rgba(201,168,76,0.27); }
+    .badge-item.badge-obtenu:hover {
+      transform: translateY(-2px);
+      border-color: var(--or);
+    }
+    .badge-item.badge-locked { filter: grayscale(100%); opacity: 0.4; }
+    .badge-icone { font-size: 26px; margin-bottom: 6px; }
+    .badge-nom {
+      font-family: var(--font-titre);
+      font-size: 11px;
+      color: var(--or);
+      margin-bottom: 4px;
+      line-height: 1.2;
+    }
+    .badge-desc {
+      font-family: var(--font-corps);
+      font-size: 10px;
+      color: #777;
+      line-height: 1.3;
+    }
   </style>
 </head>
 <body>
@@ -428,6 +482,13 @@
         <span id="streak-statut"></span>
       </div>
       <div id="streak-calendrier"></div>
+    </div>
+
+    <!-- ── Distinctions ── -->
+    <div id="section-badges">
+      <div class="badges-section-title">Distinctions</div>
+      <div id="badges-compteur">0 / 10 distinctions obtenues</div>
+      <div id="grille-badges"></div>
     </div>
 
     <!-- ── Informations du compte ── -->
@@ -517,6 +578,7 @@
 
   <script src="./js/auth.js"></script>
   <script src="./js/scoring.js"></script>
+  <script src="./js/badges.js"></script>
   <script>
     requireLogin();
 
@@ -629,6 +691,9 @@
         ctx.fillText('enigmes-criminelles.fr', W-20, 210);
       }
       drawCard();
+
+      // ── Badges ──
+      if (typeof renderBadges === 'function') renderBadges();
 
       // ── Streak ──
       (function() {
