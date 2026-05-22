@@ -1083,6 +1083,9 @@ function wsValidate(aff) {
     updateProgression({ scores: scores });
   }
 
+  /* Streak */
+  var streakData = typeof updateStreak === 'function' ? updateStreak() : null;
+
   /* Overlay résultat */
   if (typeof afficherResultat === 'function') {
     afficherResultat(aff, scoreData);
@@ -1097,6 +1100,11 @@ function wsValidate(aff) {
     document.getElementById('ws-nxt-' + aff.id).style.display = 'block';
   }
   document.getElementById('ws-sub-' + aff.id).disabled = true;
+
+  /* Toast streak (léger délai pour ne pas superposer l'overlay) */
+  if (streakData && typeof afficherToastStreak === 'function') {
+    setTimeout(function() { afficherToastStreak(streakData); }, 900);
+  }
 }
 
 // Escape key handling is now managed by GridSelector

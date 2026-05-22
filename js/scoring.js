@@ -259,6 +259,101 @@ function construireClassement(tri) {
   mettreAJourPodium(joueurs.slice(0, 3));
 }
 
+/* ── Streak quotidien ── */
+function getDateJour() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function updateStreak() {
+  var prog = typeof getProgression === 'function' ? getProgression() : null;
+  if (!prog) return null;
+
+  var streak = prog.streak || {
+    actuel: 0, maximum: 0, dernierJour: null, joueAujourdhui: false
+  };
+
+  var aujourdhui = getDateJour();
+
+  if (streak.dernierJour === aujourdhui) {
+    return streak;
+  }
+
+  if (streak.dernierJour === null) {
+    streak.actuel = 1;
+  } else {
+    var hier = new Date();
+    hier.setDate(hier.getDate() - 1);
+    var hierStr = hier.toISOString().split('T')[0];
+
+    if (streak.dernierJour === hierStr) {
+      streak.actuel += 1;
+    } else {
+      streak.actuel = 1;
+    }
+  }
+
+  streak.maximum      = Math.max(streak.actuel, streak.maximum);
+  streak.dernierJour  = aujourdhui;
+  streak.joueAujourdhui = true;
+
+  var historique = prog.historiqueJours || [];
+  if (historique.indexOf(aujourdhui) === -1) {
+    historique.push(aujourdhui);
+    if (historique.length > 30) historique.shift();
+  }
+
+  if (typeof updateProgression === 'function') {
+    updateProgression({ streak: streak, historiqueJours: historique });
+  }
+  return streak;
+}
+
+function getStreak() {
+  var prog = typeof getProgression === 'function' ? getProgression() : null;
+  if (!prog || !prog.streak) {
+    return { actuel: 0, maximum: 0, dernierJour: null, joueAujourdhui: false };
+  }
+
+  var streak     = prog.streak;
+  var aujourdhui = getDateJour();
+
+  if (streak.dernierJour === null) return streak;
+
+  var hier = new Date();
+  hier.setDate(hier.getDate() - 1);
+  var hierStr = hier.toISOString().split('T')[0];
+
+  if (streak.dernierJour !== aujourdhui && streak.dernierJour !== hierStr) {
+    streak.actuel         = 0;
+    streak.joueAujourdhui = false;
+    if (typeof updateProgression === 'function') {
+      updateProgression({ streak: streak });
+    }
+  }
+
+  return streak;
+}
+
+function afficherToastStreak(streak) {
+  var toast   = document.getElementById('toast-streak');
+  var texteEl = document.getElementById('toast-streak-texte');
+  if (!toast || !texteEl) return;
+
+  var message;
+  if (streak.actuel === streak.maximum && streak.actuel > 1) {
+    message = '🔥 Nouveau record : ' + streak.actuel + ' jours de suite !';
+  } else if (streak.actuel > 1) {
+    message = '🔥 ' + streak.actuel + ' jours de suite ! Continuez demain.';
+  } else {
+    message = '🔥 Vous avez démarré votre série !';
+  }
+
+  texteEl.textContent = message;
+  toast.classList.remove('hidden');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(function() { toast.classList.add('hidden'); }, 4000);
+}
+
 function mettreAJourPodium(top3) {
   /* Ordre d'affichage podium : 2ème, 1er, 3ème */
   var config = [
