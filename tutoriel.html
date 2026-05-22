@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="description" content="Énigmes Criminelles — Apprenez à jouer avec l'affaire de démonstration guidée.">
+  <meta name="robots" content="index, follow">
+  <title>Énigmes Criminelles — Comment jouer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=EB+Garamond:ital,wght@0,400;1,400&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/style.css" />
+  <style>
+    /* ── Page layout ── */
+    .page-tuto {
+      padding: 5rem 1.5rem 4rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    /* ── Header ── */
+    .tuto-header {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      max-width: 560px;
+    }
+    .tuto-header h2 {
+      font-family: var(--font-titre);
+      font-size: clamp(1.3rem, 3.5vw, 2rem);
+      color: var(--or);
+      letter-spacing: 0.07em;
+    }
+    .tuto-sous {
+      font-family: var(--font-corps);
+      font-style: italic;
+      color: var(--or-clair);
+      opacity: 0.75;
+      font-size: 0.92rem;
+    }
+
+    /* ── Progress dots ── */
+    .tuto-progress {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+    .tuto-dot {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 2px solid rgba(201,168,76,0.35);
+      background: transparent;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: rgba(201,168,76,0.35);
+      transition: all 0.3s;
+      position: relative;
+    }
+    .tuto-dot.active {
+      border-color: var(--or);
+      color: var(--or);
+      background: rgba(201,168,76,0.1);
+      box-shadow: 0 0 8px rgba(201,168,76,0.3);
+    }
+    .tuto-dot.done {
+      border-color: rgba(201,168,76,0.6);
+      background: rgba(201,168,76,0.15);
+      color: var(--or-clair);
+    }
+    .tuto-dot.done::after {
+      content: '✓';
+      font-size: 0.65rem;
+    }
+    .tuto-dot-line {
+      width: 32px; height: 1px;
+      background: rgba(201,168,76,0.2);
+    }
+
+    /* ── Main layout ── */
+    .tutoriel-layout {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 2rem;
+      width: 100%;
+      max-width: 900px;
+      align-items: start;
+    }
+
+    /* ── Guide panel ── */
+    #panneau-guide {
+      background: linear-gradient(160deg, #151008, #0e0c08);
+      border: 1px solid rgba(201,168,76,0.2);
+      padding: 1.6rem 1.4rem;
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      position: sticky;
+      top: 5rem;
+    }
+    .tuto-titre {
+      font-family: var(--font-titre);
+      font-size: 1.15rem;
+      color: var(--or);
+      margin: 0 0 0.3rem;
+      line-height: 1.2;
+    }
+    #panneau-guide p {
+      font-family: var(--font-corps);
+      color: var(--or-clair);
+      opacity: 0.85;
+      font-size: 0.88rem;
+      line-height: 1.6;
+      margin: 0.2rem 0;
+    }
+    .tuto-btn-primary {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--bg);
+      background: var(--or);
+      border: 1px solid var(--or);
+      padding: 0.6em 1.4em;
+      cursor: pointer;
+      margin-top: auto;
+      transition: background 0.2s, color 0.2s;
+      align-self: flex-start;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .tuto-btn-primary:hover {
+      background: var(--or-clair);
+      border-color: var(--or-clair);
+    }
+    .tuto-btn-primary.hidden { display: none; }
+    .tuto-btn-secondary {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--or);
+      background: transparent;
+      border: 1px solid rgba(201,168,76,0.4);
+      padding: 0.6em 1.4em;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .tuto-btn-secondary:hover { border-color: var(--or); }
+
+    .tuto-prog-txt {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--or-clair);
+      opacity: 0.7;
+      letter-spacing: 0.1em;
+    }
+    .tuto-arrow-anim {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--or);
+      animation: arrowPulse 1.2s ease-in-out infinite;
+    }
+    @keyframes arrowPulse {
+      0%, 100% { opacity: 0.5; transform: translateX(0); }
+      50%       { opacity: 1;   transform: translateX(4px); }
+    }
+    .tuto-indice-box {
+      border: 1px solid rgba(201,168,76,0.5);
+      background: rgba(201,168,76,0.07);
+      padding: 0.6em 1em;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--or);
+      letter-spacing: 0.08em;
+      margin: 0.4rem 0;
+    }
+    .tuto-hint {
+      font-family: var(--font-corps);
+      font-style: italic;
+      font-size: 0.82rem;
+      color: var(--or-clair);
+      opacity: 0.8;
+      border-left: 2px solid rgba(201,168,76,0.4);
+      padding-left: 0.7em;
+      margin: 0.3rem 0;
+    }
+    .tuto-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      margin-top: 0.5rem;
+    }
+    .tuto-field-row {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      flex-wrap: wrap;
+    }
+    .tuto-field-lbl {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+      color: var(--or);
+      opacity: 0.7;
+      text-transform: uppercase;
+      min-width: 60px;
+    }
+    .tuto-char-boxes {
+      display: flex;
+      gap: 4px;
+    }
+    .tuto-char-inp {
+      width: 28px; height: 32px;
+      background: rgba(201,168,76,0.05);
+      border: 1px solid rgba(201,168,76,0.35);
+      color: var(--creme);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      font-weight: bold;
+      text-align: center;
+      text-transform: uppercase;
+      caret-color: var(--or);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .tuto-char-inp:focus { border-color: var(--or); background: rgba(201,168,76,0.1); }
+    .tuto-prefilled { gap: 4px; }
+    .tuto-char-pre {
+      width: 28px; height: 32px;
+      background: rgba(201,168,76,0.12);
+      border: 1px solid rgba(201,168,76,0.5);
+      color: var(--or);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      font-weight: bold;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Grille panel ── */
+    #panneau-grille {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+    #tuto-grid-wrapper {
+      position: relative;
+    }
+    #tuto-grid-wrapper.grille-bloquee::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(10,8,4,0.45);
+      z-index: 5;
+      cursor: not-allowed;
+    }
+
+    /* ── Grid cells ── */
+    #tuto-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 3px;
+      user-select: none;
+    }
+    .tuto-cell {
+      aspect-ratio: 1;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono);
+      font-size: clamp(0.75rem, 2vw, 1rem);
+      font-weight: bold;
+      color: var(--creme);
+      background: rgba(201,168,76,0.04);
+      border: 1px solid rgba(201,168,76,0.1);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
+    }
+    .tuto-cell:hover { background: rgba(201,168,76,0.1); }
+    .tuto-cell.tuto-sel {
+      background: rgba(201,168,76,0.25);
+      border-color: var(--or);
+      color: var(--or);
+      box-shadow: 0 0 6px rgba(201,168,76,0.4);
+    }
+    .tuto-cell.tuto-preview {
+      background: rgba(201,168,76,0.14);
+      border-color: rgba(201,168,76,0.5);
+    }
+    .tuto-cell.tuto-found {
+      background: rgba(201,168,76,0.18);
+      border-color: rgba(201,168,76,0.55);
+      color: var(--or);
+    }
+    .tuto-cell.tuto-guide {
+      background: rgba(201,168,76,0.12);
+      border-color: rgba(201,168,76,0.45);
+      animation: guidePulse 1.4s ease-in-out infinite;
+    }
+    @keyframes guidePulse {
+      0%, 100% { box-shadow: none; }
+      50%       { box-shadow: 0 0 8px rgba(201,168,76,0.5); }
+    }
+    .tuto-cell.tuto-residual {
+      color: var(--or);
+      background: rgba(201,168,76,0.1);
+      border-color: rgba(201,168,76,0.4);
+      text-shadow: 0 0 6px rgba(201,168,76,0.6);
+    }
+    .tuto-cell.tuto-flash-err {
+      background: rgba(139,26,26,0.35) !important;
+      border-color: #8b1a1a !important;
+    }
+
+    /* ── Word list ── */
+    #tuto-words {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 1rem;
+      background: rgba(201,168,76,0.03);
+      border: 1px solid rgba(201,168,76,0.12);
+    }
+    .tuto-list-lbl {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.2em;
+      color: var(--or);
+      opacity: 0.5;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .tuto-word-item {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--creme);
+      letter-spacing: 0.1em;
+      opacity: 0.7;
+      padding: 0.2em 0.5em;
+      transition: all 0.25s;
+    }
+    .tuto-word-item.highlight-guide {
+      color: var(--or);
+      opacity: 1;
+      background: rgba(201,168,76,0.08);
+    }
+    .tuto-word-item.tuto-word-found {
+      text-decoration: line-through;
+      opacity: 0.35;
+    }
+    .tuto-ghost-item { color: var(--or-clair); }
+    .tuto-ghost-item.tuto-ghost-revealed {
+      color: #c97a7a;
+      opacity: 1;
+      text-decoration: line-through;
+    }
+    .tuto-ghost-msg {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: #c97a7a;
+      letter-spacing: 0.05em;
+      padding: 0.2em 0.5em;
+      opacity: 0.9;
+    }
+
+    /* ── Result overlay ── */
+    #overlay-tuto {
+      position: fixed;
+      inset: 0;
+      background: rgba(5,4,2,0.88);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 300;
+      padding: 1rem;
+    }
+    #overlay-tuto.hidden { display: none; }
+    #carte-tuto {
+      background: linear-gradient(160deg, #1a1408, #0e0c08);
+      border: 1px solid rgba(201,168,76,0.45);
+      padding: 2rem 2rem 1.6rem;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      position: relative;
+    }
+    .tuto-tampon {
+      font-family: var(--font-mono);
+      font-size: 1.6rem;
+      font-weight: bold;
+      letter-spacing: 0.22em;
+      color: var(--or);
+      border: 3px solid var(--or);
+      padding: 0.15em 0.5em;
+      opacity: 0.85;
+      transform: rotate(-4deg);
+      display: inline-block;
+    }
+    #carte-tuto h3 {
+      font-family: var(--font-titre);
+      font-size: 1.1rem;
+      font-style: italic;
+      color: var(--creme);
+      margin: 0;
+    }
+    .tuto-sol-bloc {
+      width: 100%;
+      border: 1px solid rgba(201,168,76,0.2);
+      padding: 0.8rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .tuto-sol-ligne {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+    }
+    .tuto-sol-lbl { color: var(--or); opacity: 0.6; }
+    .tuto-sol-val { color: var(--creme); font-weight: bold; }
+    #tuto-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      width: 100%;
+      margin-top: 0.4rem;
+    }
+    #tuto-actions a, #tuto-actions button {
+      width: 100%;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    /* ── Confetti keyframe ── */
+    @keyframes confettiFall {
+      0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 720px) {
+      .tutoriel-layout {
+        grid-template-columns: 1fr;
+      }
+      #panneau-grille { order: 1; }
+      #panneau-guide  { order: 2; position: static; }
+      #tuto-grid { gap: 2px; }
+      .tuto-cell { font-size: 0.72rem; }
+    }
+    @media (max-width: 400px) {
+      .tuto-char-inp, .tuto-char-pre { width: 24px; height: 28px; font-size: 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+  <nav id="top-nav">
+    <a class="brand" href="index.html">ÉNIGMES CRIMINELLES</a>
+    <div class="links" id="nav-links">
+      <a data-page="affaires" href="affaires.html">Affaires</a>
+      <a data-page="classement" href="classement.html">Classement</a>
+      <a data-page="tutoriel" href="tutoriel.html" class="active-link">Comment jouer</a>
+      <a data-page="livres" href="livres.html">Livres</a>
+      <a data-page="compte" id="nav-compte" href="inscription.html">Mon compte</a>
+    </div>
+    <button id="nav-hamburger" aria-label="Menu" aria-expanded="false">☰</button>
+  </nav>
+  <div id="nav-mobile-panel">
+    <a href="affaires.html">Affaires</a>
+    <a href="classement.html">Classement</a>
+    <a href="tutoriel.html" class="active-link">Comment jouer</a>
+    <a href="livres.html">Livres</a>
+    <a id="nav-mobile-compte" href="inscription.html">Mon compte</a>
+  </div>
+
+  <main class="page-tuto">
+
+    <div class="tuto-header">
+      <span class="stamp-label">Affaire de démonstration</span>
+      <h2>COMMENT JOUER</h2>
+      <p class="tuto-sous">Résolvez une affaire guidée pour maîtriser la mécanique</p>
+      <div class="divider"></div>
+    </div>
+
+    <!-- Progress dots -->
+    <div class="tuto-progress">
+      <div class="tuto-dot active" id="tp1">1</div>
+      <div class="tuto-dot-line"></div>
+      <div class="tuto-dot" id="tp2">2</div>
+      <div class="tuto-dot-line"></div>
+      <div class="tuto-dot" id="tp3">3</div>
+      <div class="tuto-dot-line"></div>
+      <div class="tuto-dot" id="tp4">4</div>
+      <div class="tuto-dot-line"></div>
+      <div class="tuto-dot" id="tp5">5</div>
+    </div>
+
+    <!-- Two-column layout -->
+    <div class="tutoriel-layout">
+
+      <!-- Left: guide panel -->
+      <div id="panneau-guide">
+        <!-- Filled by tutoriel.js -->
+      </div>
+
+      <!-- Right: grid + word list -->
+      <div id="panneau-grille">
+        <div id="tuto-grid-wrapper">
+          <div id="tuto-grid"></div>
+        </div>
+        <div id="tuto-words"></div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Result overlay -->
+  <div id="overlay-tuto" class="hidden">
+    <div id="carte-tuto">
+      <div class="tuto-tampon">RÉSOLU</div>
+      <h3>L'Affaire de la Maison Close</h3>
+      <div class="tuto-sol-bloc">
+        <div class="tuto-sol-ligne">
+          <span class="tuto-sol-lbl">TUEUR</span>
+          <span class="tuto-sol-val">PAUL</span>
+        </div>
+        <div class="tuto-sol-ligne">
+          <span class="tuto-sol-lbl">MÉTHODE</span>
+          <span class="tuto-sol-val">CORDE</span>
+        </div>
+        <div class="tuto-sol-ligne">
+          <span class="tuto-sol-lbl">LIEU</span>
+          <span class="tuto-sol-val">CAVE</span>
+        </div>
+      </div>
+      <p style="font-family:var(--font-corps);font-style:italic;font-size:0.85rem;color:var(--or-clair);opacity:0.75;margin:0">
+        Vous avez percé les secrets de cette affaire. Prêt pour une vraie enquête ?
+      </p>
+      <div id="tuto-actions">
+        <a class="tuto-btn-primary" href="inscription.html">Commencer une vraie enquête →</a>
+        <button id="btn-rejouer-tuto" class="tuto-btn-secondary">Rejouer la démonstration</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./js/auth.js"></script>
+  <script src="./js/tutoriel.js"></script>
+  <script>
+    (function () {
+      var fc = document.createElement('canvas'); fc.width = fc.height = 32;
+      var x = fc.getContext('2d');
+      x.fillStyle = '#0a0a0a'; x.fillRect(0,0,32,32);
+      x.strokeStyle = '#c9a84c'; x.lineWidth = 2.5; x.lineCap = 'round';
+      x.beginPath(); x.arc(13,13,7,0,Math.PI*2); x.stroke();
+      x.beginPath(); x.moveTo(18,18); x.lineTo(26,26); x.stroke();
+      var lk = document.createElement('link'); lk.rel='icon'; lk.href=fc.toDataURL();
+      document.head.appendChild(lk);
+    }());
+  </script>
+
+</body>
+</html>
