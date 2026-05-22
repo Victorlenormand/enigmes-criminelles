@@ -219,9 +219,66 @@
     @media (max-width: 600px) {
       .livres-grid { grid-template-columns: 1fr; max-width: 340px; }
     }
+
+    /* ── Bouton offrir ── */
+    .btn-offrir {
+      display: block;
+      width: 100%;
+      margin-top: 8px;
+      padding: 10px;
+      background: transparent;
+      border: 1px solid rgba(201,168,76,0.27);
+      color: #c9a84c;
+      font-family: 'Courier Prime', monospace;
+      font-size: 13px;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 1px;
+      box-sizing: border-box;
+    }
+    .btn-offrir:hover {
+      border-color: #c9a84c;
+      background: rgba(201,168,76,0.08);
+    }
+    .btn-offrir-note {
+      font-family: 'EB Garamond', serif;
+      font-style: italic;
+      font-size: 11px;
+      color: rgba(245,240,232,0.5);
+      text-align: center;
+      margin-top: 6px;
+    }
+
+    /* ── Bandeau saisonnier ── */
+    #bandeau-noel {
+      background: linear-gradient(90deg, #1a0a0a, #2a1a0a, #1a0a0a);
+      border-bottom: 1px solid rgba(201,168,76,0.27);
+      text-align: center;
+      padding: 10px;
+      font-family: 'EB Garamond', serif;
+      font-size: 14px;
+      color: #e8d5a3;
+    }
+    #bandeau-noel a {
+      color: #c9a84c;
+      margin-left: 12px;
+      text-decoration: none;
+    }
+    #bandeau-noel a:hover { text-decoration: underline; }
+    #bandeau-noel.hidden { display: none; }
   </style>
 </head>
 <body>
+
+  <!-- Bandeau saisonnier Noël -->
+  <div id="bandeau-noel" class="hidden">
+    <div id="bandeau-contenu">
+      🎁 Idée cadeau de Noël — Livraison rapide disponible sur Amazon
+      <a href="https://www.amazon.fr/dp/B0GZK93B5F" target="_blank" rel="noopener noreferrer">Commander maintenant →</a>
+    </div>
+  </div>
 
   <div class="corner tl"></div>
   <div class="corner tr"></div>
@@ -274,6 +331,10 @@
           <a class="livre-btn" href="https://www.amazon.fr/dp/B0GZK93B5F" target="_blank" rel="noopener noreferrer">
             Commander sur Amazon →
           </a>
+          <a class="btn-offrir" href="https://www.amazon.fr/dp/B0GZK93B5F" target="_blank" rel="noopener noreferrer">
+            🎁 Offrir ce livre →
+          </a>
+          <p class="btn-offrir-note">Livraison directe à l'adresse du destinataire via Amazon</p>
         </div>
       </div>
 
@@ -334,6 +395,14 @@
       x.beginPath(); x.moveTo(18, 18); x.lineTo(26, 26); x.stroke();
       var lk = document.createElement('link'); lk.rel = 'icon'; lk.href = fc.toDataURL();
       document.head.appendChild(lk);
+    }());
+
+    /* ── Bandeau saisonnier Noël (nov–déc) ── */
+    (function() {
+      var mois = new Date().getMonth() + 1;
+      if (mois === 11 || mois === 12) {
+        document.getElementById('bandeau-noel').classList.remove('hidden');
+      }
     }());
   </script>
 
