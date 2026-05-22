@@ -780,13 +780,34 @@ function wsInitAffaire(aff) {
     aff.grid = result.grid;
     aff.residuels = result.residuels;
   }
-  wsStates[aff.id] = {found:[], done:false, selector:null};
+  wsStates[aff.id] = {found:[], done:false, selector:null, erreurs:0, premiereTentative:true, timer:null};
 
   var hdr = document.getElementById('ws-hdr-' + aff.id);
   if (hdr) {
     hdr.innerHTML =
       '<p class="ws-titre">N°' + String(aff.id).padStart(2,'0') + ' — ' + aff.titre + '</p>' +
       '<div class="divider"></div>';
+  }
+
+  /* ── Timer ── */
+  var duree = (typeof DUREES !== 'undefined' ? DUREES[aff.niveau] : null) || 300;
+  var wsBody = document.querySelector('#jeu-affaire-container .ws-body');
+  if (wsBody && !document.getElementById('timer-container')) {
+    var timerDiv = document.createElement('div');
+    timerDiv.id = 'timer-container';
+    timerDiv.innerHTML =
+      '<div id="timer-barre-wrapper"><div id="timer-barre"></div></div>' +
+      '<div id="timer-texte">--:--</div>';
+    wsBody.parentNode.insertBefore(timerDiv, wsBody);
+  }
+  if (typeof AffaireTimer !== 'undefined') {
+    var t = new AffaireTimer(duree,
+      function(tr) { updateTimerUI(tr, duree); },
+      function() { afficherNotification('⏱ Temps écoulé ! Vous pouvez encore résoudre l\'affaire mais sans bonus de vitesse.', 'warning', 4000); }
+    );
+    wsStates[aff.id].timer = t;
+    t.start();
+    updateTimerUI(duree, duree);
   }
 
   wsRenderGrid(aff);
@@ -1015,21 +1036,67 @@ function wsValidate(aff) {
   var okT = readField('tueur')   === wsNorm(aff.solution.tueur);
   var okM = readField('methode') === wsNorm(aff.solution.methode);
   var okL = readField('lieu')    === wsNorm(aff.solution.lieu);
-  var ok = okT && okM && okL;
+  var ok  = okT && okM && okL;
+  var st  = wsStates[aff.id];
 
-  var wrap = document.getElementById('ws-sw-' + aff.id);
-  var stamp = document.createElement('div');
-  stamp.className = 'ws-stamp ' + (ok ? 'ws-resolu' : 'ws-echec');
-  stamp.textContent = ok ? 'RÉSOLU' : 'ÉCHEC';
-  wrap.appendChild(stamp);
   if (!ok) {
-    var sol = document.createElement('p');
-    sol.className = 'ws-sol-reveal';
-    sol.textContent = 'Tueur : ' + aff.solution.tueur + ' — Méthode : ' + aff.solution.methode + ' — Lieu : ' + aff.solution.lieu;
-    wrap.appendChild(sol);
+    st.erreurs++;
+    st.premiereTentative = false;
+    var subBtn = document.getElementById('ws-sub-' + aff.id);
+    if (subBtn) {
+      var orig = subBtn.textContent;
+      subBtn.textContent = '✗ Réponse incorrecte';
+      subBtn.style.cssText += ';border-color:#8b1a1a;color:#8b1a1a;';
+      setTimeout(function() {
+        subBtn.textContent = orig;
+        subBtn.style.borderColor = '';
+        subBtn.style.color = '';
+      }, 1200);
+    }
+    return;
+  }
+
+  /* ── Succès ── */
+  var timer       = st.timer;
+  var tempsRestant = timer ? timer.getTempsRestant() : 0;
+  if (timer) timer.stop();
+
+  var scoreData = typeof calculerScore === 'function' ? calculerScore({
+    niveau: aff.niveau,
+    tempsRestant: tempsRestant,
+    erreurs: st.erreurs,
+    premiereTentative: st.premiereTentative
+  }) : { points: 100, base: 100, bonusVitesse: 0, bonusPremiere: 0, penalite: 0 };
+
+  /* Stocker le meilleur score */
+  var prog   = getProgression();
+  var scores = prog.scores || {};
+  var duree  = (typeof DUREES !== 'undefined' ? DUREES[aff.niveau] : null) || 300;
+  var tempsPris = duree - tempsRestant;
+  if (!scores[aff.id] || scoreData.points > scores[aff.id].points) {
+    scores[aff.id] = {
+      points: scoreData.points,
+      temps:  tempsPris,
+      erreurs: st.erreurs,
+      date:   new Date().toISOString()
+    };
+    updateProgression({ scores: scores });
+  }
+
+  /* Overlay résultat */
+  if (typeof afficherResultat === 'function') {
+    afficherResultat(aff, scoreData);
+  } else {
+    var wrap = document.getElementById('ws-sw-' + aff.id);
+    if (wrap) {
+      var stamp = document.createElement('div');
+      stamp.className = 'ws-stamp ws-resolu';
+      stamp.textContent = 'RÉSOLU';
+      wrap.appendChild(stamp);
+    }
+    document.getElementById('ws-nxt-' + aff.id).style.display = 'block';
   }
   document.getElementById('ws-sub-' + aff.id).disabled = true;
-  document.getElementById('ws-nxt-' + aff.id).style.display = 'block';
 }
 
 // Escape key handling is now managed by GridSelector

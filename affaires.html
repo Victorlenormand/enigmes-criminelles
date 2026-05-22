@@ -27,6 +27,7 @@
     <a class="brand" href="index.html">ÉNIGMES CRIMINELLES</a>
     <div class="links" id="nav-links">
       <a data-page="affaires" href="affaires.html" class="active-link">Affaires</a>
+      <a data-page="classement" href="classement.html">Classement</a>
       <a data-page="livres" href="livres.html">Livres</a>
       <a data-page="compte" id="nav-compte" href="inscription.html">Mon compte</a>
     </div>
@@ -34,6 +35,7 @@
   </nav>
   <div id="nav-mobile-panel">
     <a href="affaires.html" class="active-link">Affaires</a>
+    <a href="classement.html">Classement</a>
     <a href="livres.html">Livres</a>
     <a id="nav-mobile-compte" href="inscription.html">Mon compte</a>
   </div>
@@ -87,10 +89,43 @@
 
   </main>
 
+  <!-- Widget score fixe -->
+  <div id="widget-score">
+    <span id="ws-score">0 pts</span>
+    <span id="ws-rang"></span>
+  </div>
+
+  <!-- Overlay résultat -->
+  <div id="overlay-resultat" class="hidden">
+    <div id="carte-resultat">
+      <div id="resultat-tampon">RÉSOLU</div>
+      <h2 id="resultat-titre" style="font-family:'Playfair Display',serif;font-size:1rem;font-style:italic;color:#e8d5a3;margin:12px 0;"></h2>
+      <div id="resultat-solution">
+        <div class="solution-ligne"><span class="sol-label">TUEUR</span><span class="sol-valeur" id="sol-tueur"></span></div>
+        <div class="solution-ligne"><span class="sol-label">MÉTHODE</span><span class="sol-valeur" id="sol-methode"></span></div>
+        <div class="solution-ligne"><span class="sol-label">LIEU</span><span class="sol-valeur" id="sol-lieu"></span></div>
+      </div>
+      <div id="resultat-scores">
+        <div class="score-ligne"><span>Points de base</span><span id="sc-base"></span></div>
+        <div class="score-ligne"><span>Bonus vitesse</span><span id="sc-vitesse"></span></div>
+        <div class="score-ligne"><span>Bonus première tentative</span><span id="sc-bonus"></span></div>
+        <div class="score-ligne penalite" id="ligne-penalite"><span>Pénalités erreurs</span><span id="sc-penalite"></span></div>
+        <div class="score-ligne score-total"><span>TOTAL</span><span id="sc-total"></span></div>
+      </div>
+      <div id="resultat-rang">Grade : <strong id="rang-valeur"></strong></div>
+      <div id="resultat-actions">
+        <button id="btn-affaire-suivante">Affaire suivante →</button>
+        <button id="btn-voir-classement">Voir le classement</button>
+        <button id="btn-rejouer">Rejouer cette affaire</button>
+      </div>
+    </div>
+  </div>
+
   <script src="./js/auth.js"></script>
   <script>
     requireLogin();
   </script>
+  <script src="./js/scoring.js"></script>
   <script src="./js/affaires.js"></script>
   <script>
     /* ── Favicon ─────────────────────────────────────────────── */
@@ -106,6 +141,17 @@
       lk.rel = 'icon'; lk.href = fc.toDataURL();
       document.head.appendChild(lk);
     }());
+
+    /* ── Widget score ────────────────────────────────────────── */
+    document.addEventListener('DOMContentLoaded', function() {
+      var progInit = getProgression();
+      var scoresInit = progInit.scores || {};
+      var totalInit = Object.values(scoresInit).reduce(function(s, x) { return s + (x.points || 0); }, 0);
+      var wsScoreEl = document.getElementById('ws-score');
+      var wsRangEl  = document.getElementById('ws-rang');
+      if (wsScoreEl) wsScoreEl.textContent = totalInit + ' pts';
+      if (wsRangEl)  wsRangEl.textContent  = progInit.grade || '';
+    });
 
     /* ── Vue sélection ───────────────────────────────────────── */
     document.addEventListener('DOMContentLoaded', function() {
