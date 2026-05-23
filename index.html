@@ -65,6 +65,15 @@
       opacity: 0.45;
       text-transform: uppercase;
     }
+    #hero-compteur {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.14em;
+      color: var(--or-clair);
+      opacity: 0.5;
+      margin-top: 1.2rem;
+      text-transform: uppercase;
+    }
   </style>
 </head>
 <body>
@@ -77,18 +86,18 @@
   <nav id="top-nav">
     <a class="brand" href="index.html">ÉNIGMES CRIMINELLES</a>
     <div class="links" id="nav-links">
+      <a data-page="tutoriel" href="tutoriel.html">Comment jouer</a>
       <a data-page="affaires" href="affaires.html">Affaires</a>
       <a data-page="classement" href="classement.html">Classement</a>
-      <a data-page="tutoriel" href="tutoriel.html">Comment jouer</a>
       <a data-page="livres" href="livres.html">Livres</a>
       <a data-page="compte" id="nav-compte" href="inscription.html">Mon compte</a>
     </div>
     <button id="nav-hamburger" aria-label="Menu" aria-expanded="false">☰</button>
   </nav>
   <div id="nav-mobile-panel">
+    <a href="tutoriel.html">Comment jouer</a>
     <a href="affaires.html">Affaires</a>
     <a href="classement.html">Classement</a>
-    <a href="tutoriel.html">Comment jouer</a>
     <a href="livres.html">Livres</a>
     <a id="nav-mobile-compte" href="inscription.html">Mon compte</a>
   </div>
@@ -111,6 +120,8 @@
         <!-- injecté par JS selon état connexion -->
       </div>
 
+      <div id="hero-compteur"></div>
+
     </div>
   </main>
 
@@ -128,6 +139,13 @@
     }());
 
     document.addEventListener('DOMContentLoaded', function () {
+      var nbEnqueteurs = JSON.parse(localStorage.getItem('ec_users') || '[]').length;
+      if (nbEnqueteurs > 0) {
+        var compteur = document.getElementById('hero-compteur');
+        if (compteur) {
+          compteur.textContent = nbEnqueteurs + ' enquêteur' + (nbEnqueteurs > 1 ? 's' : '') + ' inscrit' + (nbEnqueteurs > 1 ? 's' : '');
+        }
+      }
       var btns = document.getElementById('hero-btns');
       if (isLoggedIn()) {
         btns.innerHTML =

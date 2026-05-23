@@ -236,6 +236,17 @@ function initNav() {
       mobileCompte.href = 'profil.html';
     }
   }
+
+  /* Badge GRATUIT sur "Comment jouer" pour les visiteurs non connectés */
+  if (!isLoggedIn()) {
+    var linkTuto = document.querySelector('a[data-page="tutoriel"]');
+    if (linkTuto) {
+      var badgeGratuit = document.createElement('sup');
+      badgeGratuit.className = 'nav-gratuit';
+      badgeGratuit.textContent = 'GRATUIT';
+      linkTuto.appendChild(badgeGratuit);
+    }
+  }
 }
 
 document.addEventListener('DOMContentLoaded', function() { initNav(); });

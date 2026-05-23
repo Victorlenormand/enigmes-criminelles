@@ -1090,3 +1090,17 @@ p {
   opacity: 0.6;
   font-style: italic;
 }
+
+/* ── Nav badge GRATUIT ── */
+.nav-gratuit {
+  font-family: var(--font-mono);
+  font-size: 0.42rem;
+  letter-spacing: 0.12em;
+  color: var(--or);
+  border: 1px solid rgba(201,168,76,0.5);
+  padding: 1px 4px;
+  margin-left: 5px;
+  vertical-align: super;
+  opacity: 0.75;
+  font-style: normal;
+}

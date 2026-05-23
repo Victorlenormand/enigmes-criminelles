@@ -195,6 +195,11 @@ function afficherResultat(aff, scoreData) {
       location.reload();
     };
   }
+
+  /* Section partage */
+  if (typeof initPartage === 'function') {
+    initPartage(aff, scoreData);
+  }
 }
 
 /* ── Classement ── */

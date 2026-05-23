@@ -26,18 +26,18 @@
   <nav id="top-nav">
     <a class="brand" href="index.html">ÉNIGMES CRIMINELLES</a>
     <div class="links" id="nav-links">
+      <a data-page="tutoriel" href="tutoriel.html">Comment jouer</a>
       <a data-page="affaires" href="affaires.html" class="active-link">Affaires</a>
       <a data-page="classement" href="classement.html">Classement</a>
-      <a data-page="tutoriel" href="tutoriel.html">Comment jouer</a>
       <a data-page="livres" href="livres.html">Livres</a>
       <a data-page="compte" id="nav-compte" href="inscription.html">Mon compte</a>
     </div>
     <button id="nav-hamburger" aria-label="Menu" aria-expanded="false">☰</button>
   </nav>
   <div id="nav-mobile-panel">
+    <a href="tutoriel.html">Comment jouer</a>
     <a href="affaires.html" class="active-link">Affaires</a>
     <a href="classement.html">Classement</a>
-    <a href="tutoriel.html">Comment jouer</a>
     <a href="livres.html">Livres</a>
     <a id="nav-mobile-compte" href="inscription.html">Mon compte</a>
   </div>
@@ -120,6 +120,25 @@
         <button id="btn-voir-classement">Voir le classement</button>
         <button id="btn-rejouer">Rejouer cette affaire</button>
       </div>
+
+      <div id="section-partage">
+        <div id="partage-titre">Partagez votre résultat</div>
+        <div id="partage-apercu-wrapper">
+          <canvas id="apercu-partage"></canvas>
+        </div>
+        <div id="partage-format">
+          <button class="btn-format actif" data-format="carre">Carré (Instagram)</button>
+          <button class="btn-format" data-format="paysage">16/9 (Twitter)</button>
+        </div>
+        <div id="partage-actions">
+          <button id="btn-telecharger-image">⬇ Télécharger l'image</button>
+          <button id="btn-partager-natif" class="hidden">↗ Partager</button>
+        </div>
+        <div id="partage-texte-copie">
+          <textarea id="texte-a-copier" readonly></textarea>
+          <button id="btn-copier-texte">Copier le texte</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -189,12 +208,118 @@
       color: #888;
       margin-top: 2px;
     }
+
+    /* ── Section partage ── */
+    #section-partage {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(201,168,76,0.15);
+    }
+    #partage-titre {
+      font-family: var(--font-mono, 'Courier Prime', monospace);
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      color: #c9a84c;
+      opacity: 0.6;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    #partage-apercu-wrapper {
+      text-align: center;
+      margin-bottom: 0.8rem;
+    }
+    #apercu-partage {
+      max-width: 100%;
+      border: 1px solid rgba(201,168,76,0.2);
+      display: block;
+      margin: 0 auto;
+    }
+    #partage-format {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    .btn-format {
+      font-family: var(--font-mono, 'Courier Prime', monospace);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      background: transparent;
+      border: 1px solid rgba(201,168,76,0.3);
+      color: #888;
+      padding: 6px 14px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+    .btn-format.actif,
+    .btn-format:hover {
+      border-color: #c9a84c;
+      color: #c9a84c;
+    }
+    #partage-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    #btn-telecharger-image,
+    #btn-partager-natif {
+      font-family: var(--font-mono, 'Courier Prime', monospace);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      background: rgba(201,168,76,0.08);
+      border: 1px solid rgba(201,168,76,0.4);
+      color: #c9a84c;
+      padding: 8px 18px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+    #btn-telecharger-image:hover,
+    #btn-partager-natif:hover {
+      background: rgba(201,168,76,0.18);
+    }
+    #btn-partager-natif.hidden { display: none; }
+    #partage-texte-copie {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    #texte-a-copier {
+      flex: 1;
+      background: #0a0908;
+      border: 1px solid #2a2018;
+      color: #888;
+      font-family: var(--font-mono, 'Courier Prime', monospace);
+      font-size: 0.7rem;
+      padding: 8px;
+      resize: none;
+      height: 64px;
+      line-height: 1.5;
+    }
+    #btn-copier-texte {
+      font-family: var(--font-mono, 'Courier Prime', monospace);
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      background: transparent;
+      border: 1px solid rgba(201,168,76,0.3);
+      color: #888;
+      padding: 8px 14px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    #btn-copier-texte:hover { color: #c9a84c; border-color: #c9a84c; }
   </style>
 
   <script src="./js/auth.js"></script>
   <script>
     requireLogin();
   </script>
+  <script src="./js/partage.js"></script>
   <script src="./js/badges.js"></script>
   <script src="./js/scoring.js"></script>
   <script src="./js/affaires.js"></script>
