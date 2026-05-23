@@ -3,40 +3,111 @@
 ═══════════════════════════════════════════════════════════ */
 
 /*
-  Grille 8×8 hardcodée :
+  Grille 8×8 — chaque cellule appartient soit à un mot soit aux résiduelles.
 
-  Row 0: S A L O N P A C   ← SALON(H,0,0-4)  COULOIR col7 row0→6 : C
-  Row 1: U L C A V E P O                                           : O
-  Row 2: G R E N I E R U   ← GRENIER(H,2,0-6)                    : U
-  Row 3: A U L C A V E L                                           : L
-  Row 4: C U I S I N E O   ← CUISINE(H,4,0-6)                    : O
-  Row 5: P A U L C A V I                                           : I
-  Row 6: J A R D I N E R   ← JARDIN(H,6,0-5)                     : R
-  Row 7: P A U L C A V E   ← résidus PAULCAVE
+  row 0 : RAPPORT(H,0-6)     + R (REGISTRE col7)
+  row 1 : P(résid,0) PISTE(H,1-5) A(résid,6) + E (REGISTRE col7)
+  row 2 : PORTAIL(H,0-6)     + G (REGISTRE col7)
+  row 3 : U(résid,0) MOTIF(H,1-5) V(résid,6) + I (REGISTRE col7)
+  row 4 : COULOIR(H,0-6)     + S (REGISTRE col7)
+  row 5 : L(résid,0) CRIME(H,1-5) C(résid,6) + T (REGISTRE col7)
+  row 6 : TABLEAU(H,0-6)     + R (REGISTRE col7)
+  row 7 : A(résid,0) GARDE(H,1-5) E(résid,6) + E (REGISTRE col7)
+
+  56 cellules-mots + 8 résiduelles = 64 ✓
+  Résiduelles : P,A,U,V,L,C,A,E → PAUL + CAVE ✓
 */
 
 var TUTO_GRID = [
-  ['S','A','L','O','N','P','A','C'],
-  ['U','L','C','A','V','E','P','O'],
-  ['G','R','E','N','I','E','R','U'],
-  ['A','U','L','C','A','V','E','L'],
-  ['C','U','I','S','I','N','E','O'],
-  ['P','A','U','L','C','A','V','I'],
-  ['J','A','R','D','I','N','E','R'],
-  ['P','A','U','L','C','A','V','E']
+  ['R','A','P','P','O','R','T','R'],
+  ['P','P','I','S','T','E','A','E'],
+  ['P','O','R','T','A','I','L','G'],
+  ['U','M','O','T','I','F','V','I'],
+  ['C','O','U','L','O','I','R','S'],
+  ['L','C','R','I','M','E','C','T'],
+  ['T','A','B','L','E','A','U','R'],
+  ['A','G','A','R','D','E','E','E']
 ];
 
-var TUTO_WORDS    = ['SALON','GRENIER','CUISINE','JARDIN','COULOIR'];
+var TUTO_WORDS    = ['RAPPORT','PISTE','PORTAIL','MOTIF','COULOIR','CRIME','TABLEAU','GARDE','REGISTRE'];
 var TUTO_GHOST    = 'CORDE';
 var TUTO_RESIDUELS = [
-  [0,5],[0,6],
-  [1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],
-  [3,0],[3,1],[3,2],[3,3],[3,4],[3,5],[3,6],
-  [5,0],[5,1],[5,2],[5,3],[5,4],[5,5],[5,6],
-  [6,6],
-  [7,0],[7,1],[7,2],[7,3],[7,4],[7,5],[7,6],[7,7]
+  [1,0],[1,6],[3,0],[3,6],[5,0],[5,6],[7,0],[7,6]
 ];
 var TUTO_SOLUTION = { tueur: 'PAUL', methode: 'CORDE', lieu: 'CAVE' };
+
+/* Position data for each findable word (used by verifierGrilleTutoriel) */
+var MOTS_TUTORIEL = [
+  { mot: 'RAPPORT',  dir: 'H', positions: [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6]] },
+  { mot: 'PISTE',    dir: 'H', positions: [[1,1],[1,2],[1,3],[1,4],[1,5]] },
+  { mot: 'PORTAIL',  dir: 'H', positions: [[2,0],[2,1],[2,2],[2,3],[2,4],[2,5],[2,6]] },
+  { mot: 'MOTIF',    dir: 'H', positions: [[3,1],[3,2],[3,3],[3,4],[3,5]] },
+  { mot: 'COULOIR',  dir: 'H', positions: [[4,0],[4,1],[4,2],[4,3],[4,4],[4,5],[4,6]] },
+  { mot: 'CRIME',    dir: 'H', positions: [[5,1],[5,2],[5,3],[5,4],[5,5]] },
+  { mot: 'TABLEAU',  dir: 'H', positions: [[6,0],[6,1],[6,2],[6,3],[6,4],[6,5],[6,6]] },
+  { mot: 'GARDE',    dir: 'H', positions: [[7,1],[7,2],[7,3],[7,4],[7,5]] },
+  { mot: 'REGISTRE', dir: 'V', positions: [[0,7],[1,7],[2,7],[3,7],[4,7],[5,7],[6,7],[7,7]] }
+];
+
+var TUTO_RESIDUELS_DATA = [
+  { row:1, col:0, lettre:'P' },
+  { row:1, col:6, lettre:'A' },
+  { row:3, col:0, lettre:'U' },
+  { row:3, col:6, lettre:'V' },
+  { row:5, col:0, lettre:'L' },
+  { row:5, col:6, lettre:'C' },
+  { row:7, col:0, lettre:'A' },
+  { row:7, col:6, lettre:'E' }
+];
+
+/* ── Vérification de la grille ── */
+function verifierGrilleTutoriel() {
+  var ROWS = 8, COLS = 8;
+  var couvert = {};
+
+  MOTS_TUTORIEL.forEach(function(m) {
+    m.positions.forEach(function(pos, idx) {
+      var r = pos[0], c = pos[1];
+      var lettreMot = m.mot[idx];
+      if (TUTO_GRID[r][c] !== lettreMot) {
+        console.error('%cERREUR (' + r + ',' + c + '): grille="' +
+          TUTO_GRID[r][c] + '" mot=' + m.mot + ' attendu="' + lettreMot + '"',
+          'color:#c97a7a');
+      }
+      couvert[r + ',' + c] = true;
+    });
+  });
+
+  TUTO_RESIDUELS_DATA.forEach(function(res) {
+    var key = res.row + ',' + res.col;
+    if (couvert[key]) {
+      console.error('%cERREUR: résiduelle (' + res.row + ',' + res.col + ') déjà couverte', 'color:#c97a7a');
+    }
+    if (TUTO_GRID[res.row][res.col] !== res.lettre) {
+      console.error('%cERREUR résiduelle (' + res.row + ',' + res.col + '): grille="' +
+        TUTO_GRID[res.row][res.col] + '" attendu="' + res.lettre + '"', 'color:#c97a7a');
+    }
+    couvert[key] = true;
+  });
+
+  var total = Object.keys(couvert).length;
+  if (total !== ROWS * COLS) {
+    console.error('%cERREUR: ' + total + ' cellules couvertes sur ' + (ROWS * COLS), 'color:#c97a7a');
+  }
+
+  var lettresRes = TUTO_RESIDUELS_DATA.map(function(r) { return r.lettre; }).sort().join('');
+  var lettresAttendues = 'PAUL'.split('').concat('CAVE'.split('')).sort().join('');
+  if (lettresRes !== lettresAttendues) {
+    console.error('%cERREUR résiduelles: "' + lettresRes + '" attendu "' + lettresAttendues + '"', 'color:#c97a7a');
+  }
+
+  console.log(
+    '%c✓ Grille tutoriel validée : ' +
+    (total - TUTO_RESIDUELS_DATA.length) + ' cellules-mots + ' +
+    TUTO_RESIDUELS_DATA.length + ' résiduelles = ' + total,
+    'color:#4caf50'
+  );
+}
 
 var tS = { step: 1, found: [], startCell: null, previewCells: [], hintTimers: [] };
 
@@ -171,7 +242,7 @@ function tHandleClick(e) {
     });
     var wEl = document.getElementById('tword-'+matched);
     if (wEl) wEl.classList.add('tuto-word-found');
-    if (matched==='SALON') tConfetti();
+    if (matched==='RAPPORT') tConfetti();
     tUpdateStep2();
   } else {
     path.forEach(function(p){
@@ -259,9 +330,9 @@ function tStep1() {
 /* ── Étape 2 — Trouver les mots ── */
 function tStep2() {
   document.querySelectorAll('.tuto-word-item').forEach(function(el){ el.classList.remove('highlight-guide'); });
-  // Mettre SALON en surbrillance si pas encore trouvé
-  if (tS.found.indexOf('SALON')===-1) {
-    [[0,0],[0,1],[0,2],[0,3],[0,4]].forEach(function(p){
+  // Mettre RAPPORT en surbrillance sur la première ligne si pas encore trouvé
+  if (tS.found.indexOf('RAPPORT')===-1) {
+    [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6]].forEach(function(p){
       var cl = tCell(p[0],p[1]);
       if (cl && !cl.classList.contains('tuto-found')) cl.classList.add('tuto-guide');
     });
@@ -269,9 +340,9 @@ function tStep2() {
   tSetPanel(
     '<h2 class="tuto-titre">Trouvez les mots cachés.</h2>'+
     '<p>Cliquez sur la <strong>première lettre</strong> d\'un mot, puis sur la <strong>dernière</strong>. Les mots peuvent être horizontaux ou verticaux.</p>'+
-    '<p>Commencez par <strong>SALON</strong> — horizontal sur la première ligne ↗</p>'+
+    '<p>Commencez par <strong>RAPPORT</strong> — horizontal sur la première ligne ↗</p>'+
     '<div class="tuto-arrow-anim">→ regardez la grille</div>'+
-    '<div id="step2-progress" class="tuto-prog-txt">0 / 5 mots trouvés</div>'+
+    '<div id="step2-progress" class="tuto-prog-txt">0 / '+TUTO_WORDS.length+' mots trouvés</div>'+
     '<button id="btn-step2" class="tuto-btn-primary hidden">Continuer →</button>'
   );
   tUpdateStep2();
@@ -296,8 +367,8 @@ function tStep3() {
     '<p style="font-size:0.82rem;opacity:0.65;margin-top:6px">Les lettres restantes dans la grille vont s\'illuminer…</p>'+
     '<button id="btn-step3" class="tuto-btn-primary">Je vois les lettres restantes →</button>'
   );
-  var delay = 0, totalMs = 2400;
-  var interval = Math.min(100, Math.ceil(totalMs / TUTO_RESIDUELS.length));
+  var delay = 0;
+  var interval = Math.min(200, Math.ceil(2400 / TUTO_RESIDUELS.length));
   TUTO_RESIDUELS.forEach(function(pos){
     (function(p,d){ setTimeout(function(){
       var cl = tCell(p[0],p[1]);
@@ -324,7 +395,7 @@ function tStep4() {
     '<h2 class="tuto-titre">Assemblez les indices.</h2>'+
     '<p>Les lettres illuminées en or forment les deux indices restants :</p>'+
     '<p>Un <strong>prénom</strong> → le TUEUR<br>Un <strong>lieu</strong> → l\'endroit du crime</p>'+
-    '<div id="hint1" class="tuto-hint" style="display:none">Indice : cherchez un prénom en 4 lettres…</div>'+
+    '<div id="hint1" class="tuto-hint" style="display:none">Indice : cherchez un prénom de 4 lettres parmi les lettres illuminées…</div>'+
     '<div id="hint2" class="tuto-hint" style="display:none">Les lettres P‑A‑U‑L et C‑A‑V‑E se cachent parmi les lettres illuminées.</div>'+
     '<div class="tuto-fields">'+
       tFieldHtml('TUEUR',4,'f-tueur')+
@@ -390,7 +461,6 @@ function tValidate() {
     if (errEl) errEl.style.display='block';
     var btn = document.getElementById('btn-valider');
     if (btn) {
-      var orig = btn.style.cssText;
       btn.style.borderColor='#8b1a1a'; btn.style.color='#8b1a1a';
       setTimeout(function(){ btn.style.borderColor=''; btn.style.color=''; },1200);
     }
@@ -412,6 +482,7 @@ function tStep5() {
 
 /* ── Init ── */
 document.addEventListener('DOMContentLoaded', function(){
+  verifierGrilleTutoriel();
   tRenderGrid();
   tRenderWords();
   tGoToStep(1);
