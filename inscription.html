@@ -358,6 +358,8 @@
         </div>
         <span class="field-error" id="err-consent"></span>
 
+        <span class="field-error" id="err-global"></span>
+
         <button class="auth-btn" id="btn-register">Créer mon compte d'enquêteur</button>
 
         <p class="legal-mention">
@@ -557,9 +559,10 @@
             el2.textContent = 'Ce nom de code est déjà pris. Choisissez-en un autre.';
             el2.classList.add('visible');
           } else {
-            var el3 = document.getElementById('err-email');
-            el3.textContent = 'Une erreur est survenue. Réessayez.';
+            var el3 = document.getElementById('err-global');
+            el3.textContent = 'Une erreur est survenue. Veuillez réessayer.';
             el3.classList.add('visible');
+            console.error('Erreur inscription:', e);
           }
         }
       });

@@ -58,36 +58,48 @@ function resetLoginAttempts() {
 
 /* ── Inscription ── */
 async function register(pseudo, email, password) {
-  const cleanPseudo = sanitize(pseudo);
-  const cleanEmail = sanitize(email).toLowerCase();
+  try {
+    const cleanPseudo = sanitize(pseudo);
+    const cleanEmail = sanitize(email).toLowerCase();
 
-  if (!isValidPseudo(cleanPseudo)) throw new Error('INVALID_PSEUDO');
-  if (!isValidEmail(cleanEmail)) throw new Error('INVALID_EMAIL');
-  if (!isValidPassword(password)) throw new Error('INVALID_PASSWORD');
+    const users = JSON.parse(localStorage.getItem('ec_users') || '[]');
 
-  const users = JSON.parse(localStorage.getItem('ec_users') || '[]');
+    if (users.find(function(u) { return u.email === cleanEmail; })) {
+      throw new Error('EMAIL_EXISTS');
+    }
+    if (users.find(function(u) { return u.pseudo.toLowerCase() === cleanPseudo.toLowerCase(); })) {
+      throw new Error('PSEUDO_EXISTS');
+    }
 
-  if (users.find(u => u.email === cleanEmail)) throw new Error('EMAIL_EXISTS');
-  if (users.find(u => u.pseudo.toLowerCase() === cleanPseudo.toLowerCase())) throw new Error('PSEUDO_EXISTS');
+    const newUser = {
+      id: crypto.randomUUID(),
+      pseudo: cleanPseudo,
+      email: cleanEmail,
+      passwordHash: await hashPassword(password),
+      dateInscription: new Date().toISOString(),
+      consentement: true,
+      consentementDate: new Date().toISOString()
+    };
 
-  const newUser = {
-    id: crypto.randomUUID(),
-    pseudo: cleanPseudo,
-    email: cleanEmail,
-    passwordHash: await hashPassword(password),
-    dateInscription: new Date().toISOString(),
-    consentement: true,
-    consentementDate: new Date().toISOString()
-  };
+    users.push(newUser);
+    localStorage.setItem('ec_users', JSON.stringify(users));
 
-  users.push(newUser);
-  localStorage.setItem('ec_users', JSON.stringify(users));
+    /* MailerLite fire-and-forget — ne bloque jamais l'inscription */
+    if (typeof subscribeToMailerLite === 'function') {
+      subscribeToMailerLite(newUser.email, newUser.pseudo).catch(function(err) {
+        console.warn('MailerLite non bloquant:', err && err.message);
+      });
+    }
 
-  if (typeof subscribeToMailerLite === 'function') {
-    subscribeToMailerLite(newUser.email, newUser.pseudo);
+    return newUser;
+
+  } catch (error) {
+    if (error.message === 'EMAIL_EXISTS' || error.message === 'PSEUDO_EXISTS') {
+      throw error;
+    }
+    console.error('Erreur register:', error);
+    throw new Error('REGISTER_ERROR');
   }
-
-  return newUser;
 }
 
 /* ── Connexion ── */

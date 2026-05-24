@@ -17,7 +17,7 @@ async function getGroupId() {
     cachedGroupId = group ? group.id : null;
     return cachedGroupId;
   } catch (e) {
-    console.error('MailerLite getGroupId error:', e);
+    console.warn('MailerLite getGroupId (non bloquant):', e && e.message);
     return null;
   }
 }
@@ -37,12 +37,13 @@ async function subscribeToMailerLite(email, pseudo) {
       body: JSON.stringify(body)
     });
     if (!response.ok) {
-      const err = await response.json();
-      console.error('MailerLite subscribe error:', err);
+      const errData = await response.json().catch(function() { return {}; });
+      console.warn('MailerLite réponse non-OK:', response.status, errData);
     } else {
-      console.log('MailerLite: subscriber ajouté', email);
+      console.log('MailerLite OK:', email);
     }
   } catch (e) {
-    console.error('MailerLite network error:', e);
+    /* CORS ou réseau — normal sur certains hébergeurs, ne bloque pas l'inscription */
+    console.warn('MailerLite erreur réseau (non bloquant):', e && e.message);
   }
 }
