@@ -1104,3 +1104,52 @@ p {
   opacity: 0.75;
   font-style: normal;
 }
+
+/* ── Footer global ── */
+#footer-global {
+  background: #050503;
+  border-top: 1px solid #2a2018;
+  margin-top: 80px;
+  padding: 40px 24px;
+}
+#footer-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+#footer-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  color: #c9a84c;
+  letter-spacing: 3px;
+}
+#footer-liens {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  font-family: 'EB Garamond', serif;
+  font-size: 13px;
+}
+#footer-liens a {
+  color: #888;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+#footer-liens a:hover {
+  color: #c9a84c;
+}
+.footer-sep {
+  color: #2a2018;
+}
+#footer-copy {
+  font-family: 'Courier Prime', monospace;
+  font-size: 11px;
+  color: #444;
+  letter-spacing: 1px;
+}

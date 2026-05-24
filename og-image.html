@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=EB+Garamond&display=swap" rel="stylesheet">
+  <style>body { margin: 0; background: #111; } canvas { display: block; }</style>
+</head>
+<body>
+<canvas id="c" width="1200" height="630"></canvas>
+<script>
+window.addEventListener('load', function() {
+  var canvas = document.getElementById('c');
+  var ctx = canvas.getContext('2d');
+  var W = 1200, H = 630;
+
+  var grad = ctx.createLinearGradient(0,0,W,H);
+  grad.addColorStop(0, '#0a0a0a');
+  grad.addColorStop(1, '#1a1208');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.strokeStyle = '#c9a84c';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(16, 16, W-32, H-32);
+  ctx.strokeStyle = 'rgba(201,168,76,0.3)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(26, 26, W-52, H-52);
+
+  ctx.fillStyle = '#c9a84c';
+  ctx.font = 'bold 96px "Playfair Display", Georgia, serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('ÉNIGMES', W/2, 220);
+  ctx.fillText('CRIMINELLES', W/2, 330);
+
+  ctx.fillStyle = '#e8d5a3';
+  ctx.font = '28px "EB Garamond", Georgia, serif';
+  ctx.fillText('Trouvez le tueur · la méthode · le lieu', W/2, 400);
+
+  ctx.strokeStyle = 'rgba(201,168,76,0.4)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(W*0.25, 430);
+  ctx.lineTo(W*0.75, 430);
+  ctx.stroke();
+
+  ctx.fillStyle = '#888';
+  ctx.font = '22px "EB Garamond", Georgia, serif';
+  ctx.fillText('20 affaires policières gratuites · 3 niveaux de difficulté', W/2, 475);
+
+  ctx.fillStyle = 'rgba(201,168,76,0.5)';
+  ctx.font = '18px monospace';
+  ctx.fillText('[TON_DOMAINE]', W/2, 570);
+
+  setTimeout(function() {
+    var lien = document.createElement('a');
+    lien.download = 'og-image.png';
+    lien.href = canvas.toDataURL('image/png');
+    lien.click();
+    document.body.innerHTML = '<p style="color:#c9a84c;font-family:monospace;padding:20px">✓ og-image.png téléchargé. Supprimez ce fichier og-image.html et placez og-image.png à la racine du projet.</p>';
+  }, 500);
+});
+</script>
+</body>
+</html>
