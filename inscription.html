@@ -558,10 +558,16 @@
             var el2 = document.getElementById('err-pseudo');
             el2.textContent = 'Ce nom de code est déjà pris. Choisissez-en un autre.';
             el2.classList.add('visible');
-          } else {
+          } else if (e.message === 'INVALID_CREDENTIALS') {
+            /* login() a échoué juste après register() — ne devrait pas arriver */
             var el3 = document.getElementById('err-global');
-            el3.textContent = 'Une erreur est survenue. Veuillez réessayer.';
+            el3.textContent = 'Compte créé mais connexion impossible. Essayez de vous connecter manuellement.';
             el3.classList.add('visible');
+            console.error('Login post-register échoué:', e);
+          } else {
+            var el3b = document.getElementById('err-global');
+            el3b.textContent = 'Erreur technique : ' + (e.message || e);
+            el3b.classList.add('visible');
             console.error('Erreur inscription:', e);
           }
         }

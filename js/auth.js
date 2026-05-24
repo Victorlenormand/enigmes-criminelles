@@ -7,6 +7,19 @@ function sanitize(str) {
   return String(str).trim().replace(/[<>"'`]/g, '').slice(0, 200);
 }
 
+function generateId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  /* Fallback : UUID v4 via getRandomValues */
+  var bytes = new Uint8Array(16);
+  (window.crypto || window.msCrypto).getRandomValues(bytes);
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  var hex = Array.from(bytes).map(function(b) { return b.toString(16).padStart(2, '0'); });
+  return hex[0]+hex[1]+hex[2]+hex[3]+'-'+hex[4]+hex[5]+'-'+hex[6]+hex[7]+'-'+hex[8]+hex[9]+'-'+hex[10]+hex[11]+hex[12]+hex[13]+hex[14]+hex[15];
+}
+
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.toLowerCase().trim());
 }
@@ -72,7 +85,7 @@ async function register(pseudo, email, password) {
     }
 
     const newUser = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       pseudo: cleanPseudo,
       email: cleanEmail,
       passwordHash: await hashPassword(password),
