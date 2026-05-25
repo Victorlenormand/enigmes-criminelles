@@ -72,36 +72,59 @@ function resetLoginAttempts() {
 /* ── Inscription ── */
 async function register(pseudo, email, password) {
   try {
-    const cleanPseudo = sanitize(pseudo);
-    const cleanEmail = sanitize(email).toLowerCase();
+    var cleanPseudo = sanitize(pseudo);
+    var cleanEmail = sanitize(email).toLowerCase();
 
-    const users = JSON.parse(localStorage.getItem('ec_users') || '[]');
+    var users;
+    try {
+      users = JSON.parse(localStorage.getItem('ec_users') || '[]');
+    } catch(e) {
+      users = [];
+    }
 
-    if (users.find(function(u) { return u.email === cleanEmail; })) {
+    if (users.find(function(u) { return u && u.email === cleanEmail; })) {
       throw new Error('EMAIL_EXISTS');
     }
-    if (users.find(function(u) { return u.pseudo.toLowerCase() === cleanPseudo.toLowerCase(); })) {
+    if (users.find(function(u) { return u && u.pseudo && u.pseudo.toLowerCase() === cleanPseudo.toLowerCase(); })) {
       throw new Error('PSEUDO_EXISTS');
     }
 
-    const newUser = {
+    var passwordHash;
+    try {
+      passwordHash = await hashPassword(password);
+    } catch(e) {
+      throw new Error('HASH_ERROR: ' + (e.message || e));
+    }
+
+    var newUser = {
       id: generateId(),
       pseudo: cleanPseudo,
       email: cleanEmail,
-      passwordHash: await hashPassword(password),
+      passwordHash: passwordHash,
       dateInscription: new Date().toISOString(),
       consentement: true,
       consentementDate: new Date().toISOString()
     };
 
-    users.push(newUser);
-    localStorage.setItem('ec_users', JSON.stringify(users));
+    try {
+      users.push(newUser);
+      localStorage.setItem('ec_users', JSON.stringify(users));
+    } catch(e) {
+      throw new Error('STORAGE_ERROR: ' + (e.message || e));
+    }
 
     /* MailerLite fire-and-forget — ne bloque jamais l'inscription */
-    if (typeof subscribeToMailerLite === 'function') {
-      subscribeToMailerLite(newUser.email, newUser.pseudo).catch(function(err) {
-        console.warn('MailerLite non bloquant:', err && err.message);
-      });
+    try {
+      if (typeof subscribeToMailerLite === 'function') {
+        var mlPromise = subscribeToMailerLite(newUser.email, newUser.pseudo);
+        if (mlPromise && typeof mlPromise.catch === 'function') {
+          mlPromise.catch(function(err) {
+            console.warn('MailerLite non bloquant:', err && err.message);
+          });
+        }
+      }
+    } catch(e) {
+      console.warn('MailerLite sync error (ignoré):', e);
     }
 
     return newUser;
@@ -111,7 +134,7 @@ async function register(pseudo, email, password) {
       throw error;
     }
     console.error('Erreur register:', error);
-    throw new Error('REGISTER_ERROR');
+    throw new Error(error.message || 'REGISTER_ERROR');
   }
 }
 
