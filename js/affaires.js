@@ -886,18 +886,23 @@ function wsRenderWordList(aff) {
   var el = document.getElementById('ws-wlist-' + aff.id);
   if (!el) return;
   el.innerHTML = '<div class="ws-list-lbl">Mots à trouver</div>';
-  aff.wordPlacements.forEach(function(p) {
+  var allWords = aff.wordPlacements.map(function(p) { return { mot: p.mot, isGhost: false }; });
+  allWords.push({ mot: aff.ghost.mot, isGhost: true });
+  for (var i = allWords.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = allWords[i]; allWords[i] = allWords[j]; allWords[j] = tmp;
+  }
+  allWords.forEach(function(w) {
     var item = document.createElement('div');
     item.className = 'ws-word-item';
-    item.dataset.mot = p.mot;
-    item.textContent = p.mot;
+    item.textContent = w.mot;
+    if (w.isGhost) {
+      item.id = 'ws-ghost-item-' + aff.id;
+    } else {
+      item.dataset.mot = w.mot;
+    }
     el.appendChild(item);
   });
-  var ghost = document.createElement('div');
-  ghost.className = 'ws-word-item';
-  ghost.id = 'ws-ghost-item-' + aff.id;
-  ghost.textContent = aff.ghost.mot;
-  el.appendChild(ghost);
 }
 
 function wsRevealGhost(aff) {

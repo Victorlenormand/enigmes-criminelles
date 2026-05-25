@@ -191,15 +191,20 @@ function tRenderWords() {
   var list = document.getElementById('tuto-words');
   if (!list) return;
   list.innerHTML = '<div class="tuto-list-lbl">Mots à trouver</div>';
-  TUTO_WORDS.forEach(function(w){
+  var allWords = TUTO_WORDS.map(function(w) { return { mot: w, isGhost: false }; });
+  allWords.push({ mot: TUTO_GHOST, isGhost: true });
+  for (var i = allWords.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = allWords[i]; allWords[i] = allWords[j]; allWords[j] = tmp;
+  }
+  allWords.forEach(function(w) {
     var el = document.createElement('div');
-    el.className = 'tuto-word-item'; el.id = 'tword-'+w; el.textContent = w;
+    el.className = 'tuto-word-item';
+    if (w.isGhost) el.className += ' tuto-ghost-item';
+    el.id = 'tword-' + w.mot;
+    el.textContent = w.mot;
     list.appendChild(el);
   });
-  var ghost = document.createElement('div');
-  ghost.className = 'tuto-word-item tuto-ghost-item';
-  ghost.id = 'tword-'+TUTO_GHOST; ghost.textContent = TUTO_GHOST;
-  list.appendChild(ghost);
 }
 
 /* ── Interaction grille ── */
