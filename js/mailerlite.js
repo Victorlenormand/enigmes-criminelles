@@ -4,7 +4,7 @@
   URL à remplacer après déploiement du Worker :
   Voir cloudflare-worker/mailerlite-proxy.js pour les instructions.
 */
-const WORKER_URL = 'https://mailerlite-proxy.TON_SOUS_DOMAINE.workers.dev';
+const WORKER_URL = 'enigmes-criminelles.victor-70d.workers.dev';
 
 async function subscribeToMailerLite(email, pseudo) {
   try {
