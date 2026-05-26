@@ -4,6 +4,7 @@
 
 /* ── Utilitaires ── */
 function sanitize(str) {
+  if (!str) return '';
   return String(str).trim().replace(/[<>"'`]/g, '').slice(0, 200);
 }
 
@@ -11,7 +12,6 @@ function generateId() {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID();
   }
-  /* Fallback : UUID v4 via getRandomValues */
   var bytes = new Uint8Array(16);
   (window.crypto || window.msCrypto).getRandomValues(bytes);
   bytes[6] = (bytes[6] & 0x0f) | 0x40;
@@ -32,7 +32,7 @@ function isValidPseudo(pseudo) {
   return /^[a-zA-Z0-9\-_àâäéèêëîïôùûüç ]{3,20}$/.test(pseudo.trim());
 }
 
-/* ── SHA-256 pur JS (fallback si crypto.subtle indisponible) ── */
+/* ── SHA-256 pur JS (fallback si crypto.subtle indisponible — HTTP) ── */
 function sha256pure(str) {
   function rightRotate(v, a) { return (v >>> a) | (v << (32 - a)); }
   var K = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
@@ -96,23 +96,73 @@ async function hashPassword(password) {
   return sha256pure(password);
 }
 
+/* ── Gestion des utilisateurs ── */
+function getAllUsers() {
+  try {
+    return JSON.parse(localStorage.getItem('ec_users') || '[]');
+  } catch(e) {
+    console.error('getAllUsers error:', e);
+    return [];
+  }
+}
+
+function saveAllUsers(users) {
+  try {
+    localStorage.setItem('ec_users', JSON.stringify(users));
+    return true;
+  } catch(e) {
+    console.error('saveAllUsers error:', e);
+    return false;
+  }
+}
+
+/* ── Diagnostic ── */
+function diagnosticAuth() {
+  console.group('=== DIAGNOSTIC AUTH ===');
+  var users = getAllUsers();
+  console.log('Comptes enregistrés :', users.length);
+  users.forEach(function(u) {
+    console.log(' -', u.pseudo, '/', u.email, '/ inscrit le', u.dateInscription);
+  });
+  var sessionLS = localStorage.getItem('ec_session');
+  var sessionSS = sessionStorage.getItem('ec_session');
+  console.log('Session localStorage :', sessionLS ? JSON.parse(sessionLS) : 'vide');
+  console.log('Session sessionStorage :', sessionSS ? JSON.parse(sessionSS) : 'vide');
+  var session = getSession();
+  console.log('getSession() retourne :', session);
+  console.log('isLoggedIn() :', isLoggedIn());
+  if (session) {
+    var now = Date.now();
+    var expiry = session.expiry;
+    console.log('Expiry dans :', expiry ? Math.round((expiry - now) / 60000) + ' minutes' : 'pas défini');
+    if (expiry && now > expiry) console.error('SESSION EXPIRÉE !');
+  }
+  var prog = getProgression();
+  console.log('Progression :', prog);
+  console.groupEnd();
+}
+
 /* ── Anti-brute-force (sessionStorage) ── */
 function checkLoginAttempts() {
   const key = 'ec_attempts';
-  const data = JSON.parse(sessionStorage.getItem(key) || '{"count":0,"lastAttempt":0,"blockedUntil":0}');
-  const now = Date.now();
-  if (data.blockedUntil > now) {
-    const secondes = Math.ceil((data.blockedUntil - now) / 1000);
-    throw new Error('BLOCKED_' + secondes);
+  try {
+    const data = JSON.parse(sessionStorage.getItem(key) || '{"count":0,"blockedUntil":0}');
+    const now = Date.now();
+    if (data.blockedUntil > now) {
+      const sec = Math.ceil((data.blockedUntil - now) / 1000);
+      throw new Error('BLOCKED_' + sec);
+    }
+    return data;
+  } catch(e) {
+    if (e.message && e.message.startsWith('BLOCKED_')) throw e;
+    return { count: 0, blockedUntil: 0 };
   }
-  return data;
 }
 
 function recordFailedAttempt() {
   const key = 'ec_attempts';
-  const data = JSON.parse(sessionStorage.getItem(key) || '{"count":0,"lastAttempt":0,"blockedUntil":0}');
+  const data = JSON.parse(sessionStorage.getItem(key) || '{"count":0,"blockedUntil":0}');
   data.count += 1;
-  data.lastAttempt = Date.now();
   if (data.count >= 3) {
     data.blockedUntil = Date.now() + 30000;
     data.count = 0;
@@ -126,104 +176,89 @@ function resetLoginAttempts() {
 
 /* ── Inscription ── */
 async function register(pseudo, email, password) {
-  try {
-    var cleanPseudo = sanitize(pseudo);
-    var cleanEmail = sanitize(email).toLowerCase();
+  const cleanEmail = email.toLowerCase().trim();
+  const cleanPseudo = pseudo.trim();
 
-    var users;
-    try {
-      users = JSON.parse(localStorage.getItem('ec_users') || '[]');
-    } catch(e) {
-      users = [];
-    }
+  const users = getAllUsers();
 
-    if (users.find(function(u) { return u && u.email === cleanEmail; })) {
-      throw new Error('EMAIL_EXISTS');
-    }
-    if (users.find(function(u) { return u && u.pseudo && u.pseudo.toLowerCase() === cleanPseudo.toLowerCase(); })) {
-      throw new Error('PSEUDO_EXISTS');
-    }
-
-    var passwordHash;
-    try {
-      passwordHash = await hashPassword(password);
-    } catch(e) {
-      throw new Error('HASH_ERROR: ' + (e.message || e));
-    }
-
-    var newUser = {
-      id: generateId(),
-      pseudo: cleanPseudo,
-      email: cleanEmail,
-      passwordHash: passwordHash,
-      dateInscription: new Date().toISOString(),
-      consentement: true,
-      consentementDate: new Date().toISOString()
-    };
-
-    try {
-      users.push(newUser);
-      localStorage.setItem('ec_users', JSON.stringify(users));
-    } catch(e) {
-      throw new Error('STORAGE_ERROR: ' + (e.message || e));
-    }
-
-    /* MailerLite fire-and-forget — ne bloque jamais l'inscription */
-    try {
-      if (typeof subscribeToMailerLite === 'function') {
-        var mlPromise = subscribeToMailerLite(newUser.email, newUser.pseudo);
-        if (mlPromise && typeof mlPromise.catch === 'function') {
-          mlPromise.catch(function(err) {
-            console.warn('MailerLite non bloquant:', err && err.message);
-          });
-        }
-      }
-    } catch(e) {
-      console.warn('MailerLite sync error (ignoré):', e);
-    }
-
-    return newUser;
-
-  } catch (error) {
-    if (error.message === 'EMAIL_EXISTS' || error.message === 'PSEUDO_EXISTS') {
-      throw error;
-    }
-    console.error('Erreur register:', error);
-    throw new Error(error.message || 'REGISTER_ERROR');
+  if (users.find(function(u) { return u && u.email === cleanEmail; })) {
+    throw new Error('EMAIL_EXISTS');
   }
+  if (users.find(function(u) { return u && u.pseudo && u.pseudo.toLowerCase() === cleanPseudo.toLowerCase(); })) {
+    throw new Error('PSEUDO_EXISTS');
+  }
+
+  const hash = await hashPassword(password);
+
+  const newUser = {
+    id: generateId(),
+    pseudo: cleanPseudo,
+    email: cleanEmail,
+    passwordHash: hash,
+    dateInscription: new Date().toISOString(),
+    consentement: true,
+    consentementDate: new Date().toISOString()
+  };
+
+  users.push(newUser);
+  const saved = saveAllUsers(users);
+  if (!saved) throw new Error('STORAGE_ERROR');
+
+  console.log('Compte créé et sauvegardé :', newUser.pseudo, newUser.email);
+
+  setTimeout(function() {
+    if (typeof subscribeToMailerLite === 'function') {
+      subscribeToMailerLite(newUser.email, newUser.pseudo).catch(function(e) {
+        console.warn('MailerLite silencieux:', e);
+      });
+    }
+  }, 0);
+
+  return newUser;
 }
 
 /* ── Connexion ── */
 async function login(email, password, remember) {
   checkLoginAttempts();
 
-  const cleanEmail = sanitize(email).toLowerCase();
-  const users = JSON.parse(localStorage.getItem('ec_users') || '[]');
+  const cleanEmail = email.toLowerCase().trim();
+  const users = getAllUsers();
+
+  console.log('Tentative connexion pour:', cleanEmail, '| Comptes disponibles:', users.length);
+
   const hash = await hashPassword(password);
-  const user = users.find(u => u.email === cleanEmail && u.passwordHash === hash);
+  const user = users.find(function(u) { return u && u.email === cleanEmail && u.passwordHash === hash; });
 
   if (!user) {
     recordFailedAttempt();
+    console.warn('Connexion échouée pour:', cleanEmail);
     throw new Error('INVALID_CREDENTIALS');
   }
 
   resetLoginAttempts();
 
-  const now = Date.now();
+  const expiry = remember
+    ? Date.now() + 30 * 24 * 60 * 60 * 1000
+    : Date.now() + 2 * 60 * 60 * 1000;
+
   const session = {
     userId: user.id,
     pseudo: user.pseudo,
     email: user.email,
     loginDate: new Date().toISOString(),
     remember: remember,
-    expiry: remember ? now + 30 * 24 * 60 * 60 * 1000 : now + 2 * 60 * 60 * 1000
+    expiry: expiry
   };
 
-  if (remember) {
-    localStorage.setItem('ec_session', JSON.stringify(session));
-  } else {
-    sessionStorage.setItem('ec_session', JSON.stringify(session));
+  /* Toujours localStorage pour la persistance entre pages */
+  localStorage.setItem('ec_session', JSON.stringify(session));
+
+  /* Flag sessionStorage : si fenêtre fermée sans remember, la session est invalidée */
+  if (!remember) {
+    sessionStorage.setItem('ec_session_temp', 'true');
   }
+
+  console.log('Session créée pour:', user.pseudo, '| Expire dans:', remember ? '30 jours' : '2 heures');
 
   return session;
 }
@@ -231,59 +266,89 @@ async function login(email, password, remember) {
 /* ── Session ── */
 function getSession() {
   try {
-    const ls = localStorage.getItem('ec_session');
-    const ss = sessionStorage.getItem('ec_session');
-    return ls ? JSON.parse(ls) : ss ? JSON.parse(ss) : null;
-  } catch(e) { return null; }
+    const raw = localStorage.getItem('ec_session');
+    if (!raw) return null;
+
+    const session = JSON.parse(raw);
+    if (!session || !session.userId) return null;
+
+    if (session.expiry && Date.now() > session.expiry) {
+      localStorage.removeItem('ec_session');
+      return null;
+    }
+
+    if (!session.remember && !sessionStorage.getItem('ec_session_temp')) {
+      localStorage.removeItem('ec_session');
+      return null;
+    }
+
+    return session;
+  } catch(e) {
+    console.error('getSession error:', e);
+    return null;
+  }
 }
 
 function isLoggedIn() {
-  const session = getSession();
-  if (!session) return false;
-  if (session.expiry && Date.now() > session.expiry) {
-    logout();
-    return false;
-  }
-  return true;
+  return getSession() !== null;
 }
 
 function logout() {
   localStorage.removeItem('ec_session');
-  sessionStorage.removeItem('ec_session');
+  sessionStorage.removeItem('ec_session_temp');
   window.location.href = 'index.html';
 }
 
 function deleteAccount() {
   const session = getSession();
   if (!session) return;
+  const users = getAllUsers().filter(function(u) { return u.id !== session.userId; });
+  saveAllUsers(users);
   localStorage.removeItem('ec_progression_' + session.userId);
-  const users = JSON.parse(localStorage.getItem('ec_users') || '[]');
-  localStorage.setItem('ec_users', JSON.stringify(users.filter(u => u.id !== session.userId)));
   logout();
 }
 
 /* ── Progression ── */
 function getProgression() {
   const session = getSession();
-  if (!session) return { affairesResolues: [], grade: 'Inspecteur Stagiaire' };
+  if (!session) return null;
+
   const key = 'ec_progression_' + session.userId;
   try {
-    return JSON.parse(localStorage.getItem(key) || JSON.stringify({
-      affairesResolues: [],
-      grade: 'Inspecteur Stagiaire',
-      derniereConnexion: new Date().toISOString()
-    }));
+    const raw = localStorage.getItem(key);
+    if (!raw) {
+      const defaut = {
+        affairesResolues: [],
+        scores: {},
+        grade: 'Inspecteur Stagiaire',
+        badges: [],
+        streak: { actuel: 0, maximum: 0, dernierJour: null, joueAujourdhui: false },
+        historiqueJours: []
+      };
+      localStorage.setItem(key, JSON.stringify(defaut));
+      return defaut;
+    }
+    return JSON.parse(raw);
   } catch(e) {
-    return { affairesResolues: [], grade: 'Inspecteur Stagiaire' };
+    console.error('getProgression error:', e);
+    return null;
   }
 }
 
 function updateProgression(data) {
   const session = getSession();
-  if (!session) return;
+  if (!session) return false;
+
   const key = 'ec_progression_' + session.userId;
-  const current = getProgression();
-  localStorage.setItem(key, JSON.stringify(Object.assign({}, current, data)));
+  try {
+    const current = getProgression() || {};
+    const updated = Object.assign({}, current, data);
+    localStorage.setItem(key, JSON.stringify(updated));
+    return true;
+  } catch(e) {
+    console.error('updateProgression error:', e);
+    return false;
+  }
 }
 
 function getGrade(n) {
@@ -315,7 +380,6 @@ function initNav() {
     }
   }
 
-  // Hamburger
   const hamburger = document.getElementById('nav-hamburger');
   const mobilePanel = document.getElementById('nav-mobile-panel');
   const mobileCompte = document.getElementById('nav-mobile-compte');
@@ -340,7 +404,6 @@ function initNav() {
     }
   }
 
-  /* Badge GRATUIT sur "Comment jouer" pour les visiteurs non connectés */
   if (!isLoggedIn()) {
     var linkTuto = document.querySelector('a[data-page="tutoriel"]');
     if (linkTuto) {

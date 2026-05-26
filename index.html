@@ -172,6 +172,7 @@
     }());
 
     document.addEventListener('DOMContentLoaded', function () {
+      diagnosticAuth();
       var nbEnqueteurs = JSON.parse(localStorage.getItem('ec_users') || '[]').length;
       if (nbEnqueteurs > 0) {
         var compteur = document.getElementById('hero-compteur');
