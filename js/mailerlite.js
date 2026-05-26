@@ -1,7 +1,7 @@
 /*
   MailerLite — proxy via Worker Cloudflare (contourne le CORS de GitHub Pages)
 */
-const WORKER_URL = 'https://enigmes-criminelles.victor-70d.workers.dev';
+const WORKER_URL = 'https://black-water-1d2f.victor-70d.workers.dev/';
 
 async function subscribeToMailerLite(email, pseudo) {
   try {
