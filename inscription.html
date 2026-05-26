@@ -430,7 +430,8 @@
       if (isLoggedIn()) { window.location.href = 'affaires.html'; return; }
 
       var params = new URLSearchParams(window.location.search);
-      var redirectTo = params.get('redirect') || 'affaires.html';
+      var rawRedirect = params.get('redirect') || '';
+      var redirectTo = /^[a-zA-Z0-9\-_]+\.html$/.test(rawRedirect) ? rawRedirect : 'affaires.html';
 
       // ── Onglets ──
       document.querySelectorAll('.auth-tab').forEach(function(tab) {

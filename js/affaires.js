@@ -916,10 +916,12 @@ function wsRevealGhost(aff) {
   }
   // Mise à jour de la progression
   var prog = getProgression();
-  var resolues = prog.affairesResolues || [];
-  if (resolues.indexOf(aff.id) === -1) {
-    resolues.push(aff.id);
-    updateProgression({ affairesResolues: resolues, grade: getGrade(resolues.length) });
+  if (prog) {
+    var resolues = prog.affairesResolues || [];
+    if (resolues.indexOf(aff.id) === -1) {
+      resolues.push(aff.id);
+      updateProgression({ affairesResolues: resolues, grade: getGrade(resolues.length) });
+    }
   }
   setTimeout(function() { wsIlluminateResiduals(aff); }, 1800);
 }
@@ -1075,6 +1077,7 @@ function wsValidate(aff) {
 
   /* Stocker le meilleur score */
   var prog   = getProgression();
+  if (!prog) return;
   var scores = prog.scores || {};
   var duree  = (typeof DUREES !== 'undefined' ? DUREES[aff.niveau] : null) || 300;
   var tempsPris = duree - tempsRestant;
@@ -1082,6 +1085,7 @@ function wsValidate(aff) {
     scores[aff.id] = {
       points: scoreData.points,
       temps:  tempsPris,
+      tempsRestant: tempsRestant,
       erreurs: st.erreurs,
       date:   new Date().toISOString()
     };

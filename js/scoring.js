@@ -3,6 +3,10 @@
 ═══════════════════════════════════════════════════════════ */
 
 var DUREES     = { 1: 300, 2: 240, 3: 180 };
+
+function escapeHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 var BASE_PTS   = { 1: 100, 2: 200, 3: 350 };
 
 /* ── Calcul du score ── */
@@ -259,12 +263,12 @@ function construireClassement(tri) {
       tr.className = (rang <= 3 ? 'rang-' + rang : '') + (j.estMoi ? ' ligne-actuel' : '');
       tr.innerHTML =
         '<td>' + medaille + '</td>' +
-        '<td>' + (j.estMoi ? '▶ ' : '') + j.pseudo +
+        '<td>' + (j.estMoi ? '▶ ' : '') + escapeHtml(j.pseudo) +
           (j.estMoi ? ' <span style="color:#c9a84c;font-size:10px">(vous)</span>' : '') + '</td>' +
-        '<td style="font-size:11px;color:#888">' + j.grade + '</td>' +
+        '<td style="font-size:11px;color:#888">' + escapeHtml(j.grade) + '</td>' +
         '<td>' + j.affairesResolues + ' / 20</td>' +
         '<td style="color:#c9a84c;font-weight:bold">' + j.scoreTotal + ' pts</td>' +
-        '<td>' + temps + '</td>';
+        '<td>' + escapeHtml(temps) + '</td>';
       tbody.appendChild(tr);
     });
   }

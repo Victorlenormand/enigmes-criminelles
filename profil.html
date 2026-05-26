@@ -784,11 +784,7 @@
         localStorage.setItem('ec_users', JSON.stringify(allUsers));
         var sess = getSession();
         sess.pseudo = newPseudo;
-        if (localStorage.getItem('ec_session')) {
-          localStorage.setItem('ec_session', JSON.stringify(sess));
-        } else {
-          sessionStorage.setItem('ec_session', JSON.stringify(sess));
-        }
+        localStorage.setItem('ec_session', JSON.stringify(sess));
         document.getElementById('zone-pseudo').classList.remove('open');
         window.location.reload();
       });

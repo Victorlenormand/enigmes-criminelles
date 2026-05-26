@@ -30,7 +30,7 @@ var BADGES = [
     icone: '⚡',
     condition: function(prog) {
       return Object.keys(prog.scores || {}).some(function(k) {
-        return (prog.scores[k].temps || 0) >= 200;
+        return (prog.scores[k].tempsRestant || 0) >= 200;
       });
     }
   },

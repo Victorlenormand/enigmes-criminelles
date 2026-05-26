@@ -116,8 +116,9 @@ function saveAllUsers(users) {
   }
 }
 
-/* ── Diagnostic ── */
+/* ── Diagnostic (localhost uniquement) ── */
 function diagnosticAuth() {
+  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') return;
   console.group('=== DIAGNOSTIC AUTH ===');
   var users = getAllUsers();
   console.log('Comptes enregistrés :', users.length);
@@ -142,11 +143,11 @@ function diagnosticAuth() {
   console.groupEnd();
 }
 
-/* ── Anti-brute-force (sessionStorage) ── */
+/* ── Anti-brute-force (localStorage — résistant à la fermeture de fenêtre) ── */
 function checkLoginAttempts() {
   const key = 'ec_attempts';
   try {
-    const data = JSON.parse(sessionStorage.getItem(key) || '{"count":0,"blockedUntil":0}');
+    const data = JSON.parse(localStorage.getItem(key) || '{"count":0,"blockedUntil":0}');
     const now = Date.now();
     if (data.blockedUntil > now) {
       const sec = Math.ceil((data.blockedUntil - now) / 1000);
@@ -161,23 +162,23 @@ function checkLoginAttempts() {
 
 function recordFailedAttempt() {
   const key = 'ec_attempts';
-  const data = JSON.parse(sessionStorage.getItem(key) || '{"count":0,"blockedUntil":0}');
+  const data = JSON.parse(localStorage.getItem(key) || '{"count":0,"blockedUntil":0}');
   data.count += 1;
   if (data.count >= 3) {
     data.blockedUntil = Date.now() + 30000;
     data.count = 0;
   }
-  sessionStorage.setItem(key, JSON.stringify(data));
+  localStorage.setItem(key, JSON.stringify(data));
 }
 
 function resetLoginAttempts() {
-  sessionStorage.removeItem('ec_attempts');
+  localStorage.removeItem('ec_attempts');
 }
 
 /* ── Inscription ── */
 async function register(pseudo, email, password) {
-  const cleanEmail = email.toLowerCase().trim();
-  const cleanPseudo = pseudo.trim();
+  const cleanEmail = sanitize(email).toLowerCase();
+  const cleanPseudo = sanitize(pseudo);
 
   const users = getAllUsers();
 
