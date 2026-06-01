@@ -32,8 +32,8 @@
      2 GB de transfert/mois
 ═══════════════════════════════════════════════════════════ */
 
-const SUPABASE_URL      = 'SUPABASE_URL_ICI';
-const SUPABASE_ANON_KEY = 'SUPABASE_ANON_KEY_ICI';
+const SUPABASE_URL      = 'https://acmazynakkmhbbkymfjv.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_mY2chf8gDjPag_hgDs5z1A_Bv2HMF6O';
 
 const supabaseClient = window.supabase
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
