@@ -166,6 +166,11 @@ function formatTemps(secondes) {
 
 /* ── Init ── */
 document.addEventListener('DOMContentLoaded', async function() {
+  /* Migration si compte créé avant Supabase */
+  if (typeof migrerCompteLocalVersSupabase === 'function') {
+    await migrerCompteLocalVersSupabase();
+  }
+
   var session = typeof getSession === 'function' ? getSession() : null;
   var prog    = typeof getProgression === 'function' ? await getProgression() : null;
 

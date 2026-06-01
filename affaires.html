@@ -344,6 +344,12 @@
       document.head.appendChild(lk);
     }());
 
+    /* ── Migration + diagnostic au chargement ── */
+    document.addEventListener('DOMContentLoaded', async function() {
+      await migrerCompteLocalVersSupabase();
+      await diagnosticSupabase();
+    });
+
     /* ── Widget score ────────────────────────────────────────── */
     document.addEventListener('DOMContentLoaded', async function() {
       var progInit = await getProgression();

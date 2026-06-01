@@ -436,7 +436,10 @@ async function getProgression() {
 
 async function updateProgression(updates) {
   const session = getSession();
-  if (!session) return false;
+  if (!session) {
+    console.error('updateProgression: pas de session');
+    return false;
+  }
 
   /* Invalider le cache immédiatement */
   localStorage.removeItem(_CACHE_KEY);
@@ -444,28 +447,41 @@ async function updateProgression(updates) {
   const db = window._supabase;
 
   if (db) {
-    const supabaseUpdate = { updated_at: new Date().toISOString() };
-    if (updates.affairesResolues !== undefined) supabaseUpdate.affaires_resolues  = updates.affairesResolues;
-    if (updates.scores           !== undefined) supabaseUpdate.scores             = updates.scores;
-    if (updates.grade            !== undefined) supabaseUpdate.grade              = updates.grade;
-    if (updates.badges           !== undefined) supabaseUpdate.badges             = updates.badges;
-    if (updates.streak           !== undefined) supabaseUpdate.streak             = updates.streak;
-    if (updates.historiqueJours  !== undefined) supabaseUpdate.historique_jours   = updates.historiqueJours;
-    if (updates.enquetesSpeciales !== undefined) supabaseUpdate.enquetes_speciales = updates.enquetesSpeciales;
+    /* Lire la progression actuelle pour fusionner */
+    const current = await getProgression() || {};
+    const merged  = Object.assign({}, current, updates);
 
+    /* Construire l'objet Supabase complet */
+    const supabaseData = {
+      user_id:     session.userId,
+      updated_at:  new Date().toISOString()
+    };
+    if (merged.affairesResolues  !== undefined) supabaseData.affaires_resolues   = merged.affairesResolues;
+    if (merged.scores            !== undefined) supabaseData.scores              = merged.scores;
+    if (merged.grade             !== undefined) supabaseData.grade               = merged.grade;
+    if (merged.badges            !== undefined) supabaseData.badges              = merged.badges;
+    if (merged.streak            !== undefined) supabaseData.streak              = merged.streak;
+    if (merged.historiqueJours   !== undefined) supabaseData.historique_jours    = merged.historiqueJours;
+    if (merged.enquetesSpeciales !== undefined) supabaseData.enquetes_speciales  = merged.enquetesSpeciales;
+
+    /* UPSERT : crée la ligne si elle n'existe pas, met à jour sinon */
     const { error } = await db
       .from('ec_progression')
-      .update(supabaseUpdate)
-      .eq('user_id', session.userId);
+      .upsert(supabaseData, { onConflict: 'user_id' });
 
-    if (error) { console.error('updateProgression error:', error); return false; }
+    if (error) {
+      console.error('updateProgression error:', error);
+      return false;
+    }
+
+    console.log('✓ Progression sauvegardée:', Object.keys(updates));
     return true;
   }
 
   /* Fallback localStorage */
   try {
-    const key  = 'ec_progression_' + session.userId;
-    const raw  = localStorage.getItem(key);
+    const key     = 'ec_progression_' + session.userId;
+    const raw     = localStorage.getItem(key);
     const current = raw ? JSON.parse(raw) : _defaultProgression();
     const updated = Object.assign({}, current, updates);
     localStorage.setItem(key, JSON.stringify(updated));
@@ -564,3 +580,140 @@ function initNav() {
 }
 
 document.addEventListener('DOMContentLoaded', function() { initNav(); });
+
+/* ── Migration comptes localStorage → Supabase ── */
+async function migrerCompteLocalVersSupabase() {
+  const session = getSession();
+  if (!session) return false;
+
+  const db = window._supabase;
+  if (!db) return false;
+
+  /* Vérifier si l'utilisateur existe déjà dans Supabase */
+  const { data: existing } = await db
+    .from('ec_users')
+    .select('id')
+    .eq('id', session.userId)
+    .maybeSingle();
+
+  if (existing) return true;
+
+  console.warn('Compte local non trouvé dans Supabase. Migration en cours...');
+
+  /* Récupérer les données locales (ancien format ec_users) */
+  const localUsers = JSON.parse(localStorage.getItem('ec_users') || '[]');
+  const localUser  = localUsers.find(function(u) { return u && u.id === session.userId; });
+
+  if (!localUser) {
+    console.error('Données locales introuvables. Déconnexion nécessaire.');
+    logout();
+    return false;
+  }
+
+  /* Insérer dans ec_users avec l'ID existant */
+  const { error: errUser } = await db
+    .from('ec_users')
+    .insert({
+      id:               localUser.id,
+      pseudo:           localUser.pseudo,
+      email:            localUser.email,
+      password_hash:    localUser.passwordHash,
+      date_inscription: localUser.dateInscription || new Date().toISOString(),
+      consentement:     true,
+      consentement_date: localUser.dateInscription || new Date().toISOString()
+    });
+
+  if (errUser) {
+    console.error('Erreur migration user:', errUser);
+    return false;
+  }
+
+  /* Migrer la progression locale */
+  const localProg = JSON.parse(
+    localStorage.getItem('ec_progression_' + session.userId) || '{}'
+  );
+
+  const { error: errProg } = await db
+    .from('ec_progression')
+    .upsert({
+      user_id:           localUser.id,
+      affaires_resolues: localProg.affairesResolues  || [],
+      scores:            localProg.scores            || {},
+      grade:             localProg.grade             || 'Inspecteur Stagiaire',
+      badges:            localProg.badges            || [],
+      streak:            localProg.streak            || { actuel: 0, maximum: 0, dernierJour: null, joueAujourdhui: false },
+      historique_jours:  localProg.historiqueJours   || [],
+      enquetes_speciales: localProg.enquetesSpeciales || {}
+    }, { onConflict: 'user_id' });
+
+  if (errProg) {
+    console.error('Erreur migration progression:', errProg);
+    return false;
+  }
+
+  localStorage.removeItem(_CACHE_KEY);
+  console.log('✓ Migration réussie pour:', localUser.pseudo);
+  return true;
+}
+
+/* ── Diagnostic Supabase (localhost uniquement) ── */
+async function diagnosticSupabase() {
+  if (window.location.hostname !== 'localhost' &&
+      window.location.hostname !== '127.0.0.1' &&
+      !window.location.hostname.includes('github') &&
+      window.location.hostname !== 'enigmes-criminelles.fr') {
+    /* Actif aussi sur le domaine de prod pour déboguer */
+  }
+
+  const db = window._supabase;
+  console.group('=== DIAGNOSTIC SUPABASE ===');
+
+  console.log('SUPABASE_URL:',
+    typeof SUPABASE_URL !== 'undefined' ? SUPABASE_URL : 'NON DÉFINI');
+  console.log('Client Supabase:', db ? 'OK' : 'NON CRÉÉ');
+
+  const session = getSession();
+  console.log('Session:', session);
+
+  if (!session) {
+    console.error('PAS DE SESSION — utilisateur non connecté');
+    console.groupEnd();
+    return;
+  }
+
+  if (!db) {
+    console.error('Client Supabase non disponible');
+    console.groupEnd();
+    return;
+  }
+
+  const { data: user, error: errUser } = await db
+    .from('ec_users').select('id, pseudo, email')
+    .eq('id', session.userId).maybeSingle();
+  console.log('User dans Supabase:', user);
+  if (errUser) console.error('Erreur user:', errUser);
+  if (!user) console.error('UTILISATEUR INTROUVABLE — compte créé avant migration.');
+
+  const { data: prog, error: errProg } = await db
+    .from('ec_progression').select('*')
+    .eq('user_id', session.userId).maybeSingle();
+  console.log('Progression dans Supabase:', prog);
+  if (errProg) console.error('Erreur progression:', errProg);
+  if (!prog) console.error('PROGRESSION INTROUVABLE — ligne ec_progression manquante.');
+
+  if (prog) {
+    const { error: errWrite } = await db
+      .from('ec_progression')
+      .update({ updated_at: new Date().toISOString() })
+      .eq('user_id', session.userId);
+    if (errWrite) console.error('ÉCRITURE IMPOSSIBLE (RLS?):', errWrite);
+    else console.log('✓ Écriture Supabase fonctionne');
+  }
+
+  const { data: allUsers, error: errAll } = await db
+    .from('ec_users').select('id, pseudo');
+  console.log('Tous les users Supabase:', allUsers);
+  if (errAll) console.error('Erreur lecture users:', errAll);
+
+  console.groupEnd();
+}

@@ -601,6 +601,9 @@
     }());
 
     document.addEventListener('DOMContentLoaded', async function() {
+      /* Migration si compte créé avant Supabase */
+      await migrerCompteLocalVersSupabase();
+
       var session = getSession();
       var prog    = await getProgression();
       prog = prog || {};
