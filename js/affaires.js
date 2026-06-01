@@ -914,15 +914,6 @@ async function wsRevealGhost(aff) {
     msg.textContent = 'Ce mot est introuvable dans la grille. Il constitue votre premier indice.';
     ghostItem.parentNode.insertBefore(msg, ghostItem.nextSibling);
   }
-  // Mise à jour de la progression
-  var prog = await getProgression();
-  if (prog) {
-    var resolues = prog.affairesResolues || [];
-    if (resolues.indexOf(aff.id) === -1) {
-      resolues.push(aff.id);
-      await updateProgression({ affairesResolues: resolues, grade: getGrade(resolues.length) });
-    }
-  }
   setTimeout(function() { wsIlluminateResiduals(aff); }, 1800);
 }
 
@@ -1064,38 +1055,74 @@ async function wsValidate(aff) {
   }
 
   /* ── Succès ── */
-  var timer       = st.timer;
+  var timer        = st.timer;
   var tempsRestant = timer ? timer.getTempsRestant() : 0;
   if (timer) timer.stop();
 
+  document.getElementById('ws-sub-' + aff.id).disabled = true;
+
+  await terminerAffaire(aff, tempsRestant, st.erreurs);
+}
+
+/* ── Finalisation affaire : sauvegarde groupée + badges + overlay ── */
+async function terminerAffaire(aff, tempsRestant, erreurs) {
+  console.log('[terminerAffaire] Affaire', aff.id, '| tempsRestant:', tempsRestant, '| erreurs:', erreurs);
+
   var scoreData = typeof calculerScore === 'function' ? calculerScore({
-    niveau: aff.niveau,
-    tempsRestant: tempsRestant,
-    erreurs: st.erreurs,
-    premiereTentative: st.premiereTentative
+    niveau:            aff.niveau,
+    tempsRestant:      tempsRestant,
+    erreurs:           erreurs,
+    premiereTentative: erreurs === 0
   }) : { points: 100, base: 100, bonusVitesse: 0, bonusPremiere: 0, penalite: 0 };
 
-  /* Stocker le meilleur score */
-  var prog   = await getProgression();
-  if (!prog) return;
-  var scores = prog.scores || {};
-  var duree  = (typeof DUREES !== 'undefined' ? DUREES[aff.niveau] : null) || 300;
-  var tempsPris = duree - tempsRestant;
-  if (!scores[aff.id] || scoreData.points > scores[aff.id].points) {
-    scores[aff.id] = {
-      points: scoreData.points,
-      temps:  tempsPris,
-      tempsRestant: tempsRestant,
-      erreurs: st.erreurs,
-      date:   new Date().toISOString()
-    };
-    await updateProgression({ scores: scores });
+  console.log('[terminerAffaire] Score calculé:', scoreData.points, 'pts');
+
+  /* Lecture fraîche depuis Supabase */
+  var prog = await getProgression(true);
+  if (!prog) {
+    console.error('[terminerAffaire] Impossible de lire la progression');
+    return;
   }
 
-  /* Streak */
+  var resolues = (prog.affairesResolues || []).slice();
+  var scores   = Object.assign({}, prog.scores || {});
+  var duree    = (typeof DUREES !== 'undefined' ? DUREES[aff.niveau] : null) || 300;
+  var tempsPris = duree - tempsRestant;
+
+  if (resolues.indexOf(aff.id) === -1) {
+    resolues.push(aff.id);
+  }
+
+  if (!scores[aff.id] || scoreData.points > scores[aff.id].points) {
+    scores[aff.id] = {
+      points:       scoreData.points,
+      temps:        tempsPris,
+      tempsRestant: tempsRestant,
+      erreurs:      erreurs,
+      date:         new Date().toISOString()
+    };
+  }
+
+  var nouveauGrade = typeof getGrade === 'function' ? getGrade(resolues.length) : prog.grade;
+
+  console.log('[terminerAffaire] Sauvegarde groupée —', resolues.length, 'résolues, grade:', nouveauGrade);
+
+  var ok = await updateProgression({
+    affairesResolues: resolues,
+    scores:           scores,
+    grade:            nouveauGrade
+  });
+
+  if (!ok) {
+    console.error('[terminerAffaire] Échec de la sauvegarde Supabase');
+  }
+
   var streakData = typeof updateStreak === 'function' ? await updateStreak() : null;
 
-  /* Overlay résultat */
+  if (typeof verifierBadges === 'function') {
+    await verifierBadges();
+  }
+
   if (typeof afficherResultat === 'function') {
     await afficherResultat(aff, scoreData);
   } else {
@@ -1106,14 +1133,17 @@ async function wsValidate(aff) {
       stamp.textContent = 'RÉSOLU';
       wrap.appendChild(stamp);
     }
-    document.getElementById('ws-nxt-' + aff.id).style.display = 'block';
+    var nxt = document.getElementById('ws-nxt-' + aff.id);
+    if (nxt) nxt.style.display = 'block';
   }
-  document.getElementById('ws-sub-' + aff.id).disabled = true;
 
-  /* Toast streak (léger délai pour ne pas superposer l'overlay) */
   if (streakData && typeof afficherToastStreak === 'function') {
     setTimeout(function() { afficherToastStreak(streakData); }, 900);
   }
+}
+
+function calculerGrade(n) {
+  return typeof getGrade === 'function' ? getGrade(n) : 'Inspecteur Stagiaire ★';
 }
 
 // Escape key handling is now managed by GridSelector

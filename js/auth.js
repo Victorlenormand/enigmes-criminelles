@@ -375,19 +375,21 @@ async function updatePassword(currentPassword, newPassword) {
 
 /* ── Progression ── */
 const _CACHE_KEY = 'ec_progression_cache';
-const _CACHE_TTL = 30000;
 
-async function getProgression() {
+async function getProgression(forceRefresh) {
   const session = getSession();
   if (!session) return null;
 
-  /* Cache localStorage */
-  try {
-    const cached = JSON.parse(localStorage.getItem(_CACHE_KEY) || 'null');
-    if (cached && Date.now() - cached.timestamp < _CACHE_TTL && cached.userId === session.userId) {
-      return cached.data;
-    }
-  } catch(e) {}
+  const CACHE_TTL = 5000;
+
+  if (!forceRefresh) {
+    try {
+      const cached = JSON.parse(localStorage.getItem(_CACHE_KEY) || 'null');
+      if (cached && Date.now() - cached.timestamp < CACHE_TTL && cached.userId === session.userId) {
+        return cached.data;
+      }
+    } catch(e) {}
+  }
 
   const db = window._supabase;
 
@@ -399,6 +401,21 @@ async function getProgression() {
       .maybeSingle();
 
     if (error) console.error('getProgression error:', error);
+
+    if (!data && !error) {
+      console.log('[getProgression] Aucune ligne — création automatique pour', session.userId);
+      const def = _defaultProgression();
+      await db.from('ec_progression').upsert({
+        user_id:            session.userId,
+        affaires_resolues:  def.affairesResolues,
+        scores:             def.scores,
+        grade:              def.grade,
+        badges:             def.badges,
+        streak:             def.streak,
+        historique_jours:   def.historiqueJours,
+        enquetes_speciales: def.enquetesSpeciales
+      }, { onConflict: 'user_id' });
+    }
 
     const prog = data ? {
       affairesResolues:  data.affaires_resolues  || [],
@@ -437,44 +454,69 @@ async function getProgression() {
 async function updateProgression(updates) {
   const session = getSession();
   if (!session) {
-    console.error('updateProgression: pas de session');
+    console.error('[updateProgression] Pas de session');
     return false;
   }
 
-  /* Invalider le cache immédiatement */
+  console.log('[updateProgression] Début mise à jour:', Object.keys(updates));
+
   localStorage.removeItem(_CACHE_KEY);
 
   const db = window._supabase;
 
   if (db) {
-    /* Lire la progression actuelle pour fusionner */
-    const current = await getProgression() || {};
-    const merged  = Object.assign({}, current, updates);
-
-    /* Construire l'objet Supabase complet */
-    const supabaseData = {
-      user_id:     session.userId,
-      updated_at:  new Date().toISOString()
-    };
-    if (merged.affairesResolues  !== undefined) supabaseData.affaires_resolues   = merged.affairesResolues;
-    if (merged.scores            !== undefined) supabaseData.scores              = merged.scores;
-    if (merged.grade             !== undefined) supabaseData.grade               = merged.grade;
-    if (merged.badges            !== undefined) supabaseData.badges              = merged.badges;
-    if (merged.streak            !== undefined) supabaseData.streak              = merged.streak;
-    if (merged.historiqueJours   !== undefined) supabaseData.historique_jours    = merged.historiqueJours;
-    if (merged.enquetesSpeciales !== undefined) supabaseData.enquetes_speciales  = merged.enquetesSpeciales;
-
-    /* UPSERT : crée la ligne si elle n'existe pas, met à jour sinon */
-    const { error } = await db
+    /* Lire DIRECTEMENT depuis Supabase — pas via getProgression() pour éviter données périmées */
+    const { data: current, error: errRead } = await db
       .from('ec_progression')
-      .upsert(supabaseData, { onConflict: 'user_id' });
+      .select('*')
+      .eq('user_id', session.userId)
+      .maybeSingle();
+
+    if (errRead) {
+      console.error('[updateProgression] Erreur lecture:', errRead.code, errRead.message, errRead.details);
+    }
+
+    console.log('[updateProgression] Progression actuelle en base:', current);
+
+    const currentMapped = current ? {
+      affairesResolues:  current.affaires_resolues  || [],
+      scores:            current.scores             || {},
+      grade:             current.grade              || 'Inspecteur Stagiaire',
+      badges:            current.badges             || [],
+      streak:            current.streak             || { actuel: 0, maximum: 0, dernierJour: null, joueAujourdhui: false },
+      historiqueJours:   current.historique_jours   || [],
+      enquetesSpeciales: current.enquetes_speciales || {}
+    } : _defaultProgression();
+
+    const merged = Object.assign({}, currentMapped, updates);
+
+    console.log('[updateProgression] affairesResolues après fusion:', merged.affairesResolues);
+    console.log('[updateProgression] scores après fusion:', Object.keys(merged.scores || {}));
+    console.log('[updateProgression] grade:', merged.grade);
+
+    const supabaseData = {
+      user_id:            session.userId,
+      updated_at:         new Date().toISOString(),
+      affaires_resolues:  merged.affairesResolues,
+      scores:             merged.scores,
+      grade:              merged.grade,
+      badges:             merged.badges,
+      streak:             merged.streak,
+      historique_jours:   merged.historiqueJours,
+      enquetes_speciales: merged.enquetesSpeciales
+    };
+
+    const { data: result, error } = await db
+      .from('ec_progression')
+      .upsert(supabaseData, { onConflict: 'user_id', ignoreDuplicates: false })
+      .select();
 
     if (error) {
-      console.error('updateProgression error:', error);
+      console.error('[updateProgression] ERREUR UPSERT:', error.code, error.message, error.details, error.hint);
       return false;
     }
 
-    console.log('✓ Progression sauvegardée:', Object.keys(updates));
+    console.log('[updateProgression] ✓ Sauvegarde confirmée:', result);
     return true;
   }
 
@@ -485,8 +527,10 @@ async function updateProgression(updates) {
     const current = raw ? JSON.parse(raw) : _defaultProgression();
     const updated = Object.assign({}, current, updates);
     localStorage.setItem(key, JSON.stringify(updated));
+    console.log('[updateProgression] ✓ Sauvegardé en localStorage');
     return true;
   } catch(e) {
+    console.error('[updateProgression] Erreur localStorage:', e);
     return false;
   }
 }

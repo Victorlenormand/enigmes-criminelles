@@ -364,7 +364,7 @@
 
     /* ── Vue sélection ───────────────────────────────────────── */
     document.addEventListener('DOMContentLoaded', async function() {
-      var prog = await getProgression();
+      var prog = await getProgression(true);
       prog = prog || {};
       var resolues = prog.affairesResolues || [];
 
