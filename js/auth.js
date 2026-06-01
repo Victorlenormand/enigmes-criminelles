@@ -405,7 +405,7 @@ async function getProgression(forceRefresh) {
     if (!data && !error) {
       console.log('[getProgression] Aucune ligne — création automatique pour', session.userId);
       const def = _defaultProgression();
-      await db.from('ec_progression').upsert({
+      const { error: errCreate } = await db.from('ec_progression').insert({
         user_id:            session.userId,
         affaires_resolues:  def.affairesResolues,
         scores:             def.scores,
@@ -414,7 +414,9 @@ async function getProgression(forceRefresh) {
         streak:             def.streak,
         historique_jours:   def.historiqueJours,
         enquetes_speciales: def.enquetesSpeciales
-      }, { onConflict: 'user_id' });
+      });
+      if (errCreate) console.error('[getProgression] Échec création ligne:', errCreate.code, errCreate.message);
+      else console.log('[getProgression] Ligne créée ✓');
     }
 
     const prog = data ? {
