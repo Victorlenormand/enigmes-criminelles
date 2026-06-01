@@ -430,7 +430,6 @@
     }());
 
     document.addEventListener('DOMContentLoaded', function () {
-      diagnosticAuth();
       if (isLoggedIn()) { window.location.href = 'affaires.html'; return; }
 
       var params = new URLSearchParams(window.location.search);

@@ -175,9 +175,16 @@
       document.head.appendChild(lk);
     }());
 
-    document.addEventListener('DOMContentLoaded', function () {
-      diagnosticAuth();
-      var nbEnqueteurs = JSON.parse(localStorage.getItem('ec_users') || '[]').length;
+    document.addEventListener('DOMContentLoaded', async function () {
+      /* Compteur enquêteurs — Supabase si disponible, sinon localStorage */
+      var nbEnqueteurs = 0;
+      var db = window._supabase;
+      if (db) {
+        var res = await db.from('ec_users').select('id', { count: 'exact', head: true });
+        nbEnqueteurs = res.count || 0;
+      } else {
+        nbEnqueteurs = JSON.parse(localStorage.getItem('ec_users_local') || '[]').length;
+      }
       if (nbEnqueteurs > 0) {
         var compteur = document.getElementById('hero-compteur');
         if (compteur) {
