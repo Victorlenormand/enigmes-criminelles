@@ -1105,6 +1105,41 @@ p {
   font-style: normal;
 }
 
+/* ── Nav badge NOUVEAU ── */
+.badge-nouveau {
+  font-family: var(--font-mono);
+  font-size: 0.42rem;
+  letter-spacing: 0.12em;
+  color: #0a0805;
+  background: var(--or);
+  padding: 2px 5px;
+  margin-left: 5px;
+  vertical-align: super;
+  font-style: normal;
+  font-weight: bold;
+  animation: pulse-nouveau 2s ease-in-out infinite;
+}
+
+@keyframes pulse-nouveau {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+
+/* ── Badge spécial (enquêtes spéciales) ── */
+.badge-item.badge-special.badge-obtenu {
+  border-color: var(--or);
+  background: linear-gradient(135deg, rgba(201,168,76,0.12) 0%, rgba(201,168,76,0.04) 100%);
+  box-shadow: 0 0 14px rgba(201,168,76,0.25);
+}
+
+.badge-item.badge-special.badge-obtenu .badge-icone {
+  font-size: 2.2rem;
+}
+
+.badge-item.badge-special.badge-obtenu .badge-nom {
+  color: var(--or);
+}
+
 /* ── Footer global ── */
 #footer-global {
   background: #050503;

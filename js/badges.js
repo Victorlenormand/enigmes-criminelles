@@ -116,6 +116,16 @@ var BADGES = [
     condition: function(prog) {
       return ((prog.streak && prog.streak.maximum) || 0) >= 7;
     }
+  },
+  {
+    id: 'affaire_ete',
+    nom: "L'Enquêteur de l'Été",
+    description: "A résolu l'Affaire de l'Été — Édition Vacances",
+    icone: '☀️',
+    special: true,
+    condition: function(prog) {
+      return prog.enquetesSpeciales && prog.enquetesSpeciales['affaire-ete'] && prog.enquetesSpeciales['affaire-ete'].resolue === true;
+    }
   }
 ];
 
@@ -180,8 +190,11 @@ function renderBadges() {
 
   BADGES.forEach(function(badge) {
     var obtenu = badgesObtenus.indexOf(badge.id) !== -1;
+    var classes = 'badge-item';
+    if (badge.special) classes += ' badge-special';
+    classes += ' ' + (obtenu ? 'badge-obtenu' : 'badge-locked');
     var div = document.createElement('div');
-    div.className = 'badge-item ' + (obtenu ? 'badge-obtenu' : 'badge-locked');
+    div.className = classes;
     div.title = obtenu ? badge.description : 'Badge non encore débloqué';
     div.innerHTML =
       '<div class="badge-icone">' + badge.icone + '</div>' +
