@@ -130,8 +130,8 @@ var BADGES = [
 ];
 
 /* ── Vérification et déblocage ── */
-function verifierBadges() {
-  var prog = typeof getProgression === 'function' ? getProgression() : null;
+async function verifierBadges() {
+  var prog = typeof getProgression === 'function' ? await getProgression() : null;
   if (!prog) return [];
 
   var badgesActuels = prog.badges || [];
@@ -146,7 +146,7 @@ function verifierBadges() {
   });
 
   if (nouveaux.length > 0 && typeof updateProgression === 'function') {
-    updateProgression({ badges: badgesActuels });
+    await updateProgression({ badges: badgesActuels });
   }
 
   return nouveaux;
@@ -180,8 +180,8 @@ function notifierNouveauxBadges(nouveaux) {
 }
 
 /* ── Rendu grille badges (profil) ── */
-function renderBadges() {
-  var prog = typeof getProgression === 'function' ? getProgression() : null;
+async function renderBadges() {
+  var prog = typeof getProgression === 'function' ? await getProgression() : null;
   var badgesObtenus = prog && prog.badges ? prog.badges.map(function(b) { return b.id; }) : [];
 
   var container = document.getElementById('grille-badges');

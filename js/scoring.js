@@ -117,7 +117,7 @@ function afficherNotification(msg, type, duree) {
 }
 
 /* ── Overlay résultat ── */
-function afficherResultat(aff, scoreData) {
+async function afficherResultat(aff, scoreData) {
   var overlay = document.getElementById('overlay-resultat');
   if (!overlay) return;
 
@@ -151,7 +151,8 @@ function afficherResultat(aff, scoreData) {
   }
 
   /* Rang = grade actuel */
-  var prog = typeof getProgression === 'function' ? getProgression() : {};
+  var prog = typeof getProgression === 'function' ? await getProgression() : {};
+  prog = prog || {};
   var rangEl = document.getElementById('rang-valeur');
   if (rangEl) rangEl.textContent = prog.grade || 'Inspecteur Stagiaire';
 
@@ -167,7 +168,7 @@ function afficherResultat(aff, scoreData) {
 
   /* Badges */
   if (typeof verifierBadges === 'function') {
-    var nouveauxBadges = verifierBadges();
+    var nouveauxBadges = await verifierBadges();
     if (nouveauxBadges.length > 0 && typeof notifierNouveauxBadges === 'function') {
       setTimeout(function() { notifierNouveauxBadges(nouveauxBadges); }, 1500);
     }
@@ -207,38 +208,71 @@ function afficherResultat(aff, scoreData) {
 }
 
 /* ── Classement ── */
-function construireClassement(tri) {
-  var users   = JSON.parse(localStorage.getItem('ec_users') || '[]');
-  var session = typeof getSession === 'function' ? getSession() : null;
-
-  var podium = document.getElementById('podium');
+async function construireClassement(tri) {
   var tbody  = document.getElementById('tbody-classement');
+  var podium = document.getElementById('podium');
 
-  if (users.length === 0) {
+  if (tbody) tbody.innerHTML =
+    '<tr><td colspan="6" style="text-align:center;color:#888;padding:40px 0">Chargement du classement…</td></tr>';
+  if (podium) podium.style.display = 'none';
+
+  var db      = window._supabase;
+  var session = typeof getSession === 'function' ? getSession() : null;
+  var joueurs = [];
+
+  if (db) {
+    var usersRes = await db.from('ec_users').select('id, pseudo');
+    var progsRes = await db.from('ec_progression').select('user_id, affaires_resolues, scores, grade');
+
+    if (usersRes.error || !usersRes.data) {
+      if (tbody) tbody.innerHTML =
+        '<tr><td colspan="6" style="text-align:center;color:#888;padding:40px 0">Impossible de charger le classement.</td></tr>';
+      return;
+    }
+
+    joueurs = usersRes.data.map(function(user) {
+      var prog   = (progsRes.data || []).find(function(p) { return p.user_id === user.id; }) || {};
+      var scores = prog.scores || {};
+      var total  = Object.values(scores).reduce(function(s, v) { return s + (v.points || 0); }, 0);
+      var resolus = (prog.affaires_resolues || []).length;
+      var tempsListe = Object.values(scores).map(function(s) { return s.temps || 0; }).filter(function(t) { return t > 0; });
+      var meilleureVitesse = tempsListe.length ? Math.min.apply(null, tempsListe) : 0;
+      return {
+        id: user.id, pseudo: user.pseudo,
+        grade: prog.grade || 'Inspecteur Stagiaire',
+        scoreTotal: total, affairesResolues: resolus,
+        meilleureVitesse: meilleureVitesse,
+        estMoi: !!(session && session.userId === user.id)
+      };
+    });
+  } else {
+    /* Fallback localStorage */
+    var users = JSON.parse(localStorage.getItem('ec_users_local') || '[]');
+    joueurs = users.map(function(user) {
+      var prog   = JSON.parse(localStorage.getItem('ec_progression_' + user.id) || '{}');
+      var scores = prog.scores || {};
+      var total  = Object.values(scores).reduce(function(s, x) { return s + (x.points || 0); }, 0);
+      var resolus = (prog.affairesResolues || []).length;
+      var tempsListe = Object.values(scores).map(function(s) { return s.temps || 0; }).filter(function(t) { return t > 0; });
+      var meilleureVitesse = tempsListe.length ? Math.min.apply(null, tempsListe) : 0;
+      return {
+        id: user.id, pseudo: user.pseudo,
+        grade: prog.grade || 'Inspecteur Stagiaire',
+        scoreTotal: total, affairesResolues: resolus,
+        meilleureVitesse: meilleureVitesse,
+        estMoi: !!(session && session.userId === user.id)
+      };
+    });
+  }
+
+  if (joueurs.length === 0) {
     if (tbody) tbody.innerHTML =
       '<tr><td colspan="6" style="text-align:center;color:#c9a84c;opacity:0.5;padding:40px 0;">' +
-      'Aucun enquêteur enregistré sur cet appareil.<br>' +
+      'Aucun enquêteur inscrit pour l\'instant.<br>' +
       '<span style="font-size:11px;opacity:0.6">Créez un compte pour apparaître au classement.</span></td></tr>';
-    if (podium) podium.style.display = 'none';
     return;
   }
   if (podium) podium.style.display = '';
-
-  var joueurs = users.map(function(user) {
-    var prog    = JSON.parse(localStorage.getItem('ec_progression_' + user.id) || '{}');
-    var scores  = prog.scores || {};
-    var total   = Object.values(scores).reduce(function(s, x) { return s + (x.points || 0); }, 0);
-    var resolus = (prog.affairesResolues || []).length;
-    var tempsListe = Object.values(scores).map(function(s) { return s.temps || 0; }).filter(function(t) { return t > 0; });
-    var meilleureVitesse = tempsListe.length ? Math.min.apply(null, tempsListe) : 0;
-    return {
-      id: user.id, pseudo: user.pseudo,
-      grade: prog.grade || 'Inspecteur Stagiaire',
-      scoreTotal: total, affairesResolues: resolus,
-      meilleureVitesse: meilleureVitesse,
-      estMoi: !!(session && session.userId === user.id)
-    };
-  });
 
   var tries = {
     score:    function(a, b) { return b.scoreTotal - a.scoreTotal; },
@@ -255,7 +289,7 @@ function construireClassement(tri) {
   if (tbody) {
     tbody.innerHTML = '';
     joueurs.forEach(function(j, i) {
-      var rang    = i + 1;
+      var rang     = i + 1;
       var medaille = rang === 1 ? '♛' : rang === 2 ? '◈' : rang === 3 ? '◇' : rang;
       var temps    = j.meilleureVitesse > 0 ?
         Math.floor(j.meilleureVitesse / 60) + 'min ' + (j.meilleureVitesse % 60) + 's' : '—';
@@ -281,8 +315,8 @@ function getDateJour() {
   return new Date().toISOString().split('T')[0];
 }
 
-function updateStreak() {
-  var prog = typeof getProgression === 'function' ? getProgression() : null;
+async function updateStreak() {
+  var prog = typeof getProgression === 'function' ? await getProgression() : null;
   if (!prog) return null;
 
   var streak = prog.streak || {
@@ -309,8 +343,8 @@ function updateStreak() {
     }
   }
 
-  streak.maximum      = Math.max(streak.actuel, streak.maximum);
-  streak.dernierJour  = aujourdhui;
+  streak.maximum        = Math.max(streak.actuel, streak.maximum);
+  streak.dernierJour    = aujourdhui;
   streak.joueAujourdhui = true;
 
   var historique = prog.historiqueJours || [];
@@ -320,13 +354,13 @@ function updateStreak() {
   }
 
   if (typeof updateProgression === 'function') {
-    updateProgression({ streak: streak, historiqueJours: historique });
+    await updateProgression({ streak: streak, historiqueJours: historique });
   }
   return streak;
 }
 
-function getStreak() {
-  var prog = typeof getProgression === 'function' ? getProgression() : null;
+async function getStreak() {
+  var prog = typeof getProgression === 'function' ? await getProgression() : null;
   if (!prog || !prog.streak) {
     return { actuel: 0, maximum: 0, dernierJour: null, joueAujourdhui: false };
   }
@@ -344,7 +378,7 @@ function getStreak() {
     streak.actuel         = 0;
     streak.joueAujourdhui = false;
     if (typeof updateProgression === 'function') {
-      updateProgression({ streak: streak });
+      await updateProgression({ streak: streak });
     }
   }
 

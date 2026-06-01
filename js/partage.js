@@ -10,7 +10,7 @@ function genererTextePartage(aff, points) {
     points + ' points au compteur. Tente de faire mieux 👇 enigmes-criminelles.fr';
 }
 
-function genererImagePartage(aff, scoreData, format) {
+async function genererImagePartage(aff, scoreData, format) {
   var W = format === 'carre' ? 1080 : 1200;
   var H = format === 'carre' ? 1080 : 675;
 
@@ -75,7 +75,7 @@ function genererImagePartage(aff, scoreData, format) {
 
   /* Temps résolution */
   var duree     = (typeof DUREES !== 'undefined' ? DUREES[aff.niveau] : null) || 300;
-  var prog      = typeof getProgression === 'function' ? getProgression() : null;
+  var prog      = typeof getProgression === 'function' ? await getProgression() : null;
   var sc        = prog && prog.scores && prog.scores[aff.id];
   var tempsPris = sc ? (sc.temps || 0) : 0;
   var min = Math.floor(tempsPris / 60).toString().padStart(2, '0');
@@ -102,9 +102,9 @@ function genererImagePartage(aff, scoreData, format) {
 }
 
 /* ── Aperçu dans le DOM ── */
-function _majApercu(format) {
+async function _majApercu(format) {
   if (!_partageAff || !_partageScore) return;
-  var src    = genererImagePartage(_partageAff, _partageScore, format);
+  var src    = await genererImagePartage(_partageAff, _partageScore, format);
   var apercu = document.getElementById('apercu-partage');
   if (!apercu) return;
   apercu.width  = src.width;
@@ -137,10 +137,10 @@ function initPartage(aff, scoreData) {
   /* Bouton télécharger */
   var btnDl = document.getElementById('btn-telecharger-image');
   if (btnDl) {
-    btnDl.onclick = function() {
+    btnDl.onclick = async function() {
       var actif  = document.querySelector('.btn-format.actif');
       var format = actif ? actif.dataset.format : 'carre';
-      var src    = genererImagePartage(_partageAff, _partageScore, format);
+      var src    = await genererImagePartage(_partageAff, _partageScore, format);
       var lien   = document.createElement('a');
       lien.download = 'enigmes-criminelles-affaire-' + (aff.id || 'x') + '.png';
       lien.href = src.toDataURL('image/png');
@@ -153,8 +153,8 @@ function initPartage(aff, scoreData) {
   if (btnNatif) {
     if (navigator.share) {
       btnNatif.classList.remove('hidden');
-      btnNatif.onclick = function() {
-        var src = genererImagePartage(_partageAff, _partageScore, 'carre');
+      btnNatif.onclick = async function() {
+        var src = await genererImagePartage(_partageAff, _partageScore, 'carre');
         src.toBlob(function(blob) {
           var file = new File([blob], 'enigmes-criminelles.png', { type: 'image/png' });
           var texte = genererTextePartage(_partageAff, _partageScore.points);

@@ -1,23 +1,11 @@
 /* ═══════════════════════════════════════════════════════════
-   auth.js — Authentification Énigmes Criminelles (RGPD)
+   auth.js — Authentification Énigmes Criminelles (Supabase)
 ═══════════════════════════════════════════════════════════ */
 
 /* ── Utilitaires ── */
 function sanitize(str) {
   if (!str) return '';
   return String(str).trim().replace(/[<>"'`]/g, '').slice(0, 200);
-}
-
-function generateId() {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID();
-  }
-  var bytes = new Uint8Array(16);
-  (window.crypto || window.msCrypto).getRandomValues(bytes);
-  bytes[6] = (bytes[6] & 0x0f) | 0x40;
-  bytes[8] = (bytes[8] & 0x3f) | 0x80;
-  var hex = Array.from(bytes).map(function(b) { return b.toString(16).padStart(2, '0'); });
-  return hex[0]+hex[1]+hex[2]+hex[3]+'-'+hex[4]+hex[5]+'-'+hex[6]+hex[7]+'-'+hex[8]+hex[9]+'-'+hex[10]+hex[11]+hex[12]+hex[13]+hex[14]+hex[15];
 }
 
 function isValidEmail(email) {
@@ -32,7 +20,7 @@ function isValidPseudo(pseudo) {
   return /^[a-zA-Z0-9\-_àâäéèêëîïôùûüç ]{3,20}$/.test(pseudo.trim());
 }
 
-/* ── SHA-256 pur JS (fallback si crypto.subtle indisponible — HTTP) ── */
+/* ── SHA-256 pur JS (fallback HTTP) ── */
 function sha256pure(str) {
   function rightRotate(v, a) { return (v >>> a) | (v << (32 - a)); }
   var K = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
@@ -80,7 +68,6 @@ function sha256pure(str) {
   return H.map(function(v) { return (v>>>0).toString(16).padStart(8,'0'); }).join('');
 }
 
-/* ── Hachage SHA-256 ── */
 async function hashPassword(password) {
   if (typeof crypto !== 'undefined' && crypto.subtle) {
     try {
@@ -96,54 +83,7 @@ async function hashPassword(password) {
   return sha256pure(password);
 }
 
-/* ── Gestion des utilisateurs ── */
-function getAllUsers() {
-  try {
-    return JSON.parse(localStorage.getItem('ec_users') || '[]');
-  } catch(e) {
-    console.error('getAllUsers error:', e);
-    return [];
-  }
-}
-
-function saveAllUsers(users) {
-  try {
-    localStorage.setItem('ec_users', JSON.stringify(users));
-    return true;
-  } catch(e) {
-    console.error('saveAllUsers error:', e);
-    return false;
-  }
-}
-
-/* ── Diagnostic (localhost uniquement) ── */
-function diagnosticAuth() {
-  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') return;
-  console.group('=== DIAGNOSTIC AUTH ===');
-  var users = getAllUsers();
-  console.log('Comptes enregistrés :', users.length);
-  users.forEach(function(u) {
-    console.log(' -', u.pseudo, '/', u.email, '/ inscrit le', u.dateInscription);
-  });
-  var sessionLS = localStorage.getItem('ec_session');
-  var sessionSS = sessionStorage.getItem('ec_session');
-  console.log('Session localStorage :', sessionLS ? JSON.parse(sessionLS) : 'vide');
-  console.log('Session sessionStorage :', sessionSS ? JSON.parse(sessionSS) : 'vide');
-  var session = getSession();
-  console.log('getSession() retourne :', session);
-  console.log('isLoggedIn() :', isLoggedIn());
-  if (session) {
-    var now = Date.now();
-    var expiry = session.expiry;
-    console.log('Expiry dans :', expiry ? Math.round((expiry - now) / 60000) + ' minutes' : 'pas défini');
-    if (expiry && now > expiry) console.error('SESSION EXPIRÉE !');
-  }
-  var prog = getProgression();
-  console.log('Progression :', prog);
-  console.groupEnd();
-}
-
-/* ── Anti-brute-force (localStorage — résistant à la fermeture de fenêtre) ── */
+/* ── Anti-brute-force (localStorage) ── */
 function checkLoginAttempts() {
   const key = 'ec_attempts';
   try {
@@ -175,96 +115,7 @@ function resetLoginAttempts() {
   localStorage.removeItem('ec_attempts');
 }
 
-/* ── Inscription ── */
-async function register(pseudo, email, password) {
-  const cleanEmail = sanitize(email).toLowerCase();
-  const cleanPseudo = sanitize(pseudo);
-
-  const users = getAllUsers();
-
-  if (users.find(function(u) { return u && u.email === cleanEmail; })) {
-    throw new Error('EMAIL_EXISTS');
-  }
-  if (users.find(function(u) { return u && u.pseudo && u.pseudo.toLowerCase() === cleanPseudo.toLowerCase(); })) {
-    throw new Error('PSEUDO_EXISTS');
-  }
-
-  const hash = await hashPassword(password);
-
-  const newUser = {
-    id: generateId(),
-    pseudo: cleanPseudo,
-    email: cleanEmail,
-    passwordHash: hash,
-    dateInscription: new Date().toISOString(),
-    consentement: true,
-    consentementDate: new Date().toISOString()
-  };
-
-  users.push(newUser);
-  const saved = saveAllUsers(users);
-  if (!saved) throw new Error('STORAGE_ERROR');
-
-  console.log('Compte créé et sauvegardé :', newUser.pseudo, newUser.email);
-
-  setTimeout(function() {
-    if (typeof subscribeToMailerLite === 'function') {
-      subscribeToMailerLite(newUser.email, newUser.pseudo).catch(function(e) {
-        console.warn('MailerLite silencieux:', e);
-      });
-    }
-  }, 0);
-
-  return newUser;
-}
-
-/* ── Connexion ── */
-async function login(email, password, remember) {
-  checkLoginAttempts();
-
-  const cleanEmail = email.toLowerCase().trim();
-  const users = getAllUsers();
-
-  console.log('Tentative connexion pour:', cleanEmail, '| Comptes disponibles:', users.length);
-
-  const hash = await hashPassword(password);
-  const user = users.find(function(u) { return u && u.email === cleanEmail && u.passwordHash === hash; });
-
-  if (!user) {
-    recordFailedAttempt();
-    console.warn('Connexion échouée pour:', cleanEmail);
-    throw new Error('INVALID_CREDENTIALS');
-  }
-
-  resetLoginAttempts();
-
-  const expiry = remember
-    ? Date.now() + 30 * 24 * 60 * 60 * 1000
-    : Date.now() + 2 * 60 * 60 * 1000;
-
-  const session = {
-    userId: user.id,
-    pseudo: user.pseudo,
-    email: user.email,
-    loginDate: new Date().toISOString(),
-    remember: remember,
-    expiry: expiry
-  };
-
-  /* Toujours localStorage pour la persistance entre pages */
-  localStorage.setItem('ec_session', JSON.stringify(session));
-
-  /* Flag sessionStorage : si fenêtre fermée sans remember, la session est invalidée */
-  if (!remember) {
-    sessionStorage.setItem('ec_session_temp', 'true');
-  }
-
-  console.log('Session créée pour:', user.pseudo, '| Expire dans:', remember ? '30 jours' : '2 heures');
-
-  return session;
-}
-
-/* ── Session ── */
+/* ── Session (synchrone — localStorage uniquement) ── */
 function getSession() {
   try {
     const raw = localStorage.getItem('ec_session');
@@ -285,7 +136,6 @@ function getSession() {
 
     return session;
   } catch(e) {
-    console.error('getSession error:', e);
     return null;
   }
 }
@@ -294,62 +144,363 @@ function isLoggedIn() {
   return getSession() !== null;
 }
 
+function _saveSession(user, remember) {
+  const expiry = remember
+    ? Date.now() + 30 * 24 * 60 * 60 * 1000
+    : Date.now() + 2 * 60 * 60 * 1000;
+
+  const session = {
+    userId:          user.id,
+    pseudo:          user.pseudo,
+    email:           user.email,
+    dateInscription: user.date_inscription || null,
+    loginDate:       new Date().toISOString(),
+    remember:        remember,
+    expiry:          expiry
+  };
+
+  localStorage.setItem('ec_session', JSON.stringify(session));
+
+  if (!remember) {
+    sessionStorage.setItem('ec_session_temp', 'true');
+  }
+
+  return session;
+}
+
 function logout() {
   localStorage.removeItem('ec_session');
+  localStorage.removeItem('ec_progression_cache');
   sessionStorage.removeItem('ec_session_temp');
   window.location.href = 'index.html';
 }
 
-function deleteAccount() {
+/* ── Inscription ── */
+async function register(pseudo, email, password) {
+  const db = window._supabase;
+  const cleanEmail  = sanitize(email).toLowerCase();
+  const cleanPseudo = sanitize(pseudo);
+
+  if (db) {
+    const { data: existingEmail } = await db
+      .from('ec_users')
+      .select('id')
+      .eq('email', cleanEmail)
+      .maybeSingle();
+    if (existingEmail) throw new Error('EMAIL_EXISTS');
+
+    const { data: existingPseudo } = await db
+      .from('ec_users')
+      .select('id')
+      .ilike('pseudo', cleanPseudo)
+      .maybeSingle();
+    if (existingPseudo) throw new Error('PSEUDO_EXISTS');
+
+    const hash = await hashPassword(password);
+
+    const { data: newUser, error } = await db
+      .from('ec_users')
+      .insert({
+        pseudo:           cleanPseudo,
+        email:            cleanEmail,
+        password_hash:    hash,
+        consentement:     true,
+        consentement_date: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Supabase insert error:', error);
+      throw new Error('REGISTER_ERROR');
+    }
+
+    await db.from('ec_progression').insert({ user_id: newUser.id });
+
+    setTimeout(function() {
+      if (typeof subscribeToMailerLite === 'function') {
+        subscribeToMailerLite(newUser.email, newUser.pseudo)
+          .catch(function(e) { console.warn('MailerLite:', e); });
+      }
+    }, 0);
+
+    return newUser;
+  }
+
+  /* Fallback localStorage si Supabase non configuré */
+  const users = _getLocalUsers();
+  if (users.find(function(u) { return u && u.email === cleanEmail; }))
+    throw new Error('EMAIL_EXISTS');
+  if (users.find(function(u) { return u && u.pseudo && u.pseudo.toLowerCase() === cleanPseudo.toLowerCase(); }))
+    throw new Error('PSEUDO_EXISTS');
+
+  const hash = await hashPassword(password);
+  const newUser = {
+    id:               _genId(),
+    pseudo:           cleanPseudo,
+    email:            cleanEmail,
+    password_hash:    hash,
+    date_inscription: new Date().toISOString(),
+    consentement:     true
+  };
+  users.push(newUser);
+  localStorage.setItem('ec_users_local', JSON.stringify(users));
+
+  setTimeout(function() {
+    if (typeof subscribeToMailerLite === 'function') {
+      subscribeToMailerLite(newUser.email, newUser.pseudo)
+        .catch(function(e) { console.warn('MailerLite:', e); });
+    }
+  }, 0);
+
+  return newUser;
+}
+
+/* ── Connexion ── */
+async function login(email, password, remember) {
+  checkLoginAttempts();
+
+  const db = window._supabase;
+  const cleanEmail = email.toLowerCase().trim();
+  const hash = await hashPassword(password);
+
+  if (db) {
+    const { data: user, error } = await db
+      .from('ec_users')
+      .select('*')
+      .eq('email', cleanEmail)
+      .maybeSingle();
+
+    if (error || !user || user.password_hash !== hash) {
+      recordFailedAttempt();
+      throw new Error('INVALID_CREDENTIALS');
+    }
+
+    resetLoginAttempts();
+    return _saveSession(user, remember);
+  }
+
+  /* Fallback localStorage */
+  const users = _getLocalUsers();
+  const user = users.find(function(u) {
+    return u && u.email === cleanEmail && u.password_hash === hash;
+  });
+  if (!user) {
+    recordFailedAttempt();
+    throw new Error('INVALID_CREDENTIALS');
+  }
+  resetLoginAttempts();
+  return _saveSession(user, remember);
+}
+
+/* ── Suppression de compte ── */
+async function deleteAccount() {
   const session = getSession();
   if (!session) return;
-  const users = getAllUsers().filter(function(u) { return u.id !== session.userId; });
-  saveAllUsers(users);
-  localStorage.removeItem('ec_progression_' + session.userId);
+  const db = window._supabase;
+  if (db) {
+    await db.from('ec_users').delete().eq('id', session.userId);
+  } else {
+    const users = _getLocalUsers().filter(function(u) { return u.id !== session.userId; });
+    localStorage.setItem('ec_users_local', JSON.stringify(users));
+    localStorage.removeItem('ec_progression_' + session.userId);
+  }
   logout();
 }
 
-/* ── Progression ── */
-function getProgression() {
+/* ── Modifier pseudo ── */
+async function updatePseudo(newPseudo) {
   const session = getSession();
-  if (!session) return null;
+  if (!session) throw new Error('NOT_LOGGED_IN');
+  const clean = sanitize(newPseudo);
+  const db = window._supabase;
 
-  const key = 'ec_progression_' + session.userId;
-  try {
-    const raw = localStorage.getItem(key);
-    if (!raw) {
-      const defaut = {
-        affairesResolues: [],
-        scores: {},
-        grade: 'Inspecteur Stagiaire',
-        badges: [],
-        streak: { actuel: 0, maximum: 0, dernierJour: null, joueAujourdhui: false },
-        historiqueJours: []
-      };
-      localStorage.setItem(key, JSON.stringify(defaut));
-      return defaut;
-    }
-    return JSON.parse(raw);
-  } catch(e) {
-    console.error('getProgression error:', e);
-    return null;
+  if (db) {
+    const { data: existing } = await db
+      .from('ec_users')
+      .select('id')
+      .ilike('pseudo', clean)
+      .neq('id', session.userId)
+      .maybeSingle();
+    if (existing) throw new Error('PSEUDO_EXISTS');
+
+    const { error } = await db
+      .from('ec_users')
+      .update({ pseudo: clean })
+      .eq('id', session.userId);
+    if (error) throw new Error('UPDATE_ERROR');
+  } else {
+    const users = _getLocalUsers();
+    if (users.find(function(u) { return u.id !== session.userId && u.pseudo.toLowerCase() === clean.toLowerCase(); }))
+      throw new Error('PSEUDO_EXISTS');
+    const idx = users.findIndex(function(u) { return u.id === session.userId; });
+    if (idx !== -1) { users[idx].pseudo = clean; localStorage.setItem('ec_users_local', JSON.stringify(users)); }
+  }
+
+  const sess = getSession();
+  sess.pseudo = clean;
+  localStorage.setItem('ec_session', JSON.stringify(sess));
+}
+
+/* ── Modifier mot de passe ── */
+async function updatePassword(currentPassword, newPassword) {
+  const session = getSession();
+  if (!session) throw new Error('NOT_LOGGED_IN');
+
+  const currHash = await hashPassword(currentPassword);
+  const newHash  = await hashPassword(newPassword);
+  const db = window._supabase;
+
+  if (db) {
+    const { data: user } = await db
+      .from('ec_users')
+      .select('password_hash')
+      .eq('id', session.userId)
+      .maybeSingle();
+    if (!user || user.password_hash !== currHash) throw new Error('WRONG_PASSWORD');
+
+    const { error } = await db
+      .from('ec_users')
+      .update({ password_hash: newHash })
+      .eq('id', session.userId);
+    if (error) throw new Error('UPDATE_ERROR');
+  } else {
+    const users = _getLocalUsers();
+    const idx = users.findIndex(function(u) { return u.id === session.userId; });
+    if (idx === -1 || users[idx].password_hash !== currHash) throw new Error('WRONG_PASSWORD');
+    users[idx].password_hash = newHash;
+    localStorage.setItem('ec_users_local', JSON.stringify(users));
   }
 }
 
-function updateProgression(data) {
+/* ── Progression ── */
+const _CACHE_KEY = 'ec_progression_cache';
+const _CACHE_TTL = 30000;
+
+async function getProgression() {
+  const session = getSession();
+  if (!session) return null;
+
+  /* Cache localStorage */
+  try {
+    const cached = JSON.parse(localStorage.getItem(_CACHE_KEY) || 'null');
+    if (cached && Date.now() - cached.timestamp < _CACHE_TTL && cached.userId === session.userId) {
+      return cached.data;
+    }
+  } catch(e) {}
+
+  const db = window._supabase;
+
+  if (db) {
+    const { data, error } = await db
+      .from('ec_progression')
+      .select('*')
+      .eq('user_id', session.userId)
+      .maybeSingle();
+
+    if (error) console.error('getProgression error:', error);
+
+    const prog = data ? {
+      affairesResolues:  data.affaires_resolues  || [],
+      scores:            data.scores             || {},
+      grade:             data.grade              || 'Inspecteur Stagiaire',
+      badges:            data.badges             || [],
+      streak:            data.streak             || { actuel: 0, maximum: 0, dernierJour: null, joueAujourdhui: false },
+      historiqueJours:   data.historique_jours   || [],
+      enquetesSpeciales: data.enquetes_speciales || {}
+    } : _defaultProgression();
+
+    localStorage.setItem(_CACHE_KEY, JSON.stringify({
+      timestamp: Date.now(),
+      userId:    session.userId,
+      data:      prog
+    }));
+
+    return prog;
+  }
+
+  /* Fallback localStorage */
+  try {
+    const raw = localStorage.getItem('ec_progression_' + session.userId);
+    const prog = raw ? JSON.parse(raw) : _defaultProgression();
+    localStorage.setItem(_CACHE_KEY, JSON.stringify({
+      timestamp: Date.now(),
+      userId:    session.userId,
+      data:      prog
+    }));
+    return prog;
+  } catch(e) {
+    return _defaultProgression();
+  }
+}
+
+async function updateProgression(updates) {
   const session = getSession();
   if (!session) return false;
 
-  const key = 'ec_progression_' + session.userId;
+  /* Invalider le cache immédiatement */
+  localStorage.removeItem(_CACHE_KEY);
+
+  const db = window._supabase;
+
+  if (db) {
+    const supabaseUpdate = { updated_at: new Date().toISOString() };
+    if (updates.affairesResolues !== undefined) supabaseUpdate.affaires_resolues  = updates.affairesResolues;
+    if (updates.scores           !== undefined) supabaseUpdate.scores             = updates.scores;
+    if (updates.grade            !== undefined) supabaseUpdate.grade              = updates.grade;
+    if (updates.badges           !== undefined) supabaseUpdate.badges             = updates.badges;
+    if (updates.streak           !== undefined) supabaseUpdate.streak             = updates.streak;
+    if (updates.historiqueJours  !== undefined) supabaseUpdate.historique_jours   = updates.historiqueJours;
+    if (updates.enquetesSpeciales !== undefined) supabaseUpdate.enquetes_speciales = updates.enquetesSpeciales;
+
+    const { error } = await db
+      .from('ec_progression')
+      .update(supabaseUpdate)
+      .eq('user_id', session.userId);
+
+    if (error) { console.error('updateProgression error:', error); return false; }
+    return true;
+  }
+
+  /* Fallback localStorage */
   try {
-    const current = getProgression() || {};
-    const updated = Object.assign({}, current, data);
+    const key  = 'ec_progression_' + session.userId;
+    const raw  = localStorage.getItem(key);
+    const current = raw ? JSON.parse(raw) : _defaultProgression();
+    const updated = Object.assign({}, current, updates);
     localStorage.setItem(key, JSON.stringify(updated));
     return true;
   } catch(e) {
-    console.error('updateProgression error:', e);
     return false;
   }
+}
+
+function _defaultProgression() {
+  return {
+    affairesResolues:  [],
+    scores:            {},
+    grade:             'Inspecteur Stagiaire',
+    badges:            [],
+    streak:            { actuel: 0, maximum: 0, dernierJour: null, joueAujourdhui: false },
+    historiqueJours:   [],
+    enquetesSpeciales: {}
+  };
+}
+
+function _getLocalUsers() {
+  try { return JSON.parse(localStorage.getItem('ec_users_local') || '[]'); }
+  catch(e) { return []; }
+}
+
+function _genId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
+    return crypto.randomUUID();
+  var bytes = new Uint8Array(16);
+  (window.crypto || window.msCrypto).getRandomValues(bytes);
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  var hex = Array.from(bytes).map(function(b) { return b.toString(16).padStart(2,'0'); });
+  return hex[0]+hex[1]+hex[2]+hex[3]+'-'+hex[4]+hex[5]+'-'+hex[6]+hex[7]+'-'+hex[8]+hex[9]+'-'+hex[10]+hex[11]+hex[12]+hex[13]+hex[14]+hex[15];
 }
 
 function getGrade(n) {
@@ -360,14 +511,12 @@ function getGrade(n) {
   return 'Inspecteur Stagiaire ★';
 }
 
-/* ── Protection des pages ── */
 function requireLogin() {
   if (!isLoggedIn()) {
     window.location.href = 'inscription.html?redirect=' + encodeURIComponent(window.location.pathname);
   }
 }
 
-/* ── Navigation dynamique ── */
 function initNav() {
   const session = getSession();
   const navCompte = document.getElementById('nav-compte');
@@ -381,8 +530,8 @@ function initNav() {
     }
   }
 
-  const hamburger = document.getElementById('nav-hamburger');
-  const mobilePanel = document.getElementById('nav-mobile-panel');
+  const hamburger    = document.getElementById('nav-hamburger');
+  const mobilePanel  = document.getElementById('nav-mobile-panel');
   const mobileCompte = document.getElementById('nav-mobile-compte');
   if (hamburger && mobilePanel) {
     hamburger.addEventListener('click', function() {
@@ -398,11 +547,9 @@ function initNav() {
       }
     }, { capture: true });
   }
-  if (mobileCompte) {
-    if (session && isLoggedIn()) {
-      mobileCompte.textContent = session.pseudo;
-      mobileCompte.href = 'profil.html';
-    }
+  if (mobileCompte && session && isLoggedIn()) {
+    mobileCompte.textContent = session.pseudo;
+    mobileCompte.href = 'profil.html';
   }
 
   if (!isLoggedIn()) {

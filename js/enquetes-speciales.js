@@ -78,27 +78,27 @@ function marquerCasesSucces(containerId) {
 }
 
 /* ── Badge ── */
-function debloquerBadgeEte() {
-  const prog = getProgression();
+async function debloquerBadgeEte() {
+  const prog = await getProgression();
   if (!prog) return;
   const badges = prog.badges || [];
   if (badges.some(b => b.id === 'affaire_ete')) return;
   badges.push({ id: 'affaire_ete', dateObtention: new Date().toISOString() });
-  updateProgression({ badges });
+  await updateProgression({ badges });
 }
 
 /* ── Persistance ── */
-function sauvegarderResolutionEte() {
-  const prog = getProgression();
+async function sauvegarderResolutionEte() {
+  const prog = await getProgression();
   if (!prog) return;
   const enquetesSpeciales = prog.enquetesSpeciales || {};
   enquetesSpeciales['affaire-ete'] = { resolue: true, date: new Date().toISOString() };
-  updateProgression({ enquetesSpeciales });
-  debloquerBadgeEte();
+  await updateProgression({ enquetesSpeciales });
+  await debloquerBadgeEte();
 }
 
-function estDejaResolue() {
-  const prog = getProgression();
+async function estDejaResolue() {
+  const prog = await getProgression();
   if (!prog) return false;
   return prog.enquetesSpeciales?.['affaire-ete']?.resolue === true;
 }
@@ -205,13 +205,13 @@ function afficherSuccesEte() {
 }
 
 /* ── Init ── */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
 
   /* Statut carte */
   const statut = document.getElementById('statut-ete');
   const btnOuvrir = document.getElementById('btn-ouvrir-ete');
 
-  if (isLoggedIn() && estDejaResolue()) {
+  if (isLoggedIn() && await estDejaResolue()) {
     if (statut) statut.innerHTML = '<span class="statut-resolu">✓ Dossier refermé</span>';
     if (btnOuvrir) { btnOuvrir.textContent = 'Voir mon résultat →'; btnOuvrir.style.background = '#2d5a27'; }
   } else if (isLoggedIn()) {
@@ -227,12 +227,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* Bouton ouvrir */
   if (btnOuvrir) {
-    btnOuvrir.addEventListener('click', () => {
+    btnOuvrir.addEventListener('click', async () => {
       if (!isLoggedIn()) {
         document.getElementById('modal-connexion').classList.remove('hidden');
         return;
       }
-      if (estDejaResolue()) {
+      if (await estDejaResolue()) {
         afficherSuccesEte();
         return;
       }
@@ -269,7 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* Validation */
   const btnValider = document.getElementById('btn-valider-ete');
   if (btnValider) {
-    btnValider.addEventListener('click', () => {
+    btnValider.addEventListener('click', async () => {
       document.querySelectorAll('.champ-erreur').forEach(e => e.classList.add('hidden'));
 
       const repCoupable = normaliser(lireCases('cases-coupable'));
@@ -301,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
       marquerCasesSucces('cases-coupable');
       marquerCasesSucces('cases-methode');
       marquerCasesSucces('cases-lieu');
-      sauvegarderResolutionEte();
+      await sauvegarderResolutionEte();
 
       setTimeout(() => {
         document.getElementById('modal-ete').classList.add('hidden');

@@ -196,6 +196,8 @@
 
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="./js/supabase-config.js"></script>
   <script src="./js/auth.js"></script>
   <script src="./js/scoring.js"></script>
   <script>
@@ -210,14 +212,14 @@
       document.head.appendChild(lk);
     }());
 
-    document.addEventListener('DOMContentLoaded', function() {
-      construireClassement('score');
+    document.addEventListener('DOMContentLoaded', async function() {
+      await construireClassement('score');
 
       document.querySelectorAll('.onglet-tri').forEach(function(btn) {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', async function() {
           document.querySelectorAll('.onglet-tri').forEach(function(b) { b.classList.remove('actif'); });
           btn.classList.add('actif');
-          construireClassement(btn.dataset.tri);
+          await construireClassement(btn.dataset.tri);
         });
       });
     });

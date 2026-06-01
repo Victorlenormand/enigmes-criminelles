@@ -3,8 +3,8 @@
 ═══════════════════════════════════════════════════════════ */
 
 /* ── Calcul ── */
-function calculerStatistiques() {
-  var prog = typeof getProgression === 'function' ? getProgression() : null;
+async function calculerStatistiques() {
+  var prog = typeof getProgression === 'function' ? await getProgression() : null;
   if (!prog) return null;
 
   var scores   = prog.scores || {};
@@ -165,9 +165,9 @@ function formatTemps(secondes) {
 }
 
 /* ── Init ── */
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
   var session = typeof getSession === 'function' ? getSession() : null;
-  var prog    = typeof getProgression === 'function' ? getProgression() : null;
+  var prog    = typeof getProgression === 'function' ? await getProgression() : null;
 
   /* Sous-titre pseudo + grade */
   if (session) {
@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  var stats = calculerStatistiques();
+  var stats = await calculerStatistiques();
 
   /* État vide */
   if (!stats || stats.vide) {

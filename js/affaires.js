@@ -905,7 +905,7 @@ function wsRenderWordList(aff) {
   });
 }
 
-function wsRevealGhost(aff) {
+async function wsRevealGhost(aff) {
   var ghostItem = document.getElementById('ws-ghost-item-' + aff.id);
   if (ghostItem) {
     ghostItem.classList.add('ws-word-ghost-revealed');
@@ -915,12 +915,12 @@ function wsRevealGhost(aff) {
     ghostItem.parentNode.insertBefore(msg, ghostItem.nextSibling);
   }
   // Mise à jour de la progression
-  var prog = getProgression();
+  var prog = await getProgression();
   if (prog) {
     var resolues = prog.affairesResolues || [];
     if (resolues.indexOf(aff.id) === -1) {
       resolues.push(aff.id);
-      updateProgression({ affairesResolues: resolues, grade: getGrade(resolues.length) });
+      await updateProgression({ affairesResolues: resolues, grade: getGrade(resolues.length) });
     }
   }
   setTimeout(function() { wsIlluminateResiduals(aff); }, 1800);
@@ -1033,7 +1033,7 @@ function wsShowAnswerForm(aff) {
   });
 }
 
-function wsValidate(aff) {
+async function wsValidate(aff) {
   function readField(key) {
     var boxes = document.querySelectorAll('#ws-chars-' + aff.id + '-' + key + ' .ws-char-inp');
     var v = '';
@@ -1076,7 +1076,7 @@ function wsValidate(aff) {
   }) : { points: 100, base: 100, bonusVitesse: 0, bonusPremiere: 0, penalite: 0 };
 
   /* Stocker le meilleur score */
-  var prog   = getProgression();
+  var prog   = await getProgression();
   if (!prog) return;
   var scores = prog.scores || {};
   var duree  = (typeof DUREES !== 'undefined' ? DUREES[aff.niveau] : null) || 300;
@@ -1089,15 +1089,15 @@ function wsValidate(aff) {
       erreurs: st.erreurs,
       date:   new Date().toISOString()
     };
-    updateProgression({ scores: scores });
+    await updateProgression({ scores: scores });
   }
 
   /* Streak */
-  var streakData = typeof updateStreak === 'function' ? updateStreak() : null;
+  var streakData = typeof updateStreak === 'function' ? await updateStreak() : null;
 
   /* Overlay résultat */
   if (typeof afficherResultat === 'function') {
-    afficherResultat(aff, scoreData);
+    await afficherResultat(aff, scoreData);
   } else {
     var wrap = document.getElementById('ws-sw-' + aff.id);
     if (wrap) {

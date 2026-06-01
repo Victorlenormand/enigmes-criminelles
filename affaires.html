@@ -319,6 +319,8 @@
     #btn-copier-texte:hover { color: #c9a84c; border-color: #c9a84c; }
   </style>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="./js/supabase-config.js"></script>
   <script src="./js/auth.js"></script>
   <script>
     requireLogin();
@@ -343,8 +345,9 @@
     }());
 
     /* ── Widget score ────────────────────────────────────────── */
-    document.addEventListener('DOMContentLoaded', function() {
-      var progInit = getProgression();
+    document.addEventListener('DOMContentLoaded', async function() {
+      var progInit = await getProgression();
+      progInit = progInit || {};
       var scoresInit = progInit.scores || {};
       var totalInit = Object.values(scoresInit).reduce(function(s, x) { return s + (x.points || 0); }, 0);
       var wsScoreEl = document.getElementById('ws-score');
@@ -354,8 +357,9 @@
     });
 
     /* ── Vue sélection ───────────────────────────────────────── */
-    document.addEventListener('DOMContentLoaded', function() {
-      var prog = getProgression();
+    document.addEventListener('DOMContentLoaded', async function() {
+      var prog = await getProgression();
+      prog = prog || {};
       var resolues = prog.affairesResolues || [];
 
       document.getElementById('sel-progression').textContent = resolues.length + ' / 20 affaires résolues';

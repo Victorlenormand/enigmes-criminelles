@@ -580,6 +580,8 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="./js/supabase-config.js"></script>
   <script src="./js/auth.js"></script>
   <script src="./js/scoring.js"></script>
   <script src="./js/badges.js"></script>
@@ -598,11 +600,12 @@
       document.head.appendChild(lk);
     }());
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', async function() {
       var session = getSession();
-      var prog    = getProgression();
-      var users   = JSON.parse(localStorage.getItem('ec_users') || '[]');
-      var user    = users.find(function(u) { return u.id === session.userId; });
+      var prog    = await getProgression();
+      prog = prog || {};
+      /* date_inscription stockée dans la session lors du login */
+      var user = { dateInscription: session.dateInscription || null };
 
       // ── Carte enquêteur ──
       function drawCard() {
@@ -698,11 +701,11 @@
       drawCard();
 
       // ── Badges ──
-      if (typeof renderBadges === 'function') renderBadges();
+      if (typeof renderBadges === 'function') await renderBadges();
 
       // ── Streak ──
-      (function() {
-        var streak = typeof getStreak === 'function' ? getStreak() : { actuel: 0, maximum: 0, joueAujourdhui: false };
+      await (async function() {
+        var streak = typeof getStreak === 'function' ? await getStreak() : { actuel: 0, maximum: 0, joueAujourdhui: false };
         document.getElementById('streak-nombre').textContent = streak.actuel;
         document.getElementById('streak-max').textContent    = streak.maximum;
         var statutEl = document.getElementById('streak-statut');
@@ -767,7 +770,7 @@
       document.getElementById('cancel-pseudo').addEventListener('click', function() {
         document.getElementById('zone-pseudo').classList.remove('open');
       });
-      document.getElementById('save-pseudo').addEventListener('click', function() {
+      document.getElementById('save-pseudo').addEventListener('click', async function() {
         var newPseudo = document.getElementById('new-pseudo').value.trim();
         var errEl = document.getElementById('err-pseudo-edit');
         errEl.textContent = ''; errEl.classList.remove('visible');
@@ -775,20 +778,16 @@
           errEl.textContent = 'Nom de code invalide (3–20 caractères, lettres, chiffres, tirets).';
           errEl.classList.add('visible'); return;
         }
-        var allUsers = JSON.parse(localStorage.getItem('ec_users') || '[]');
-        if (allUsers.find(function(u) { return u.id !== session.userId && u.pseudo.toLowerCase() === newPseudo.toLowerCase(); })) {
-          errEl.textContent = 'Ce nom de code est déjà pris.';
-          errEl.classList.add('visible'); return;
+        try {
+          await updatePseudo(newPseudo);
+          document.getElementById('zone-pseudo').classList.remove('open');
+          window.location.reload();
+        } catch(e) {
+          errEl.textContent = e.message === 'PSEUDO_EXISTS'
+            ? 'Ce nom de code est déjà pris.'
+            : 'Erreur lors de la modification.';
+          errEl.classList.add('visible');
         }
-        allUsers = allUsers.map(function(u) {
-          return u.id === session.userId ? Object.assign({}, u, {pseudo: newPseudo}) : u;
-        });
-        localStorage.setItem('ec_users', JSON.stringify(allUsers));
-        var sess = getSession();
-        sess.pseudo = newPseudo;
-        localStorage.setItem('ec_session', JSON.stringify(sess));
-        document.getElementById('zone-pseudo').classList.remove('open');
-        window.location.reload();
       });
 
       // ── Modifier mot de passe ──
@@ -814,10 +813,10 @@
         editPwFill.style.background = colors[score];
       });
       document.getElementById('save-pw').addEventListener('click', async function() {
-        var currPw   = document.getElementById('curr-pw').value;
-        var newPw    = document.getElementById('new-pw').value;
+        var currPw    = document.getElementById('curr-pw').value;
+        var newPw     = document.getElementById('new-pw').value;
         var confirmPw = document.getElementById('confirm-pw').value;
-        var errEl    = document.getElementById('err-pw-edit');
+        var errEl     = document.getElementById('err-pw-edit');
         errEl.textContent = ''; errEl.classList.remove('visible');
         if (!newPw || newPw.length < 8 || !/[A-Z]/.test(newPw) || !/[0-9]/.test(newPw)) {
           errEl.textContent = 'Le nouveau mot de passe ne respecte pas les critères (8 chars, majuscule, chiffre).';
@@ -827,20 +826,19 @@
           errEl.textContent = 'Les mots de passe ne correspondent pas.';
           errEl.classList.add('visible'); return;
         }
-        var currHash = await hashPassword(currPw);
-        var allUsers = JSON.parse(localStorage.getItem('ec_users') || '[]');
-        var idx = allUsers.findIndex(function(u) { return u.id === session.userId; });
-        if (idx === -1 || allUsers[idx].passwordHash !== currHash) {
-          errEl.textContent = 'Mot de passe actuel incorrect.';
-          errEl.classList.add('visible'); return;
+        try {
+          await updatePassword(currPw, newPw);
+          document.getElementById('zone-pw').classList.remove('open');
+          document.getElementById('curr-pw').value = '';
+          document.getElementById('new-pw').value = '';
+          document.getElementById('confirm-pw').value = '';
+          editPwFill.style.width = '0%';
+        } catch(e) {
+          errEl.textContent = e.message === 'WRONG_PASSWORD'
+            ? 'Mot de passe actuel incorrect.'
+            : 'Erreur lors de la modification.';
+          errEl.classList.add('visible');
         }
-        allUsers[idx].passwordHash = await hashPassword(newPw);
-        localStorage.setItem('ec_users', JSON.stringify(allUsers));
-        document.getElementById('zone-pw').classList.remove('open');
-        document.getElementById('curr-pw').value = '';
-        document.getElementById('new-pw').value = '';
-        document.getElementById('confirm-pw').value = '';
-        editPwFill.style.width = '0%';
       });
 
       // ── Déconnexion ──
@@ -855,7 +853,7 @@
       document.getElementById('modal-cancel-btn').addEventListener('click', function() {
         document.getElementById('delete-modal').classList.remove('open');
       });
-      document.getElementById('modal-confirm-btn').addEventListener('click', function() {
+      document.getElementById('modal-confirm-btn').addEventListener('click', async function() {
         var typed = document.getElementById('modal-email-confirm').value.trim().toLowerCase();
         var errEl = document.getElementById('modal-error');
         if (typed !== session.email) {
@@ -863,7 +861,7 @@
           errEl.classList.add('visible');
           return;
         }
-        deleteAccount();
+        await deleteAccount();
       });
     });
   </script>
