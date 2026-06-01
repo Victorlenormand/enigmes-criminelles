@@ -1,57 +1,85 @@
 -- ═══════════════════════════════════════════════════════════
 -- supabase-rls-fix.sql
--- À exécuter dans Supabase SQL Editor si la progression
--- ne se sauvegarde pas ou si le classement est vide.
+-- À exécuter dans Supabase SQL Editor (Dashboard → SQL Editor)
+-- Couvre les cas B, C, D selon le diagnostic du bouton TEST
 -- ═══════════════════════════════════════════════════════════
 
--- 1. Supprimer les anciennes politiques RLS restrictives
-drop policy if exists "Classement public"          on ec_users;
-drop policy if exists "Progression publique"        on ec_progression;
-drop policy if exists "Insertion utilisateur"       on ec_users;
-drop policy if exists "Modification utilisateur"    on ec_users;
-drop policy if exists "Insertion progression"       on ec_progression;
-drop policy if exists "Modification progression"    on ec_progression;
-drop policy if exists "Suppression utilisateur"     on ec_users;
-drop policy if exists "Lecture publique users"      on ec_users;
-drop policy if exists "Lecture publique progression" on ec_progression;
-drop policy if exists "Ecriture users"              on ec_users;
-drop policy if exists "Modification users"          on ec_users;
-drop policy if exists "Suppression users"           on ec_users;
-drop policy if exists "Ecriture progression"        on ec_progression;
-drop policy if exists "Upsert progression"          on ec_progression;
+-- ────────────────────────────────────────────────────────────
+-- CAS B — Erreur 42501 : RLS bloque les écritures
+-- Désactiver le RLS complètement (sécurité gérée côté JS)
+-- ────────────────────────────────────────────────────────────
 
--- 2. Ajouter une contrainte UNIQUE sur user_id (nécessaire pour upsert)
-do $$
+alter table ec_users       disable row level security;
+alter table ec_progression disable row level security;
+
+-- Supprimer toutes les politiques existantes (boucle exhaustive)
+do $$ declare
+  r record;
 begin
-  if not exists (
-    select 1 from pg_constraint
-    where conname = 'ec_progression_user_id_key'
-  ) then
-    alter table ec_progression add constraint ec_progression_user_id_key unique (user_id);
-  end if;
+  for r in (
+    select policyname, tablename
+    from pg_policies
+    where tablename in ('ec_users', 'ec_progression')
+  ) loop
+    execute format('drop policy if exists %I on %I', r.policyname, r.tablename);
+  end loop;
 end $$;
 
--- 3. Nouvelles politiques permissives (sécurité gérée côté JS)
+-- ────────────────────────────────────────────────────────────
+-- CAS C — Erreur 23503 : violation de clé étrangère
+-- La contrainte est trop stricte — la rendre différée
+-- ────────────────────────────────────────────────────────────
 
--- Lecture publique pour le classement
-create policy "Lecture publique users"
-  on ec_users for select using (true);
+alter table ec_progression
+  drop constraint if exists ec_progression_user_id_fkey;
 
-create policy "Lecture publique progression"
-  on ec_progression for select using (true);
+alter table ec_progression
+  add constraint ec_progression_user_id_fkey
+  foreign key (user_id)
+  references ec_users(id)
+  on delete cascade
+  deferrable initially deferred;
 
--- Écriture complète via anon key
-create policy "Ecriture users"
-  on ec_users for insert with check (true);
+-- ────────────────────────────────────────────────────────────
+-- CAS D — Erreur 23505 : violation unique sur upsert
+-- Recréer la contrainte UNIQUE proprement (requise pour upsert)
+-- ────────────────────────────────────────────────────────────
 
-create policy "Modification users"
-  on ec_users for update using (true);
+alter table ec_progression
+  drop constraint if exists ec_progression_user_id_key;
 
-create policy "Suppression users"
-  on ec_users for delete using (true);
+alter table ec_progression
+  add constraint ec_progression_user_id_key
+  unique (user_id);
 
--- Progression : toutes opérations permises
-create policy "Toutes operations progression"
-  on ec_progression for all
-  using (true)
-  with check (true);
+-- ────────────────────────────────────────────────────────────
+-- VÉRIFICATION — exécuter après les corrections ci-dessus
+-- ────────────────────────────────────────────────────────────
+
+-- RLS désactivé sur les deux tables ?
+select tablename, rowsecurity
+from pg_tables
+where tablename in ('ec_users', 'ec_progression');
+-- rowsecurity doit être "f" (false) pour les deux
+
+-- Contraintes présentes sur ec_progression ?
+select conname, contype
+from pg_constraint
+where conrelid = 'ec_progression'::regclass;
+-- Doit voir : ec_progression_user_id_key (u) + ec_progression_user_id_fkey (f)
+
+-- État des données
+select
+  (select count(*) from ec_users)       as nb_users,
+  (select count(*) from ec_progression) as nb_progressions;
+
+-- Progressions avec affaires résolues
+select
+  u.pseudo,
+  p.affaires_resolues,
+  p.scores,
+  p.grade,
+  p.updated_at
+from ec_progression p
+join ec_users u on u.id = p.user_id
+order by p.updated_at desc;

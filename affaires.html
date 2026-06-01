@@ -320,7 +320,16 @@
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="./js/supabase-config.js"></script>
+  <script>
+    var SUPABASE_URL      = 'https://acmazynakkmhbbkymfjv.supabase.co';
+    var SUPABASE_ANON_KEY = 'sb_publishable_mY2chf8gDjPag_hgDs5z1A_Bv2HMF6O';
+    var supabase = window.supabase
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+      : null;
+    window._supabase = supabase;
+    if (!supabase) console.error('[Supabase] ERREUR — CDN non chargé');
+    else console.log('[Supabase] Client initialisé ✓');
+  </script>
   <script src="./js/auth.js"></script>
   <script>
     requireLogin();
@@ -430,6 +439,75 @@
       document.getElementById('vue-jeu').style.display = 'none';
       document.getElementById('vue-selection').style.display = 'block';
       location.reload();
+    });
+  </script>
+
+  <!-- ═══ BOUTON TEST SUPABASE (temporaire — diagnostic) ═══ -->
+  <button id="btn-test-supabase"
+    style="position:fixed;top:10px;right:10px;z-index:9999;background:red;
+    color:white;padding:10px;font-size:14px;cursor:pointer;border:none;
+    font-family:monospace;border-radius:4px;">
+    TEST SUPABASE
+  </button>
+  <script>
+    document.getElementById('btn-test-supabase').addEventListener('click', async function() {
+      console.clear();
+      console.log('=== TEST SUPABASE DIRECT ===');
+
+      console.log('1. supabase défini ?', typeof supabase !== 'undefined' ? typeof supabase : 'undefined');
+      console.log('2. window._supabase ?', !!window._supabase);
+      console.log('3. SUPABASE_URL:', typeof SUPABASE_URL !== 'undefined' ? SUPABASE_URL : 'MANQUANT');
+      console.log('4. SUPABASE_ANON_KEY:', typeof SUPABASE_ANON_KEY !== 'undefined' ? 'OK (' + SUPABASE_ANON_KEY.length + ' chars)' : 'MANQUANT');
+
+      var db = window._supabase || (typeof supabase !== 'undefined' ? supabase : null);
+      if (!db) {
+        console.error('FATAL: aucun client Supabase disponible');
+        alert('FATAL: client Supabase absent — voir console');
+        return;
+      }
+
+      console.log('--- TEST LECTURE ---');
+      var r1 = await db.from('ec_users').select('*').limit(5);
+      console.log('Lecture ec_users:', r1.data);
+      console.log('Erreur lecture:', r1.error);
+
+      console.log('--- TEST ÉCRITURE ---');
+      var testEmail = 'test-' + Date.now() + '@test.com';
+      var r2 = await db.from('ec_users').insert({
+        pseudo: 'TestUser' + Date.now(),
+        email: testEmail,
+        password_hash: 'testhash123'
+      }).select();
+      console.log('Insert résultat:', r2.data);
+      console.log('Insert erreur:', r2.error);
+      if (r2.error) {
+        console.error('CODE:', r2.error.code);
+        console.error('MESSAGE:', r2.error.message);
+        console.error('DETAILS:', r2.error.details);
+        console.error('HINT:', r2.error.hint);
+      }
+
+      if (r2.data && r2.data[0]) {
+        var userId = r2.data[0].id;
+        console.log('--- TEST PROGRESSION ---');
+        var r3 = await db.from('ec_progression').upsert({
+          user_id: userId,
+          affaires_resolues: [1, 2],
+          scores: { '1': { points: 100 } },
+          grade: 'Inspecteur'
+        }, { onConflict: 'user_id' }).select();
+        console.log('Progression upsert:', r3.data);
+        console.log('Progression erreur:', r3.error);
+        if (r3.error) {
+          console.error('CODE:', r3.error.code);
+          console.error('MESSAGE:', r3.error.message);
+        }
+
+        await db.from('ec_users').delete().eq('id', userId);
+        console.log('Test nettoyé ✓');
+      }
+
+      alert('Tests terminés — ouvre la console F12 pour voir les résultats');
     });
   </script>
 
