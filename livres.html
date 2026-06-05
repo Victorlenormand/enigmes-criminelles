@@ -282,15 +282,41 @@
     }
     #bandeau-noel a:hover { text-decoration: underline; }
     #bandeau-noel.hidden { display: none; }
+
+    /* ── Bandeau saisonnier Été ── */
+    #bandeau-ete {
+      background: linear-gradient(90deg, #0a0a05, #1a1505, #0a0a05);
+      border-bottom: 1px solid rgba(201,168,76,0.27);
+      text-align: center;
+      padding: 10px;
+      font-family: 'EB Garamond', serif;
+      font-size: 14px;
+      color: #e8d5a3;
+    }
+    #bandeau-ete a {
+      color: #c9a84c;
+      margin-left: 12px;
+      text-decoration: none;
+    }
+    #bandeau-ete a:hover { text-decoration: underline; }
+    #bandeau-ete.hidden { display: none; }
   </style>
 </head>
 <body>
 
   <!-- Bandeau saisonnier Noël -->
   <div id="bandeau-noel" class="hidden">
-    <div id="bandeau-contenu">
+    <div>
       🎁 Idée cadeau de Noël — Livraison rapide disponible sur Amazon
       <a href="https://www.amazon.fr/dp/B0GZK93B5F" target="_blank" rel="noopener noreferrer">Commander maintenant →</a>
+    </div>
+  </div>
+
+  <!-- Bandeau saisonnier Été -->
+  <div id="bandeau-ete" class="hidden">
+    <div>
+      ☀️ Édition Été disponible — L'enquête continue sous le soleil
+      <a href="https://www.amazon.fr/dp/B0H4266X84" target="_blank" rel="noopener noreferrer">Commander maintenant →</a>
     </div>
   </div>
 
@@ -348,6 +374,29 @@
             Commander sur Amazon →
           </a>
           <a class="btn-offrir" href="https://www.amazon.fr/dp/B0GZK93B5F" target="_blank" rel="noopener noreferrer">
+            🎁 Offrir ce livre →
+          </a>
+          <p class="btn-offrir-note">Livraison directe à l'adresse du destinataire via Amazon</p>
+        </div>
+      </div>
+
+      <!-- ── Édition Été — Disponible ── -->
+      <div class="livre-card">
+        <span class="livre-badge disponible">Disponible</span>
+        <div class="livre-cover" style="padding:0;background:#0a0a0a;">
+          <img src="img/cover-été.jpeg" alt="Énigmes Criminelles Édition Été — Victor Lenormand" style="width:100%;height:100%;object-fit:cover;display:block;" />
+        </div>
+        <div class="livre-body">
+          <span class="livre-vol">Édition Été</span>
+          <div class="livre-titre">ÉNIGMES CRIMINELLES — Édition Été</div>
+          <div class="livre-auteur">Victor Lenormand</div>
+          <div class="livre-sep"></div>
+          <div class="livre-sous-titre">100 casse-têtes d'enquêtes policières — Édition Vacances</div>
+          <p class="livre-desc">100 nouvelles affaires criminelles à résoudre. L'édition spéciale été pour enquêter partout — à la plage, en voyage, sous le soleil. Même mécanique, nouvelles énigmes, ambiance vacances.</p>
+          <a class="livre-btn" href="https://www.amazon.fr/dp/B0H4266X84" target="_blank" rel="noopener noreferrer">
+            Commander sur Amazon →
+          </a>
+          <a class="btn-offrir" href="https://www.amazon.fr/dp/B0H4266X84" target="_blank" rel="noopener noreferrer">
             🎁 Offrir ce livre →
           </a>
           <p class="btn-offrir-note">Livraison directe à l'adresse du destinataire via Amazon</p>
@@ -424,11 +473,14 @@
       document.head.appendChild(lk);
     }());
 
-    /* ── Bandeau saisonnier Noël (nov–déc) ── */
+    /* ── Bandeaux saisonniers ── */
     (function() {
       var mois = new Date().getMonth() + 1;
       if (mois === 11 || mois === 12) {
         document.getElementById('bandeau-noel').classList.remove('hidden');
+      }
+      if (mois >= 6 && mois <= 8) {
+        document.getElementById('bandeau-ete').classList.remove('hidden');
       }
     }());
   </script>
