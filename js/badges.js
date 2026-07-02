@@ -126,6 +126,16 @@ var BADGES = [
     condition: function(prog) {
       return prog.enquetesSpeciales && prog.enquetesSpeciales['affaire-ete'] && prog.enquetesSpeciales['affaire-ete'].resolue === true;
     }
+  },
+  {
+    id: 'affaire_vacances',
+    nom: "L'Enquêteur des Vacances",
+    description: "A résolu l'Affaire des Vacances — Édition Vacances II",
+    icone: '🌊',
+    special: true,
+    condition: function(prog) {
+      return prog.enquetesSpeciales && prog.enquetesSpeciales['affaire-vacances'] && prog.enquetesSpeciales['affaire-vacances'].resolue === true;
+    }
   }
 ];
 

@@ -14,6 +14,18 @@ const CHAMPS_ETE = {
   lieu:     8
 };
 
+const SOLUTION_VACANCES = {
+  coupable: 'HENRI',
+  methode:  'DAGUE',
+  lieu:     'PRESQUILE'
+};
+
+const CHAMPS_VACANCES = {
+  coupable: 5,
+  methode:  5,
+  lieu:     9
+};
+
 function normaliser(str) {
   return str.toUpperCase()
     .normalize('NFD')
@@ -204,6 +216,133 @@ function afficherSuccesEte() {
   if (fermer) fermer.onclick = () => overlay.classList.add('hidden');
 }
 
+/* ── Badge Vacances ── */
+async function debloquerBadgeVacances() {
+  const prog = await getProgression();
+  if (!prog) return;
+  const badges = prog.badges || [];
+  if (badges.some(b => b.id === 'affaire_vacances')) return;
+  badges.push({ id: 'affaire_vacances', dateObtention: new Date().toISOString() });
+  await updateProgression({ badges });
+}
+
+/* ── Persistance Vacances ── */
+async function sauvegarderResolutionVacances() {
+  const prog = await getProgression();
+  if (!prog) return;
+  const enquetesSpeciales = prog.enquetesSpeciales || {};
+  enquetesSpeciales['affaire-vacances'] = { resolue: true, date: new Date().toISOString() };
+  await updateProgression({ enquetesSpeciales });
+  await debloquerBadgeVacances();
+}
+
+async function estDejaResolueVacances() {
+  const prog = await getProgression();
+  if (!prog) return false;
+  return prog.enquetesSpeciales?.['affaire-vacances']?.resolue === true;
+}
+
+/* ── Image canvas Vacances ── */
+function genererImagePartageVacances() {
+  const canvas = document.getElementById('canvas-partage-vacances');
+  if (!canvas) return;
+  canvas.width = 1080; canvas.height = 1080;
+  const ctx = canvas.getContext('2d');
+  const W = 1080, H = 1080;
+
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, '#0a0805');
+  grad.addColorStop(0.5, '#05101a');
+  grad.addColorStop(1, '#0a0a05');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.strokeStyle = '#c9a84c'; ctx.lineWidth = 6;
+  ctx.strokeRect(20, 20, W - 40, H - 40);
+  ctx.strokeStyle = 'rgba(201,168,76,0.3)'; ctx.lineWidth = 1;
+  ctx.strokeRect(34, 34, W - 68, H - 68);
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#c9a84c';
+  ctx.font = '80px serif';
+  ctx.fillText('🌊', W / 2, 160);
+
+  ctx.fillStyle = '#888';
+  ctx.font = '24px monospace';
+  ctx.fillText('ENQUÊTE SPÉCIALE N°002', W / 2, 220);
+
+  ctx.fillStyle = '#f5f0e8';
+  ctx.font = 'bold 72px serif';
+  ctx.fillText("L'Affaire des Vacances", W / 2, 320);
+
+  ctx.fillStyle = '#c9a84c';
+  ctx.font = 'italic 28px serif';
+  ctx.fillText('Édition Vacances II — Énigmes Criminelles', W / 2, 375);
+
+  ctx.strokeStyle = 'rgba(201,168,76,0.4)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(W * 0.2, 410); ctx.lineTo(W * 0.8, 410); ctx.stroke();
+
+  ctx.save();
+  ctx.translate(W / 2, 530);
+  ctx.rotate(-0.08);
+  ctx.font = 'bold 96px monospace';
+  ctx.textAlign = 'center';
+  ctx.strokeStyle = '#2d5a27'; ctx.lineWidth = 8;
+  ctx.strokeText('RÉSOLU', 0, 0);
+  ctx.fillStyle = '#2d5a27';
+  ctx.fillText('RÉSOLU', 0, 0);
+  ctx.restore();
+
+  const solutions = [
+    { label: 'COUPABLE', valeur: 'HENRI' },
+    { label: 'MÉTHODE',  valeur: 'DAGUE' },
+    { label: 'LIEU',     valeur: "PRESQU'ÎLE" }
+  ];
+  let yBase = 640;
+  solutions.forEach(s => {
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#c9a84c';
+    ctx.font = '20px monospace';
+    ctx.fillText(s.label, W / 2, yBase);
+    ctx.fillStyle = '#f5f0e8';
+    ctx.font = 'bold 36px serif';
+    ctx.fillText(s.valeur, W / 2, yBase + 42);
+    yBase += 100;
+  });
+
+  const session = getSession ? getSession() : null;
+  if (session) {
+    ctx.fillStyle = 'rgba(201,168,76,0.6)';
+    ctx.font = '22px serif';
+    ctx.fillText('Résolu par ' + session.pseudo, W / 2, 980);
+  }
+  ctx.fillStyle = 'rgba(201,168,76,0.35)';
+  ctx.font = '18px monospace';
+  ctx.fillText('enigmes-criminelles.fr', W / 2, 1020);
+
+  const texte = session
+    ? `🌊 J'ai résolu l'Affaire des Vacances sur Énigmes Criminelles ! 100 affaires. 100 indices. Un seul crime. À toi de jouer 👇 enigmes-criminelles.fr`
+    : `🌊 L'Affaire des Vacances est résolue ! enigmes-criminelles.fr`;
+  const ta = document.getElementById('texte-partage-vacances');
+  if (ta) ta.value = texte;
+}
+
+/* ── Overlay succès Vacances ── */
+function afficherSuccesVacances() {
+  const overlay = document.getElementById('overlay-succes-vacances');
+  if (!overlay) return;
+  overlay.classList.remove('hidden');
+  setTimeout(genererImagePartageVacances, 300);
+
+  const statut = document.getElementById('statut-vacances');
+  if (statut) statut.innerHTML = '<span class="statut-resolu">✓ Dossier refermé</span>';
+  const btn = document.getElementById('btn-ouvrir-vacances');
+  if (btn) { btn.textContent = 'Voir mon résultat →'; btn.style.background = '#2d5a27'; }
+
+  const fermer = document.getElementById('btn-fermer-succes-vacances');
+  if (fermer) fermer.onclick = () => overlay.classList.add('hidden');
+}
+
 /* ── Init ── */
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -335,6 +474,134 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.execCommand('copy');
         btnCopier.textContent = '✓ Copié !';
         setTimeout(() => { btnCopier.textContent = 'Copier le texte'; }, 2000);
+      });
+    });
+  }
+
+  /* ══════════════════════════════════════════════════════
+     AFFAIRE DES VACANCES — N°002
+  ══════════════════════════════════════════════════════ */
+
+  /* Statut carte Vacances */
+  const statutVacances = document.getElementById('statut-vacances');
+  const btnOuvrirVacances = document.getElementById('btn-ouvrir-vacances');
+
+  if (isLoggedIn() && await estDejaResolueVacances()) {
+    if (statutVacances) statutVacances.innerHTML = '<span class="statut-resolu">✓ Dossier refermé</span>';
+    if (btnOuvrirVacances) { btnOuvrirVacances.textContent = 'Voir mon résultat →'; btnOuvrirVacances.style.background = '#2d5a27'; }
+  } else if (isLoggedIn()) {
+    if (statutVacances) statutVacances.innerHTML = '<span class="statut-en-cours">● Dossier ouvert</span>';
+  } else {
+    if (statutVacances) statutVacances.innerHTML = '<span style="color:#888;font-size:12px">🔒 Connexion requise pour valider</span>';
+  }
+
+  /* Générer les cases Vacances */
+  genererCases('cases-vacances-coupable', CHAMPS_VACANCES.coupable);
+  genererCases('cases-vacances-methode', CHAMPS_VACANCES.methode);
+  genererCases('cases-vacances-lieu', CHAMPS_VACANCES.lieu);
+
+  /* Bouton ouvrir Vacances */
+  if (btnOuvrirVacances) {
+    btnOuvrirVacances.addEventListener('click', async () => {
+      if (!isLoggedIn()) {
+        document.getElementById('modal-connexion').classList.remove('hidden');
+        return;
+      }
+      if (await estDejaResolueVacances()) {
+        afficherSuccesVacances();
+        return;
+      }
+      document.getElementById('modal-vacances').classList.remove('hidden');
+      setTimeout(() => {
+        const first = document.querySelector('#cases-vacances-coupable .case-lettre');
+        if (first) first.focus();
+      }, 100);
+    });
+  }
+
+  /* Fermer modal Vacances */
+  const btnFermerModalVacances = document.getElementById('modal-vacances-fermer');
+  if (btnFermerModalVacances) {
+    btnFermerModalVacances.addEventListener('click', () => {
+      document.getElementById('modal-vacances').classList.add('hidden');
+    });
+  }
+  const modalOverlayVacances = document.getElementById('modal-vacances');
+  if (modalOverlayVacances) {
+    modalOverlayVacances.addEventListener('click', (e) => {
+      if (e.target === modalOverlayVacances) modalOverlayVacances.classList.add('hidden');
+    });
+  }
+
+  /* Validation Vacances */
+  const btnValiderVacances = document.getElementById('btn-valider-vacances');
+  if (btnValiderVacances) {
+    btnValiderVacances.addEventListener('click', async () => {
+      document.querySelectorAll('#modal-vacances .champ-erreur').forEach(e => e.classList.add('hidden'));
+
+      const repCoupable = normaliser(lireCases('cases-vacances-coupable'));
+      const repMethode  = normaliser(lireCases('cases-vacances-methode'));
+      const repLieu     = normaliser(lireCases('cases-vacances-lieu'));
+      let erreurs = 0;
+
+      if (repCoupable !== SOLUTION_VACANCES.coupable) {
+        document.getElementById('erreur-vacances-coupable').classList.remove('hidden');
+        marquerCasesErreur('cases-vacances-coupable');
+        erreurs++;
+      }
+      if (repMethode !== SOLUTION_VACANCES.methode) {
+        document.getElementById('erreur-vacances-methode').classList.remove('hidden');
+        marquerCasesErreur('cases-vacances-methode');
+        erreurs++;
+      }
+      if (repLieu !== SOLUTION_VACANCES.lieu) {
+        document.getElementById('erreur-vacances-lieu').classList.remove('hidden');
+        marquerCasesErreur('cases-vacances-lieu');
+        erreurs++;
+      }
+
+      if (erreurs > 0) {
+        document.getElementById('erreur-global-vacances').classList.remove('hidden');
+        return;
+      }
+
+      marquerCasesSucces('cases-vacances-coupable');
+      marquerCasesSucces('cases-vacances-methode');
+      marquerCasesSucces('cases-vacances-lieu');
+      await sauvegarderResolutionVacances();
+
+      setTimeout(() => {
+        document.getElementById('modal-vacances').classList.add('hidden');
+        afficherSuccesVacances();
+      }, 600);
+    });
+  }
+
+  /* Télécharger image Vacances */
+  const btnDlVacances = document.getElementById('btn-dl-partage-vacances');
+  if (btnDlVacances) {
+    btnDlVacances.addEventListener('click', () => {
+      const canvas = document.getElementById('canvas-partage-vacances');
+      const lien = document.createElement('a');
+      lien.download = 'affaire-des-vacances-resolue.png';
+      lien.href = canvas.toDataURL('image/png');
+      lien.click();
+    });
+  }
+
+  /* Copier texte Vacances */
+  const btnCopierVacances = document.getElementById('btn-copier-texte-vacances');
+  if (btnCopierVacances) {
+    btnCopierVacances.addEventListener('click', () => {
+      const texte = document.getElementById('texte-partage-vacances');
+      navigator.clipboard.writeText(texte.value).then(() => {
+        btnCopierVacances.textContent = '✓ Copié !';
+        setTimeout(() => { btnCopierVacances.textContent = 'Copier le texte'; }, 2000);
+      }).catch(() => {
+        texte.select();
+        document.execCommand('copy');
+        btnCopierVacances.textContent = '✓ Copié !';
+        setTimeout(() => { btnCopierVacances.textContent = 'Copier le texte'; }, 2000);
       });
     });
   }

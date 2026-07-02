@@ -101,6 +101,37 @@
     #texte-partage-ete { width: 100%; background: #0f0d0a; border: 1px solid #2a2018; color: #888; font-family: var(--font-corps); font-size: 12px; padding: 8px; resize: none; height: 60px; box-sizing: border-box; }
     #btn-fermer-succes-ete { background: transparent; border: 1px solid #2a2018; color: #888; padding: 12px 24px; font-family: var(--font-mono); font-size: 13px; cursor: pointer; margin-top: 16px; }
     #btn-fermer-succes-ete:hover { border-color: #c9a84c; color: #c9a84c; }
+
+    /* ── Lien livre dans carte ── */
+    .cs-lien-livre { margin-bottom: 16px; }
+    .cs-lien-amazon { font-family: var(--font-mono); font-size: 12px; color: #c9a84c; text-decoration: none; border: 1px solid rgba(201,168,76,0.3); padding: 6px 12px; display: inline-block; letter-spacing: 1px; transition: border-color 0.2s; }
+    .cs-lien-amazon:hover { border-color: #c9a84c; }
+
+    /* ── Modal vacances ── */
+    #modal-vacances-contenu { background: #0a0805; border: 2px solid #c9a84c; max-width: 520px; width: 100%; padding: 40px 32px; position: relative; animation: slideUp 0.3s ease; }
+    #btn-valider-vacances { width: 100%; padding: 16px; background: #c9a84c; color: #0a0a0a; border: none; font-family: var(--font-mono); font-size: 15px; font-weight: bold; letter-spacing: 2px; cursor: pointer; margin-top: 16px; transition: background 0.2s; }
+    #btn-valider-vacances:hover { background: #e8d5a3; }
+
+    /* ── Overlay succès vacances ── */
+    #overlay-succes-vacances { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 900; display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+    #overlay-succes-vacances.hidden { display: none; }
+    #succes-vacances-contenu { background: #0a0805; border: 2px solid #c9a84c; max-width: 540px; width: 100%; padding: 40px 32px; text-align: center; animation: slideUp 0.4s ease; }
+    #succes-vacances-tampon { font-family: var(--font-mono); font-size: 36px; font-weight: bold; color: #2d5a27; border: 4px solid #2d5a27; display: inline-block; padding: 6px 20px; transform: rotate(-6deg); margin-bottom: 24px; letter-spacing: 4px; }
+    #succes-vacances-badge { margin: 20px 0; padding: 20px; border: 1px solid rgba(201,168,76,0.27); background: #1a1500; }
+    #succes-vacances-badge-icone { font-size: 48px; margin-bottom: 8px; }
+    #succes-vacances-badge-nom { font-family: var(--font-titre); color: #c9a84c; font-size: 18px; margin-bottom: 4px; }
+    #succes-vacances-badge-desc { font-family: var(--font-mono); color: #888; font-size: 11px; letter-spacing: 2px; }
+    #succes-vacances-solution { margin: 20px 0; padding: 16px; border: 1px solid rgba(201,168,76,0.15); }
+    #succes-vacances-message { font-family: var(--font-corps); font-style: italic; color: #888; font-size: 14px; line-height: 1.8; margin: 20px 0; padding: 0 16px; }
+    #succes-vacances-partage-section { margin: 20px 0; }
+    #succes-vacances-partage-titre { font-family: var(--font-mono); font-size: 11px; color: #888; letter-spacing: 2px; margin-bottom: 12px; }
+    #canvas-partage-vacances { display: block; width: 100%; max-width: 240px; margin: 0 auto 12px; border: 1px solid #2a2018; }
+    #succes-vacances-partage-actions { display: flex; gap: 8px; justify-content: center; margin-bottom: 10px; flex-wrap: wrap; }
+    #btn-dl-partage-vacances { background: #c9a84c; color: #0a0a0a; border: none; padding: 10px 16px; font-family: var(--font-mono); font-size: 13px; cursor: pointer; }
+    #btn-copier-texte-vacances { background: transparent; border: 1px solid #c9a84c; color: #c9a84c; padding: 10px 16px; font-family: var(--font-mono); font-size: 13px; cursor: pointer; }
+    #texte-partage-vacances { width: 100%; background: #0f0d0a; border: 1px solid #2a2018; color: #888; font-family: var(--font-corps); font-size: 12px; padding: 8px; resize: none; height: 60px; box-sizing: border-box; }
+    #btn-fermer-succes-vacances { background: transparent; border: 1px solid #2a2018; color: #888; padding: 12px 24px; font-family: var(--font-mono); font-size: 13px; cursor: pointer; margin-top: 16px; }
+    #btn-fermer-succes-vacances:hover { border-color: #c9a84c; color: #c9a84c; }
   </style>
 </head>
 <body>
@@ -167,19 +198,40 @@
           <button class="cs-bouton" id="btn-ouvrir-ete">Ouvrir le dossier →</button>
         </div>
 
-        <!-- À venir N°002 -->
-        <div class="carte-speciale a-venir">
-          <div class="cs-bandeau cs-bandeau-gris">BIENTÔT</div>
+        <!-- Affaire des Vacances — disponible -->
+        <div class="carte-speciale disponible" id="carte-vacances">
+          <div class="cs-bandeau">ÉDITION VACANCES II</div>
           <div class="cs-numero">ENQUÊTE SPÉCIALE N°002</div>
-          <div class="cs-titre">???</div>
-          <div class="cs-description">Cette enquête sera dévoilée lors d'une prochaine édition.</div>
-          <button class="cs-bouton cs-bouton-gris" disabled>Dossier classifié</button>
+          <div class="cs-titre">L'Affaire des Vacances</div>
+          <div class="cs-sous-titre">100 affaires. 100 mots fantômes. Un seul crime.</div>
+          <div class="cs-description">
+            Dans l'édition Vacances II d'Énigmes Criminelles, chaque affaire dissimule un mot fantôme.
+            Réunis les 100 indices pour identifier le coupable, la méthode et le lieu d'un crime ultime.
+          </div>
+          <div class="cs-meta">
+            <span class="cs-difficulte">♛ NIVEAU ULTIME</span>
+            <span class="cs-type">📖 Réservé aux lecteurs</span>
+          </div>
+          <div class="cs-lien-livre">
+            <a class="cs-lien-amazon" href="https://www.amazon.fr/dp/B0H5WXCGZP" target="_blank" rel="noopener">📖 Commander l'Édition Vacances II →</a>
+          </div>
+          <div class="cs-statut" id="statut-vacances"></div>
+          <button class="cs-bouton" id="btn-ouvrir-vacances">Ouvrir le dossier →</button>
         </div>
 
         <!-- À venir N°003 -->
         <div class="carte-speciale a-venir">
           <div class="cs-bandeau cs-bandeau-gris">BIENTÔT</div>
           <div class="cs-numero">ENQUÊTE SPÉCIALE N°003</div>
+          <div class="cs-titre">???</div>
+          <div class="cs-description">Cette enquête sera dévoilée lors d'une prochaine édition.</div>
+          <button class="cs-bouton cs-bouton-gris" disabled>Dossier classifié</button>
+        </div>
+
+        <!-- À venir N°004 -->
+        <div class="carte-speciale a-venir">
+          <div class="cs-bandeau cs-bandeau-gris">BIENTÔT</div>
+          <div class="cs-numero">ENQUÊTE SPÉCIALE N°004</div>
           <div class="cs-titre">???</div>
           <div class="cs-description">Cette enquête sera dévoilée lors d'une prochaine édition.</div>
           <button class="cs-bouton cs-bouton-gris" disabled>Dossier classifié</button>
@@ -293,6 +345,101 @@
       </div>
 
       <button id="btn-fermer-succes-ete">Fermer ce dossier</button>
+
+    </div>
+  </div>
+
+  <!-- Modal principale affaire des vacances -->
+  <div id="modal-vacances" class="modal-overlay hidden">
+    <div id="modal-vacances-contenu">
+      <button class="modal-fermer-btn" id="modal-vacances-fermer">✕</button>
+
+      <div style="margin-bottom:24px;">
+        <div class="cs-bandeau">ENQUÊTE SPÉCIALE</div>
+        <h2 style="font-family:var(--font-titre);font-size:1.8rem;margin:8px 0 4px;">L'Affaire des Vacances</h2>
+        <p class="modal-sous-titre">Édition Vacances II — Énigmes Criminelles</p>
+      </div>
+
+      <div style="margin-bottom:28px;">
+        <div class="dossier-texte">
+          <p>Un crime a été commis. Les preuves sont dissimulées à travers 100 affaires.</p>
+          <p>Dans votre édition Vacances II, chaque grille cache un mot fantôme. Ces 100 mots, une fois réunis, permettent d'identifier les trois éléments du crime ultime.</p>
+          <p>Vous avez résolu les 100 affaires. Vous avez collecté les 100 indices. Il est temps de refermer ce dossier.</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="champ-reponse-groupe">
+          <label class="champ-label">LE COUPABLE</label>
+          <div class="champ-cases" id="cases-vacances-coupable"></div>
+          <p class="champ-hint">Prénom du coupable (5 lettres)</p>
+          <p class="champ-erreur hidden" id="erreur-vacances-coupable">Ce n'est pas le bon coupable.</p>
+        </div>
+
+        <div class="champ-reponse-groupe">
+          <label class="champ-label">LA MÉTHODE</label>
+          <div class="champ-cases" id="cases-vacances-methode"></div>
+          <p class="champ-hint">La méthode utilisée (5 lettres)</p>
+          <p class="champ-erreur hidden" id="erreur-vacances-methode">Ce n'est pas la bonne méthode.</p>
+        </div>
+
+        <div class="champ-reponse-groupe">
+          <label class="champ-label">LE LIEU</label>
+          <div class="champ-cases" id="cases-vacances-lieu"></div>
+          <p class="champ-hint">Le lieu du crime (9 lettres, sans apostrophe)</p>
+          <p class="champ-erreur hidden" id="erreur-vacances-lieu">Ce n'est pas le bon lieu.</p>
+        </div>
+
+        <p class="modal-note">Les réponses sont insensibles aux majuscules et aux accents.</p>
+        <p class="champ-erreur hidden" id="erreur-global-vacances">Un ou plusieurs éléments sont incorrects. Vérifiez vos réponses.</p>
+        <button id="btn-valider-vacances">REFERMER LE DOSSIER</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay succès vacances -->
+  <div id="overlay-succes-vacances" class="hidden">
+    <div id="succes-vacances-contenu">
+
+      <div id="succes-vacances-tampon">RÉSOLU</div>
+
+      <div id="succes-vacances-badge">
+        <div id="succes-vacances-badge-icone">🌊</div>
+        <div id="succes-vacances-badge-nom">L'Enquêteur des Vacances</div>
+        <div id="succes-vacances-badge-desc">BADGE DÉBLOQUÉ</div>
+      </div>
+
+      <div id="succes-vacances-solution">
+        <div class="sol-ligne">
+          <span class="sol-label">COUPABLE</span>
+          <span class="sol-valeur">HENRI</span>
+        </div>
+        <div class="sol-ligne">
+          <span class="sol-label">MÉTHODE</span>
+          <span class="sol-valeur">DAGUE</span>
+        </div>
+        <div class="sol-ligne">
+          <span class="sol-label">LIEU</span>
+          <span class="sol-valeur">PRESQU'ÎLE</span>
+        </div>
+      </div>
+
+      <div id="succes-vacances-message">
+        "Vous avez réuni 100 indices, traversé 100 affaires, et résolu l'impensable.
+        Ce dossier est désormais fermé."
+      </div>
+
+      <div id="succes-vacances-partage-section">
+        <p id="succes-vacances-partage-titre">PARTAGEZ VOTRE EXPLOIT</p>
+        <canvas id="canvas-partage-vacances"></canvas>
+        <div id="succes-vacances-partage-actions">
+          <button id="btn-dl-partage-vacances">⬇ Télécharger l'image</button>
+          <button id="btn-copier-texte-vacances">Copier le texte</button>
+        </div>
+        <textarea id="texte-partage-vacances" readonly></textarea>
+      </div>
+
+      <button id="btn-fermer-succes-vacances">Fermer ce dossier</button>
 
     </div>
   </div>
