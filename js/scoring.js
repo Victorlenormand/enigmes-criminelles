@@ -216,98 +216,116 @@ async function construireClassement(tri) {
     '<tr><td colspan="6" style="text-align:center;color:#888;padding:40px 0">Chargement du classement…</td></tr>';
   if (podium) podium.style.display = 'none';
 
-  var db      = window._supabase;
-  var session = typeof getSession === 'function' ? getSession() : null;
-  var joueurs = [];
+  try {
+    var db      = window._supabase;
+    var session = typeof getSession === 'function' ? getSession() : null;
+    var joueurs = [];
 
-  if (db) {
-    var usersRes = await db.from('ec_users').select('id, pseudo');
-    var progsRes = await db.from('ec_progression').select('user_id, affaires_resolues, scores, grade');
+    if (db) {
+      var usersRes = await db.from('ec_users').select('id, pseudo');
+      var progsRes = await db.from('ec_progression').select('user_id, affaires_resolues, scores, grade');
 
-    if (usersRes.error || !usersRes.data) {
+      if (usersRes.error || !usersRes.data) {
+        console.error('[classement] Erreur lecture ec_users:', usersRes.error);
+        if (tbody) tbody.innerHTML =
+          '<tr><td colspan="6" style="text-align:center;color:#888;padding:40px 0">Impossible de charger le classement.</td></tr>';
+        return;
+      }
+
+      if (progsRes.error) {
+        console.warn('[classement] Erreur lecture ec_progression:', progsRes.error);
+      }
+      var progsData = (!progsRes.error && progsRes.data) ? progsRes.data : [];
+
+      joueurs = usersRes.data.map(function(user) {
+        var prog   = progsData.find(function(p) { return p.user_id === user.id; }) || {};
+        var scores = (prog.scores && typeof prog.scores === 'object') ? prog.scores : {};
+        var total  = Object.values(scores).reduce(function(s, v) { return s + ((v && v.points) || 0); }, 0);
+        var resolus = (prog.affaires_resolues || []).length;
+        var tempsListe = Object.values(scores).map(function(v) { return (v && v.temps) || 0; }).filter(function(t) { return t > 0; });
+        var meilleureVitesse = tempsListe.length ? Math.min.apply(null, tempsListe) : 0;
+        return {
+          id: user.id, pseudo: user.pseudo || '—',
+          grade: prog.grade || 'Inspecteur Stagiaire',
+          scoreTotal: total, affairesResolues: resolus,
+          meilleureVitesse: meilleureVitesse,
+          estMoi: !!(session && session.userId === user.id)
+        };
+      });
+    } else {
+      /* Fallback localStorage */
+      var users = JSON.parse(localStorage.getItem('ec_users_local') || '[]');
+      joueurs = users.map(function(user) {
+        var prog   = JSON.parse(localStorage.getItem('ec_progression_' + user.id) || '{}');
+        var scores = (prog.scores && typeof prog.scores === 'object') ? prog.scores : {};
+        var total  = Object.values(scores).reduce(function(s, x) { return s + ((x && x.points) || 0); }, 0);
+        var resolus = (prog.affairesResolues || []).length;
+        var tempsListe = Object.values(scores).map(function(v) { return (v && v.temps) || 0; }).filter(function(t) { return t > 0; });
+        var meilleureVitesse = tempsListe.length ? Math.min.apply(null, tempsListe) : 0;
+        return {
+          id: user.id, pseudo: user.pseudo || '—',
+          grade: prog.grade || 'Inspecteur Stagiaire',
+          scoreTotal: total, affairesResolues: resolus,
+          meilleureVitesse: meilleureVitesse,
+          estMoi: !!(session && session.userId === user.id)
+        };
+      });
+    }
+
+    if (joueurs.length === 0) {
       if (tbody) tbody.innerHTML =
-        '<tr><td colspan="6" style="text-align:center;color:#888;padding:40px 0">Impossible de charger le classement.</td></tr>';
+        '<tr><td colspan="6" style="text-align:center;color:#c9a84c;opacity:0.5;padding:40px 0;">' +
+        'Aucun enquêteur inscrit pour l\'instant.<br>' +
+        '<span style="font-size:11px;opacity:0.6">Créez un compte pour apparaître au classement.</span></td></tr>';
       return;
     }
+    if (podium) podium.style.display = '';
 
-    joueurs = usersRes.data.map(function(user) {
-      var prog   = (progsRes.data || []).find(function(p) { return p.user_id === user.id; }) || {};
-      var scores = prog.scores || {};
-      var total  = Object.values(scores).reduce(function(s, v) { return s + (v.points || 0); }, 0);
-      var resolus = (prog.affaires_resolues || []).length;
-      var tempsListe = Object.values(scores).map(function(s) { return s.temps || 0; }).filter(function(t) { return t > 0; });
-      var meilleureVitesse = tempsListe.length ? Math.min.apply(null, tempsListe) : 0;
-      return {
-        id: user.id, pseudo: user.pseudo,
-        grade: prog.grade || 'Inspecteur Stagiaire',
-        scoreTotal: total, affairesResolues: resolus,
-        meilleureVitesse: meilleureVitesse,
-        estMoi: !!(session && session.userId === user.id)
-      };
-    });
-  } else {
-    /* Fallback localStorage */
-    var users = JSON.parse(localStorage.getItem('ec_users_local') || '[]');
-    joueurs = users.map(function(user) {
-      var prog   = JSON.parse(localStorage.getItem('ec_progression_' + user.id) || '{}');
-      var scores = prog.scores || {};
-      var total  = Object.values(scores).reduce(function(s, x) { return s + (x.points || 0); }, 0);
-      var resolus = (prog.affairesResolues || []).length;
-      var tempsListe = Object.values(scores).map(function(s) { return s.temps || 0; }).filter(function(t) { return t > 0; });
-      var meilleureVitesse = tempsListe.length ? Math.min.apply(null, tempsListe) : 0;
-      return {
-        id: user.id, pseudo: user.pseudo,
-        grade: prog.grade || 'Inspecteur Stagiaire',
-        scoreTotal: total, affairesResolues: resolus,
-        meilleureVitesse: meilleureVitesse,
-        estMoi: !!(session && session.userId === user.id)
-      };
-    });
-  }
+    var tries = {
+      score:    function(a, b) { return b.scoreTotal - a.scoreTotal; },
+      affaires: function(a, b) { return b.affairesResolues - a.affairesResolues; },
+      vitesse:  function(a, b) {
+        if (!a.meilleureVitesse && !b.meilleureVitesse) return 0;
+        if (!a.meilleureVitesse) return 1;
+        if (!b.meilleureVitesse) return -1;
+        return a.meilleureVitesse - b.meilleureVitesse;
+      }
+    };
+    joueurs.sort(tries[tri] || tries.score);
 
-  if (joueurs.length === 0) {
-    if (tbody) tbody.innerHTML =
-      '<tr><td colspan="6" style="text-align:center;color:#c9a84c;opacity:0.5;padding:40px 0;">' +
-      'Aucun enquêteur inscrit pour l\'instant.<br>' +
-      '<span style="font-size:11px;opacity:0.6">Créez un compte pour apparaître au classement.</span></td></tr>';
-    return;
-  }
-  if (podium) podium.style.display = '';
-
-  var tries = {
-    score:    function(a, b) { return b.scoreTotal - a.scoreTotal; },
-    affaires: function(a, b) { return b.affairesResolues - a.affairesResolues; },
-    vitesse:  function(a, b) {
-      if (!a.meilleureVitesse && !b.meilleureVitesse) return 0;
-      if (!a.meilleureVitesse) return 1;
-      if (!b.meilleureVitesse) return -1;
-      return a.meilleureVitesse - b.meilleureVitesse;
+    if (tbody) {
+      tbody.innerHTML = '';
+      joueurs.forEach(function(j, i) {
+        var rang     = i + 1;
+        var medaille = rang === 1 ? '♛' : rang === 2 ? '◈' : rang === 3 ? '◇' : rang;
+        var temps    = j.meilleureVitesse > 0 ?
+          Math.floor(j.meilleureVitesse / 60) + 'min ' + (j.meilleureVitesse % 60) + 's' : '—';
+        var tr = document.createElement('tr');
+        tr.className = (rang <= 3 ? 'rang-' + rang : '') + (j.estMoi ? ' ligne-actuel' : '');
+        tr.innerHTML =
+          '<td>' + medaille + '</td>' +
+          '<td>' + (j.estMoi ? '▶ ' : '') + escapeHtml(j.pseudo) +
+            (j.estMoi ? ' <span style="color:#c9a84c;font-size:10px">(vous)</span>' : '') + '</td>' +
+          '<td style="font-size:11px;color:#888">' + escapeHtml(j.grade) + '</td>' +
+          '<td>' + j.affairesResolues + ' / 20</td>' +
+          '<td style="color:#c9a84c;font-weight:bold">' + j.scoreTotal + ' pts</td>' +
+          '<td>' + escapeHtml(temps) + '</td>';
+        tbody.appendChild(tr);
+      });
     }
-  };
-  joueurs.sort(tries[tri] || tries.score);
 
-  if (tbody) {
-    tbody.innerHTML = '';
-    joueurs.forEach(function(j, i) {
-      var rang     = i + 1;
-      var medaille = rang === 1 ? '♛' : rang === 2 ? '◈' : rang === 3 ? '◇' : rang;
-      var temps    = j.meilleureVitesse > 0 ?
-        Math.floor(j.meilleureVitesse / 60) + 'min ' + (j.meilleureVitesse % 60) + 's' : '—';
-      var tr = document.createElement('tr');
-      tr.className = (rang <= 3 ? 'rang-' + rang : '') + (j.estMoi ? ' ligne-actuel' : '');
-      tr.innerHTML =
-        '<td>' + medaille + '</td>' +
-        '<td>' + (j.estMoi ? '▶ ' : '') + escapeHtml(j.pseudo) +
-          (j.estMoi ? ' <span style="color:#c9a84c;font-size:10px">(vous)</span>' : '') + '</td>' +
-        '<td style="font-size:11px;color:#888">' + escapeHtml(j.grade) + '</td>' +
-        '<td>' + j.affairesResolues + ' / 20</td>' +
-        '<td style="color:#c9a84c;font-weight:bold">' + j.scoreTotal + ' pts</td>' +
-        '<td>' + escapeHtml(temps) + '</td>';
-      tbody.appendChild(tr);
-    });
+    mettreAJourPodium(joueurs.slice(0, 3));
+
+  } catch(e) {
+    console.error('[construireClassement] Exception:', e);
+    if (tbody) tbody.innerHTML =
+      '<tr><td colspan="6" style="text-align:center;color:#888;padding:40px 0">' +
+      'Erreur lors du chargement. ' +
+      '<button onclick="construireClassement(\'' + (tri || 'score') + '\')" ' +
+      'style="background:transparent;border:1px solid #c9a84c;color:#c9a84c;padding:6px 14px;font-family:monospace;cursor:pointer;margin-left:12px">Réessayer</button>' +
+      '</td></tr>';
+    if (podium) podium.style.display = 'none';
   }
-
-  mettreAJourPodium(joueurs.slice(0, 3));
 }
 
 /* ── Streak quotidien ── */
