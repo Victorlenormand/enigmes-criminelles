@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <title>Enquêtes Spéciales — Énigmes Criminelles</title>
+  <meta name="description" content="Des affaires hors du commun, réservées aux lecteurs de la série Énigmes Criminelles.">
+  <meta name="author" content="Victor Lenormand">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#0a0a0a">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=EB+Garamond:ital,wght@0,400;1,400&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/style.css" />
+  <style>
+    /* ── Grille enquêtes ── */
+    .es-page { max-width: 680px; margin: 0 auto; padding: 0 1rem 4rem; }
+    .es-header { text-align: center; margin-bottom: 2.4rem; }
+    .es-header h1 { font-size: clamp(2rem, 6vw, 3.2rem); letter-spacing: 0.12em; margin-bottom: 0.5rem; }
+    .es-header .es-sous-titre { font-family: var(--font-corps); font-style: italic; color: var(--or-clair); font-size: 1.1rem; opacity: 0.8; }
+    .es-intro { font-family: var(--font-corps); font-size: 0.95rem; color: #888; line-height: 1.8; text-align: center; margin: 1.6rem 0 2.4rem; padding: 1.4rem 1.2rem; border: 1px solid rgba(201,168,76,0.15); }
+    .es-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.6rem; }
+
+    /* ── Cartes ── */
+    .carte-speciale { background: #0f0d0a; border: 1px solid #c9a84c; padding: 28px; position: relative; overflow: hidden; }
+    .carte-speciale::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, #c9a84c, transparent); }
+    .carte-speciale.a-venir { border-color: #2a2018; opacity: 0.6; }
+    .cs-bandeau { display: inline-block; background: #c9a84c; color: #0a0a0a; font-family: var(--font-mono); font-size: 10px; font-weight: bold; padding: 3px 10px; letter-spacing: 2px; margin-bottom: 16px; }
+    .cs-bandeau-gris { background: #333; color: #888; }
+    .cs-numero { font-family: var(--font-mono); font-size: 11px; color: #888; letter-spacing: 2px; margin-bottom: 8px; }
+    .cs-titre { font-family: var(--font-titre); font-size: 28px; color: #f5f0e8; margin-bottom: 8px; }
+    .cs-sous-titre { font-family: var(--font-corps); font-style: italic; font-size: 15px; color: #c9a84c; margin-bottom: 16px; }
+    .cs-description { font-family: var(--font-corps); font-size: 14px; color: #888; line-height: 1.7; margin-bottom: 20px; }
+    .cs-meta { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+    .cs-difficulte, .cs-type { font-family: var(--font-mono); font-size: 11px; color: #c9a84c; letter-spacing: 1px; }
+    .cs-statut { margin-bottom: 12px; font-family: var(--font-mono); font-size: 12px; }
+    .statut-resolu { color: #2d5a27; }
+    .statut-en-cours { color: #c9a84c; }
+    .cs-bouton { width: 100%; padding: 14px; background: #c9a84c; color: #0a0a0a; border: none; font-family: var(--font-mono); font-size: 14px; font-weight: bold; letter-spacing: 2px; cursor: pointer; transition: background 0.2s; }
+    .cs-bouton:hover { background: #e8d5a3; }
+    .cs-bouton-gris { background: #1a1510; color: #444; border: 1px solid #2a2018; cursor: not-allowed; }
+
+    /* ── Cases lettres ── */
+    .champ-reponse-groupe { margin-bottom: 28px; }
+    .champ-label { display: block; font-family: var(--font-mono); font-size: 11px; color: #c9a84c; letter-spacing: 3px; margin-bottom: 10px; }
+    .champ-cases { display: flex; gap: 6px; flex-wrap: wrap; }
+    .case-lettre { width: 44px; height: 52px; background: transparent; border: 1px solid #c9a84c; color: #f5f0e8; font-family: var(--font-mono); font-size: 22px; font-weight: bold; text-align: center; text-transform: uppercase; outline: none; transition: border-color 0.2s, background 0.2s; }
+    .case-lettre:focus { border-color: #e8d5a3; background: rgba(201,168,76,0.08); }
+    .case-lettre.case-erreur { border-color: #8b1a1a; background: rgba(139,26,26,0.15); animation: shake 0.3s ease; }
+    .case-lettre.case-succes { border-color: #2d5a27; background: rgba(45,90,39,0.15); color: #2d5a27; }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+    .champ-hint { font-family: var(--font-corps); font-size: 12px; color: #555; margin-top: 6px; font-style: italic; }
+    .champ-erreur { font-family: var(--font-corps); font-size: 13px; color: #8b1a1a; margin-top: 6px; }
+    .champ-erreur.hidden { display: none; }
+
+    /* ── Modals ── */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 800; display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+    .modal-overlay.hidden { display: none; }
+    #modal-ete-contenu, #modal-connexion-contenu { background: #0a0805; border: 2px solid #c9a84c; max-width: 520px; width: 100%; padding: 40px 32px; position: relative; animation: slideUp 0.3s ease; }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-fermer-btn { position: absolute; top: 16px; right: 16px; background: transparent; border: none; color: #888; font-size: 18px; cursor: pointer; padding: 4px 8px; }
+    .modal-fermer-btn:hover { color: #c9a84c; }
+    .modal-sous-titre { font-family: var(--font-corps); font-style: italic; color: #888; font-size: 14px; margin-top: 4px; }
+    .dossier-texte p { font-family: var(--font-corps); font-size: 15px; color: #888; line-height: 1.8; margin-bottom: 12px; font-style: italic; }
+    #btn-valider-ete { width: 100%; padding: 16px; background: #c9a84c; color: #0a0a0a; border: none; font-family: var(--font-mono); font-size: 15px; font-weight: bold; letter-spacing: 2px; cursor: pointer; margin-top: 16px; transition: background 0.2s; }
+    #btn-valider-ete:hover { background: #e8d5a3; }
+    .modal-note { font-family: var(--font-corps); font-size: 12px; color: #555; text-align: center; margin-top: 12px; font-style: italic; }
+
+    /* ── Modal connexion ── */
+    #modal-connexion-contenu { text-align: center; max-width: 380px; }
+    #modal-connexion-contenu h3 { font-family: var(--font-titre); font-size: 1.4rem; margin-bottom: 12px; }
+    #modal-connexion-contenu p { font-family: var(--font-corps); font-style: italic; color: #888; font-size: 14px; line-height: 1.7; margin-bottom: 20px; }
+    .modal-btn-connexion { display: block; width: 100%; padding: 14px; background: #c9a84c; color: #0a0a0a; border: none; font-family: var(--font-mono); font-size: 13px; font-weight: bold; letter-spacing: 2px; cursor: pointer; text-decoration: none; text-align: center; margin-bottom: 10px; transition: background 0.2s; }
+    .modal-btn-connexion:hover { background: #e8d5a3; color: #0a0a0a; }
+    .modal-btn-fermer { background: transparent; border: 1px solid #2a2018; color: #888; padding: 12px 24px; font-family: var(--font-mono); font-size: 12px; cursor: pointer; width: 100%; }
+    .modal-btn-fermer:hover { border-color: #c9a84c; color: #c9a84c; }
+
+    /* ── Overlay succès ── */
+    #overlay-succes-ete { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 900; display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+    #overlay-succes-ete.hidden { display: none; }
+    #succes-ete-contenu { background: #0a0805; border: 2px solid #c9a84c; max-width: 540px; width: 100%; padding: 40px 32px; text-align: center; animation: slideUp 0.4s ease; }
+    #succes-tampon { font-family: var(--font-mono); font-size: 36px; font-weight: bold; color: #2d5a27; border: 4px solid #2d5a27; display: inline-block; padding: 6px 20px; transform: rotate(-6deg); margin-bottom: 24px; letter-spacing: 4px; }
+    #succes-badge-container { margin: 20px 0; padding: 20px; border: 1px solid rgba(201,168,76,0.27); background: #1a1500; }
+    #succes-badge-icone { font-size: 48px; margin-bottom: 8px; }
+    #succes-badge-nom { font-family: var(--font-titre); color: #c9a84c; font-size: 18px; margin-bottom: 4px; }
+    #succes-badge-desc { font-family: var(--font-mono); color: #888; font-size: 11px; letter-spacing: 2px; }
+    .sol-ligne { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(201,168,76,0.1); }
+    .sol-ligne:last-child { border-bottom: none; }
+    .sol-label { font-family: var(--font-mono); font-size: 11px; color: #888; letter-spacing: 2px; }
+    .sol-valeur { font-family: var(--font-titre); font-size: 20px; color: #c9a84c; }
+    #succes-solution { margin: 20px 0; padding: 16px; border: 1px solid rgba(201,168,76,0.15); }
+    #succes-message { font-family: var(--font-corps); font-style: italic; color: #888; font-size: 14px; line-height: 1.8; margin: 20px 0; padding: 0 16px; }
+    #succes-partage-section { margin: 20px 0; }
+    #succes-partage-titre { font-family: var(--font-mono); font-size: 11px; color: #888; letter-spacing: 2px; margin-bottom: 12px; }
+    #canvas-partage-ete { display: block; width: 100%; max-width: 240px; margin: 0 auto 12px; border: 1px solid #2a2018; }
+    #succes-partage-actions { display: flex; gap: 8px; justify-content: center; margin-bottom: 10px; flex-wrap: wrap; }
+    #btn-dl-partage-ete { background: #c9a84c; color: #0a0a0a; border: none; padding: 10px 16px; font-family: var(--font-mono); font-size: 13px; cursor: pointer; }
+    #btn-copier-texte-ete { background: transparent; border: 1px solid #c9a84c; color: #c9a84c; padding: 10px 16px; font-family: var(--font-mono); font-size: 13px; cursor: pointer; }
+    #texte-partage-ete { width: 100%; background: #0f0d0a; border: 1px solid #2a2018; color: #888; font-family: var(--font-corps); font-size: 12px; padding: 8px; resize: none; height: 60px; box-sizing: border-box; }
+    #btn-fermer-succes-ete { background: transparent; border: 1px solid #2a2018; color: #888; padding: 12px 24px; font-family: var(--font-mono); font-size: 13px; cursor: pointer; margin-top: 16px; }
+    #btn-fermer-succes-ete:hover { border-color: #c9a84c; color: #c9a84c; }
+
+    /* ── Lien livre dans carte ── */
+    .cs-lien-livre { margin-bottom: 16px; }
+    .cs-lien-amazon { font-family: var(--font-mono); font-size: 12px; color: #c9a84c; text-decoration: none; border: 1px solid rgba(201,168,76,0.3); padding: 6px 12px; display: inline-block; letter-spacing: 1px; transition: border-color 0.2s; }
+    .cs-lien-amazon:hover { border-color: #c9a84c; }
+
+    /* ── Modal vacances ── */
+    #modal-vacances-contenu { background: #0a0805; border: 2px solid #c9a84c; max-width: 520px; width: 100%; padding: 40px 32px; position: relative; animation: slideUp 0.3s ease; }
+    #btn-valider-vacances { width: 100%; padding: 16px; background: #c9a84c; color: #0a0a0a; border: none; font-family: var(--font-mono); font-size: 15px; font-weight: bold; letter-spacing: 2px; cursor: pointer; margin-top: 16px; transition: background 0.2s; }
+    #btn-valider-vacances:hover { background: #e8d5a3; }
+
+    /* ── Overlay succès vacances ── */
+    #overlay-succes-vacances { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 900; display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+    #overlay-succes-vacances.hidden { display: none; }
+    #succes-vacances-contenu { background: #0a0805; border: 2px solid #c9a84c; max-width: 540px; width: 100%; padding: 40px 32px; text-align: center; animation: slideUp 0.4s ease; }
+    #succes-vacances-tampon { font-family: var(--font-mono); font-size: 36px; font-weight: bold; color: #2d5a27; border: 4px solid #2d5a27; display: inline-block; padding: 6px 20px; transform: rotate(-6deg); margin-bottom: 24px; letter-spacing: 4px; }
+    #succes-vacances-badge { margin: 20px 0; padding: 20px; border: 1px solid rgba(201,168,76,0.27); background: #1a1500; }
+    #succes-vacances-badge-icone { font-size: 48px; margin-bottom: 8px; }
+    #succes-vacances-badge-nom { font-family: var(--font-titre); color: #c9a84c; font-size: 18px; margin-bottom: 4px; }
+    #succes-vacances-badge-desc { font-family: var(--font-mono); color: #888; font-size: 11px; letter-spacing: 2px; }
+    #succes-vacances-solution { margin: 20px 0; padding: 16px; border: 1px solid rgba(201,168,76,0.15); }
+    #succes-vacances-message { font-family: var(--font-corps); font-style: italic; color: #888; font-size: 14px; line-height: 1.8; margin: 20px 0; padding: 0 16px; }
+    #succes-vacances-partage-section { margin: 20px 0; }
+    #succes-vacances-partage-titre { font-family: var(--font-mono); font-size: 11px; color: #888; letter-spacing: 2px; margin-bottom: 12px; }
+    #canvas-partage-vacances { display: block; width: 100%; max-width: 240px; margin: 0 auto 12px; border: 1px solid #2a2018; }
+    #succes-vacances-partage-actions { display: flex; gap: 8px; justify-content: center; margin-bottom: 10px; flex-wrap: wrap; }
+    #btn-dl-partage-vacances { background: #c9a84c; color: #0a0a0a; border: none; padding: 10px 16px; font-family: var(--font-mono); font-size: 13px; cursor: pointer; }
+    #btn-copier-texte-vacances { background: transparent; border: 1px solid #c9a84c; color: #c9a84c; padding: 10px 16px; font-family: var(--font-mono); font-size: 13px; cursor: pointer; }
+    #texte-partage-vacances { width: 100%; background: #0f0d0a; border: 1px solid #2a2018; color: #888; font-family: var(--font-corps); font-size: 12px; padding: 8px; resize: none; height: 60px; box-sizing: border-box; }
+    #btn-fermer-succes-vacances { background: transparent; border: 1px solid #2a2018; color: #888; padding: 12px 24px; font-family: var(--font-mono); font-size: 13px; cursor: pointer; margin-top: 16px; }
+    #btn-fermer-succes-vacances:hover { border-color: #c9a84c; color: #c9a84c; }
+  </style>
+</head>
+<body>
+
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+  <nav id="top-nav">
+    <a class="brand" href="index.html">ÉNIGMES CRIMINELLES</a>
+    <div class="links" id="nav-links">
+      <a data-page="tutoriel" href="tutoriel.html">Comment jouer</a>
+      <a data-page="affaires" href="affaires.html">Affaires</a>
+      <a data-page="enquetes-speciales" href="enquetes-speciales.html" class="active-link">Enquêtes Spéciales <span class="badge-nouveau">NOUVEAU</span></a>
+      <a data-page="classement" href="classement.html">Classement</a>
+      <a data-page="livres" href="livres.html">Livres</a>
+      <a data-page="compte" id="nav-compte" href="inscription.html">Mon compte</a>
+    </div>
+    <button id="nav-hamburger" aria-label="Menu" aria-expanded="false">☰</button>
+  </nav>
+  <div id="nav-mobile-panel">
+    <a href="tutoriel.html">Comment jouer</a>
+    <a href="affaires.html">Affaires</a>
+    <a href="enquetes-speciales.html" class="active-link">Enquêtes Spéciales <span class="badge-nouveau">NOUVEAU</span></a>
+    <a href="classement.html">Classement</a>
+    <a href="livres.html">Livres</a>
+    <a id="nav-mobile-compte" href="inscription.html">Mon compte</a>
+  </div>
+
+  <main class="page-content">
+    <div class="es-page">
+
+      <div class="es-header">
+        <h1>ENQUÊTES SPÉCIALES</h1>
+        <p class="es-sous-titre">Des affaires hors du commun.<br>Réservées aux lecteurs de la série.</p>
+        <div class="divider"></div>
+      </div>
+
+      <p class="es-intro">
+        Les Enquêtes Spéciales sont liées aux éditions physiques de la série Énigmes Criminelles.
+        Elles ne rapportent pas de points au classement.
+        Elles offrent quelque chose de plus rare&nbsp;: la preuve que vous avez résolu l'impossible.
+      </p>
+
+      <div class="es-grille">
+
+        <!-- Affaire de l'Été — disponible -->
+        <div class="carte-speciale disponible" id="carte-ete">
+          <div class="cs-bandeau">ÉDITION VACANCES</div>
+          <div class="cs-numero">ENQUÊTE SPÉCIALE N°001</div>
+          <div class="cs-titre">L'Affaire de l'Été</div>
+          <div class="cs-sous-titre">100 affaires. 100 mots fantômes. Un seul crime.</div>
+          <div class="cs-description">
+            Dans l'édition Vacances d'Énigmes Criminelles, chaque affaire cache un mot fantôme.
+            Réunis les 100 indices dispersés à travers le livre pour identifier le coupable,
+            la méthode et le lieu d'un crime ultime.
+          </div>
+          <div class="cs-meta">
+            <span class="cs-difficulte">♛ NIVEAU ULTIME</span>
+            <span class="cs-type">📖 Réservé aux lecteurs</span>
+          </div>
+          <div class="cs-statut" id="statut-ete"></div>
+          <button class="cs-bouton" id="btn-ouvrir-ete">Ouvrir le dossier →</button>
+        </div>
+
+        <!-- Affaire des Vacances — disponible -->
+        <div class="carte-speciale disponible" id="carte-vacances">
+          <div class="cs-bandeau">ÉDITION VACANCES II</div>
+          <div class="cs-numero">ENQUÊTE SPÉCIALE N°002</div>
+          <div class="cs-titre">L'Affaire des Vacances</div>
+          <div class="cs-sous-titre">100 affaires. 100 mots fantômes. Un seul crime.</div>
+          <div class="cs-description">
+            Dans l'édition Vacances II d'Énigmes Criminelles, chaque affaire dissimule un mot fantôme.
+            Réunis les 100 indices pour identifier le coupable, la méthode et le lieu d'un crime ultime.
+          </div>
+          <div class="cs-meta">
+            <span class="cs-difficulte">♛ NIVEAU ULTIME</span>
+            <span class="cs-type">📖 Réservé aux lecteurs</span>
+          </div>
+          <div class="cs-lien-livre">
+            <a class="cs-lien-amazon" href="https://www.amazon.fr/dp/B0H5WXCGZP" target="_blank" rel="noopener">📖 Commander l'Édition Vacances II →</a>
+          </div>
+          <div class="cs-statut" id="statut-vacances"></div>
+          <button class="cs-bouton" id="btn-ouvrir-vacances">Ouvrir le dossier →</button>
+        </div>
+
+        <!-- À venir N°003 -->
+        <div class="carte-speciale a-venir">
+          <div class="cs-bandeau cs-bandeau-gris">BIENTÔT</div>
+          <div class="cs-numero">ENQUÊTE SPÉCIALE N°003</div>
+          <div class="cs-titre">???</div>
+          <div class="cs-description">Cette enquête sera dévoilée lors d'une prochaine édition.</div>
+          <button class="cs-bouton cs-bouton-gris" disabled>Dossier classifié</button>
+        </div>
+
+        <!-- À venir N°004 -->
+        <div class="carte-speciale a-venir">
+          <div class="cs-bandeau cs-bandeau-gris">BIENTÔT</div>
+          <div class="cs-numero">ENQUÊTE SPÉCIALE N°004</div>
+          <div class="cs-titre">???</div>
+          <div class="cs-description">Cette enquête sera dévoilée lors d'une prochaine édition.</div>
+          <button class="cs-bouton cs-bouton-gris" disabled>Dossier classifié</button>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal connexion requise -->
+  <div id="modal-connexion" class="modal-overlay hidden">
+    <div id="modal-connexion-contenu">
+      <button class="modal-fermer-btn" id="modal-connexion-fermer">✕</button>
+      <h3>Dossier classifié</h3>
+      <p>Connectez-vous pour soumettre votre solution et débloquer le badge.</p>
+      <a class="modal-btn-connexion" href="inscription.html?redirect=enquetes-speciales.html">Se connecter →</a>
+      <button class="modal-btn-fermer" id="modal-connexion-fermer2">Fermer</button>
+    </div>
+  </div>
+
+  <!-- Modal principale affaire de l'été -->
+  <div id="modal-ete" class="modal-overlay hidden">
+    <div id="modal-ete-contenu">
+      <button class="modal-fermer-btn" id="modal-ete-fermer">✕</button>
+
+      <div id="modal-ete-header" style="margin-bottom:24px;">
+        <div class="cs-bandeau">ENQUÊTE SPÉCIALE</div>
+        <h2 style="font-family:var(--font-titre);font-size:1.8rem;margin:8px 0 4px;">L'Affaire de l'Été</h2>
+        <p class="modal-sous-titre">Édition Vacances — Énigmes Criminelles</p>
+      </div>
+
+      <div id="modal-ete-contexte" style="margin-bottom:28px;">
+        <div class="dossier-texte">
+          <p>Un crime a été commis. Les preuves sont dissimulées à travers 100 affaires.</p>
+          <p>Dans votre édition Vacances, chaque grille cache un mot fantôme. Ces 100 mots, une fois réunis, permettent d'identifier les trois éléments du crime ultime.</p>
+          <p>Vous avez résolu les 100 affaires. Vous avez collecté les 100 indices. Il est temps de refermer ce dossier.</p>
+        </div>
+      </div>
+
+      <div id="modal-ete-formulaire">
+
+        <div class="champ-reponse-groupe">
+          <label class="champ-label">LE COUPABLE</label>
+          <div class="champ-cases" id="cases-coupable"></div>
+          <p class="champ-hint">Prénom du coupable (4 lettres)</p>
+          <p class="champ-erreur hidden" id="erreur-coupable">Ce n'est pas le bon coupable.</p>
+        </div>
+
+        <div class="champ-reponse-groupe">
+          <label class="champ-label">LA MÉTHODE</label>
+          <div class="champ-cases" id="cases-methode"></div>
+          <p class="champ-hint">La méthode utilisée (6 lettres)</p>
+          <p class="champ-erreur hidden" id="erreur-methode">Ce n'est pas la bonne méthode.</p>
+        </div>
+
+        <div class="champ-reponse-groupe">
+          <label class="champ-label">LE LIEU</label>
+          <div class="champ-cases" id="cases-lieu"></div>
+          <p class="champ-hint">Le lieu du crime (8 lettres)</p>
+          <p class="champ-erreur hidden" id="erreur-lieu">Ce n'est pas le bon lieu.</p>
+        </div>
+
+        <p class="modal-note">Les réponses sont insensibles aux majuscules et aux accents.</p>
+        <p class="champ-erreur hidden" id="erreur-global-ete">Un ou plusieurs éléments sont incorrects. Vérifiez vos réponses.</p>
+        <button id="btn-valider-ete">REFERMER LE DOSSIER</button>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay succès -->
+  <div id="overlay-succes-ete" class="hidden">
+    <div id="succes-ete-contenu">
+
+      <div id="succes-tampon">RÉSOLU</div>
+
+      <div id="succes-badge-container">
+        <div id="succes-badge-icone">☀️</div>
+        <div id="succes-badge-nom">L'Enquêteur de l'Été</div>
+        <div id="succes-badge-desc">BADGE DÉBLOQUÉ</div>
+      </div>
+
+      <div id="succes-solution">
+        <div class="sol-ligne">
+          <span class="sol-label">COUPABLE</span>
+          <span class="sol-valeur">LÉON</span>
+        </div>
+        <div class="sol-ligne">
+          <span class="sol-label">MÉTHODE</span>
+          <span class="sol-valeur">NOYADE</span>
+        </div>
+        <div class="sol-ligne">
+          <span class="sol-label">LIEU</span>
+          <span class="sol-valeur">CALANQUE</span>
+        </div>
+      </div>
+
+      <div id="succes-message">
+        "Vous avez réuni 100 indices, traversé 100 affaires, et résolu l'impensable.
+        Ce dossier est désormais fermé."
+      </div>
+
+      <div id="succes-partage-section">
+        <p id="succes-partage-titre">PARTAGEZ VOTRE EXPLOIT</p>
+        <canvas id="canvas-partage-ete"></canvas>
+        <div id="succes-partage-actions">
+          <button id="btn-dl-partage-ete">⬇ Télécharger l'image</button>
+          <button id="btn-copier-texte-ete">Copier le texte</button>
+        </div>
+        <textarea id="texte-partage-ete" readonly></textarea>
+      </div>
+
+      <button id="btn-fermer-succes-ete">Fermer ce dossier</button>
+
+    </div>
+  </div>
+
+  <!-- Modal principale affaire des vacances -->
+  <div id="modal-vacances" class="modal-overlay hidden">
+    <div id="modal-vacances-contenu">
+      <button class="modal-fermer-btn" id="modal-vacances-fermer">✕</button>
+
+      <div style="margin-bottom:24px;">
+        <div class="cs-bandeau">ENQUÊTE SPÉCIALE</div>
+        <h2 style="font-family:var(--font-titre);font-size:1.8rem;margin:8px 0 4px;">L'Affaire des Vacances</h2>
+        <p class="modal-sous-titre">Édition Vacances II — Énigmes Criminelles</p>
+      </div>
+
+      <div style="margin-bottom:28px;">
+        <div class="dossier-texte">
+          <p>Un crime a été commis. Les preuves sont dissimulées à travers 100 affaires.</p>
+          <p>Dans votre édition Vacances II, chaque grille cache un mot fantôme. Ces 100 mots, une fois réunis, permettent d'identifier les trois éléments du crime ultime.</p>
+          <p>Vous avez résolu les 100 affaires. Vous avez collecté les 100 indices. Il est temps de refermer ce dossier.</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="champ-reponse-groupe">
+          <label class="champ-label">LE COUPABLE</label>
+          <div class="champ-cases" id="cases-vacances-coupable"></div>
+          <p class="champ-hint">Prénom du coupable (5 lettres)</p>
+          <p class="champ-erreur hidden" id="erreur-vacances-coupable">Ce n'est pas le bon coupable.</p>
+        </div>
+
+        <div class="champ-reponse-groupe">
+          <label class="champ-label">LA MÉTHODE</label>
+          <div class="champ-cases" id="cases-vacances-methode"></div>
+          <p class="champ-hint">La méthode utilisée (5 lettres)</p>
+          <p class="champ-erreur hidden" id="erreur-vacances-methode">Ce n'est pas la bonne méthode.</p>
+        </div>
+
+        <div class="champ-reponse-groupe">
+          <label class="champ-label">LE LIEU</label>
+          <div class="champ-cases" id="cases-vacances-lieu"></div>
+          <p class="champ-hint">Le lieu du crime (9 lettres, sans apostrophe)</p>
+          <p class="champ-erreur hidden" id="erreur-vacances-lieu">Ce n'est pas le bon lieu.</p>
+        </div>
+
+        <p class="modal-note">Les réponses sont insensibles aux majuscules et aux accents.</p>
+        <p class="champ-erreur hidden" id="erreur-global-vacances">Un ou plusieurs éléments sont incorrects. Vérifiez vos réponses.</p>
+        <button id="btn-valider-vacances">REFERMER LE DOSSIER</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay succès vacances -->
+  <div id="overlay-succes-vacances" class="hidden">
+    <div id="succes-vacances-contenu">
+
+      <div id="succes-vacances-tampon">RÉSOLU</div>
+
+      <div id="succes-vacances-badge">
+        <div id="succes-vacances-badge-icone">🌊</div>
+        <div id="succes-vacances-badge-nom">L'Enquêteur des Vacances</div>
+        <div id="succes-vacances-badge-desc">BADGE DÉBLOQUÉ</div>
+      </div>
+
+      <div id="succes-vacances-solution">
+        <div class="sol-ligne">
+          <span class="sol-label">COUPABLE</span>
+          <span class="sol-valeur">HENRI</span>
+        </div>
+        <div class="sol-ligne">
+          <span class="sol-label">MÉTHODE</span>
+          <span class="sol-valeur">DAGUE</span>
+        </div>
+        <div class="sol-ligne">
+          <span class="sol-label">LIEU</span>
+          <span class="sol-valeur">PRESQU'ÎLE</span>
+        </div>
+      </div>
+
+      <div id="succes-vacances-message">
+        "Vous avez réuni 100 indices, traversé 100 affaires, et résolu l'impensable.
+        Ce dossier est désormais fermé."
+      </div>
+
+      <div id="succes-vacances-partage-section">
+        <p id="succes-vacances-partage-titre">PARTAGEZ VOTRE EXPLOIT</p>
+        <canvas id="canvas-partage-vacances"></canvas>
+        <div id="succes-vacances-partage-actions">
+          <button id="btn-dl-partage-vacances">⬇ Télécharger l'image</button>
+          <button id="btn-copier-texte-vacances">Copier le texte</button>
+        </div>
+        <textarea id="texte-partage-vacances" readonly></textarea>
+      </div>
+
+      <button id="btn-fermer-succes-vacances">Fermer ce dossier</button>
+
+    </div>
+  </div>
+
+  <footer id="footer-global">
+    <div id="footer-inner">
+      <div id="footer-logo">ÉNIGMES CRIMINELLES</div>
+      <div id="footer-liens">
+        <a href="mentions-legales.html">Mentions légales</a>
+        <span class="footer-sep">·</span>
+        <a href="politique-confidentialite.html">Politique de confidentialité</a>
+        <span class="footer-sep">·</span>
+        <a href="livres.html">La série</a>
+        <span class="footer-sep">·</span>
+        <a href="https://www.amazon.fr/dp/B0GZK93B5F" target="_blank" rel="noopener">Commander sur Amazon</a>
+      </div>
+      <div id="footer-copy">
+        © <span id="footer-annee"></span> Victor Lenormand — Tous droits réservés
+      </div>
+    </div>
+  </footer>
+  <script>document.getElementById('footer-annee').textContent = new Date().getFullYear();</script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+    var SUPABASE_URL      = 'https://acmazynakkmhbbkymfjv.supabase.co';
+    var SUPABASE_ANON_KEY = 'sb_publishable_mY2chf8gDjPag_hgDs5z1A_Bv2HMF6O';
+    var supabase = window.supabase
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+      : null;
+    window._supabase = supabase;
+    if (!supabase) console.error('[Supabase] ERREUR — CDN non chargé');
+    else console.log('[Supabase] Client initialisé ✓');
+  </script>
+  <script src="./js/auth.js"></script>
+  <script src="./js/badges.js"></script>
+  <script src="./js/enquetes-speciales.js"></script>
+  <script>
+    /* Deuxième bouton fermer modal connexion */
+    document.getElementById('modal-connexion-fermer2').addEventListener('click', function() {
+      document.getElementById('modal-connexion').classList.add('hidden');
+    });
+  </script>
+
+</body>
+</html>

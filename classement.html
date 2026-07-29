@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tableau d'Honneur — Énigmes Criminelles</title>
+  <meta name="description" content="Les enquêteurs les plus redoutables. Classement des meilleurs scores sur Énigmes Criminelles.">
+  <meta name="author" content="Victor Lenormand">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Énigmes Criminelles">
+  <meta property="og:title" content="Tableau d'Honneur — Énigmes Criminelles">
+  <meta property="og:url" content="https://enigmes-criminelles.fr/classement.html">
+  <meta property="og:image" content="https://enigmes-criminelles.fr/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="fr_FR">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://enigmes-criminelles.fr/og-image.jpg">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=EB+Garamond:ital,wght@0,400;1,400&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/style.css" />
+  <style>
+    .page-classement {
+      padding: 5.5rem 2rem 4rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+      min-height: 100vh;
+    }
+    .class-header { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+    .class-header h2 { font-family: var(--font-titre); font-size: clamp(1.4rem,3.5vw,2.2rem); color: var(--or); letter-spacing: 0.06em; }
+    .class-sous { font-family: var(--font-corps); font-style: italic; color: var(--or-clair); opacity: 0.75; font-size: 0.95rem; }
+
+    /* Podium */
+    #podium {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 8px;
+      margin: 2rem auto 1rem;
+      max-width: 600px;
+      width: 100%;
+    }
+    .podium-place { flex: 1; text-align: center; max-width: 180px; }
+    .podium-couronne { font-size: 22px; color: var(--or); margin-bottom: 4px; }
+    .podium-avatar {
+      width: 52px; height: 52px; border-radius: 50%;
+      margin: 0 auto 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-titre); font-size: 20px; font-weight: bold;
+    }
+    .place-1 .podium-avatar { background: var(--or); color: #0a0a0a; border: 3px solid var(--or-clair); }
+    .place-2 .podium-avatar { background: #888; color: #0a0a0a; }
+    .place-3 .podium-avatar { background: #7a4a2a; color: var(--creme); }
+    .podium-pseudo { font-family: var(--font-titre); color: var(--creme); font-size: 13px; margin-bottom: 4px; word-break: break-word; }
+    .podium-score  { font-family: var(--font-mono); color: var(--or); font-size: 17px; font-weight: bold; margin-bottom: 4px; }
+    .podium-grade  { font-size: 11px; color: var(--or-clair); margin-bottom: 8px; opacity: 0.7; }
+    .podium-bloc {
+      border: 1px solid rgba(201,168,76,0.35); border-bottom: none;
+      background: linear-gradient(to bottom, #2a2018, #1a1208);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono); font-size: 10px;
+      color: rgba(201,168,76,0.3); letter-spacing: 2px;
+    }
+
+    /* Onglets de tri */
+    .onglets-tri {
+      display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; justify-content: center;
+    }
+    .onglet-tri {
+      background: transparent; border: 1px solid rgba(201,168,76,0.3);
+      color: var(--or-clair); opacity: 0.5;
+      font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.16em;
+      text-transform: uppercase; padding: 0.4em 1.1em; cursor: pointer;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    .onglet-tri:hover { opacity: 0.85; }
+    .onglet-tri.actif { opacity: 1; background: rgba(201,168,76,0.12); border-color: var(--or); color: var(--or); }
+
+    /* Tableau */
+    #tableau-classement {
+      width: 100%; max-width: 820px; border-collapse: collapse;
+      font-family: var(--font-mono); font-size: 13px;
+    }
+    #tableau-classement th {
+      color: var(--or); letter-spacing: 2px; font-size: 10px; text-transform: uppercase;
+      padding: 12px 8px; border-bottom: 1px solid rgba(201,168,76,0.4); text-align: left;
+    }
+    #tableau-classement td {
+      padding: 10px 8px; border-bottom: 1px solid rgba(201,168,76,0.07); color: var(--or-clair);
+    }
+    .ligne-actuel { background: rgba(201,168,76,0.07); outline: 1px solid rgba(201,168,76,0.3); }
+    .rang-1 td:first-child { color: var(--or); font-size: 16px; }
+    .rang-2 td:first-child { color: #888; }
+    .rang-3 td:first-child { color: #7a4a2a; }
+
+    @media (max-width: 600px) {
+      #tableau-classement { font-size: 11px; }
+      #tableau-classement th, #tableau-classement td { padding: 8px 5px; }
+      #podium { gap: 4px; }
+      .podium-avatar { width: 40px; height: 40px; font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+  <nav id="top-nav">
+    <a class="brand" href="index.html">ÉNIGMES CRIMINELLES</a>
+    <div class="links" id="nav-links">
+      <a data-page="tutoriel" href="tutoriel.html">Comment jouer</a>
+      <a data-page="affaires" href="affaires.html">Affaires</a>
+      <a data-page="enquetes-speciales" href="enquetes-speciales.html">Enquêtes Spéciales <span class="badge-nouveau">NOUVEAU</span></a>
+      <a data-page="classement" href="classement.html" class="active-link">Classement</a>
+      <a data-page="livres" href="livres.html">Livres</a>
+      <a data-page="compte" id="nav-compte" href="inscription.html">Mon compte</a>
+    </div>
+    <button id="nav-hamburger" aria-label="Menu" aria-expanded="false">☰</button>
+  </nav>
+  <div id="nav-mobile-panel">
+    <a href="tutoriel.html">Comment jouer</a>
+    <a href="affaires.html">Affaires</a>
+    <a href="enquetes-speciales.html">Enquêtes Spéciales <span class="badge-nouveau">NOUVEAU</span></a>
+    <a href="classement.html" class="active-link">Classement</a>
+    <a href="livres.html">Livres</a>
+    <a id="nav-mobile-compte" href="inscription.html">Mon compte</a>
+  </div>
+
+  <main class="page-classement">
+
+    <div class="class-header">
+      <span class="stamp-label">Tableau d'honneur</span>
+      <h2>LES MEILLEURS ENQUÊTEURS</h2>
+      <p class="class-sous">Les détectives les plus redoutables de la brigade</p>
+      <div class="divider"></div>
+    </div>
+
+    <!-- Podium top 3 -->
+    <div id="podium">
+      <div class="podium-place place-2">
+        <div class="podium-avatar">2</div>
+        <div class="podium-pseudo"></div>
+        <div class="podium-score"></div>
+        <div class="podium-grade"></div>
+        <div class="podium-bloc" style="height:80px">ARGENT</div>
+      </div>
+      <div class="podium-place place-1">
+        <div class="podium-couronne">♛</div>
+        <div class="podium-avatar">1</div>
+        <div class="podium-pseudo"></div>
+        <div class="podium-score"></div>
+        <div class="podium-grade"></div>
+        <div class="podium-bloc" style="height:120px">OR</div>
+      </div>
+      <div class="podium-place place-3">
+        <div class="podium-avatar">3</div>
+        <div class="podium-pseudo"></div>
+        <div class="podium-score"></div>
+        <div class="podium-grade"></div>
+        <div class="podium-bloc" style="height:60px">BRONZE</div>
+      </div>
+    </div>
+
+    <!-- Onglets de tri -->
+    <div class="onglets-tri">
+      <button class="onglet-tri actif" data-tri="score">Score total</button>
+      <button class="onglet-tri" data-tri="affaires">Affaires résolues</button>
+      <button class="onglet-tri" data-tri="vitesse">Meilleur temps</button>
+    </div>
+
+    <!-- Tableau -->
+    <table id="tableau-classement">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Enquêteur</th>
+          <th>Grade</th>
+          <th>Affaires</th>
+          <th>Score</th>
+          <th>Meilleur temps</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-classement">
+        <tr><td colspan="6" style="text-align:center;padding:32px;opacity:0.4;">Chargement…</td></tr>
+      </tbody>
+    </table>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+    var SUPABASE_URL      = 'https://acmazynakkmhbbkymfjv.supabase.co';
+    var SUPABASE_ANON_KEY = 'sb_publishable_mY2chf8gDjPag_hgDs5z1A_Bv2HMF6O';
+    var supabase = window.supabase
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+      : null;
+    window._supabase = supabase;
+    if (!supabase) console.error('[Supabase] ERREUR — CDN non chargé');
+    else console.log('[Supabase] Client initialisé ✓');
+  </script>
+  <script src="./js/auth.js"></script>
+  <script src="./js/scoring.js"></script>
+  <script>
+    (function () {
+      var fc = document.createElement('canvas'); fc.width = fc.height = 32;
+      var x = fc.getContext('2d');
+      x.fillStyle = '#0a0a0a'; x.fillRect(0,0,32,32);
+      x.strokeStyle = '#c9a84c'; x.lineWidth = 2.5; x.lineCap = 'round';
+      x.beginPath(); x.arc(13,13,7,0,Math.PI*2); x.stroke();
+      x.beginPath(); x.moveTo(18,18); x.lineTo(26,26); x.stroke();
+      var lk = document.createElement('link'); lk.rel='icon'; lk.href=fc.toDataURL();
+      document.head.appendChild(lk);
+    }());
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      await construireClassement('score');
+
+      document.querySelectorAll('.onglet-tri').forEach(function(btn) {
+        btn.addEventListener('click', async function() {
+          document.querySelectorAll('.onglet-tri').forEach(function(b) { b.classList.remove('actif'); });
+          btn.classList.add('actif');
+          await construireClassement(btn.dataset.tri);
+        });
+      });
+    });
+  </script>
+
+  <footer id="footer-global">
+    <div id="footer-inner">
+      <div id="footer-logo">ÉNIGMES CRIMINELLES</div>
+      <div id="footer-liens">
+        <a href="mentions-legales.html">Mentions légales</a>
+        <span class="footer-sep">·</span>
+        <a href="politique-confidentialite.html">Politique de confidentialité</a>
+        <span class="footer-sep">·</span>
+        <a href="livres.html">La série</a>
+        <span class="footer-sep">·</span>
+        <a href="https://www.amazon.fr/dp/B0GZK93B5F" target="_blank" rel="noopener">Commander sur Amazon</a>
+      </div>
+      <div id="footer-copy">
+        © <span id="footer-annee"></span> Victor Lenormand — Tous droits réservés
+      </div>
+    </div>
+  </footer>
+  <script>document.getElementById('footer-annee').textContent = new Date().getFullYear();</script>
+
+</body>
+</html>

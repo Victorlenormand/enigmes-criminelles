@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <title>Mon Profil — Énigmes Criminelles</title>
+  <meta name="author" content="Victor Lenormand">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0a0a0a">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/style.css" />
+  <style>
+    .page-profil {
+      padding: 5rem 1.5rem 4rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+      min-height: 100vh;
+      overflow-y: auto;
+      max-width: 540px;
+      margin: 0 auto;
+    }
+    .profil-section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+    .profil-section-title {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--or);
+      opacity: 0.55;
+      border-bottom: 1px solid rgba(201,168,76,0.15);
+      padding-bottom: 0.4rem;
+    }
+
+    /* ── Carte canvas ── */
+    #enqueteur-card {
+      width: 100%;
+      max-width: 420px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+      border: 1px solid rgba(201,168,76,0.2);
+    }
+
+    /* ── Infos compte ── */
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
+    }
+    .info-key {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      color: var(--or);
+      opacity: 0.5;
+      white-space: nowrap;
+    }
+    .info-val {
+      font-family: var(--font-corps);
+      font-size: 0.85rem;
+      color: var(--creme);
+      opacity: 0.8;
+      text-align: right;
+    }
+
+    /* ── Barre de progression ── */
+    .prog-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    .prog-bar {
+      flex: 1;
+      height: 4px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .prog-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--or), var(--or-clair));
+      border-radius: 2px;
+      transition: width 0.6s ease;
+    }
+    .prog-label {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      color: var(--or);
+      white-space: nowrap;
+    }
+    .grade-display {
+      font-family: var(--font-titre);
+      font-style: italic;
+      font-size: 1rem;
+      color: var(--or-clair);
+    }
+
+    /* ── Actions ── */
+    .action-btn {
+      width: 100%;
+      background: transparent;
+      border: 1px solid rgba(201,168,76,0.3);
+      color: var(--creme);
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 0.75em 1em;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 0.2s, color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+    }
+    .action-btn:hover { border-color: var(--or); color: var(--or); }
+
+    /* ── Zone édition inline ── */
+    .edit-zone {
+      display: none;
+      flex-direction: column;
+      gap: 0.6rem;
+      padding: 0.8rem;
+      border: 1px solid rgba(201,168,76,0.15);
+      background: rgba(255,255,255,0.02);
+    }
+    .edit-zone.open { display: flex; }
+    .edit-input {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(201,168,76,0.3);
+      color: var(--creme);
+      font-family: var(--font-titre);
+      font-style: italic;
+      font-size: 1rem;
+      padding: 0.35rem 0.3rem;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.2s;
+    }
+    .edit-input:focus { border-bottom-color: var(--or); }
+    .edit-input::placeholder { color: rgba(245,240,232,0.25); }
+    .edit-error {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: #c97a7a;
+      display: none;
+    }
+    .edit-error.visible { display: block; }
+    .edit-actions { display: flex; gap: 0.6rem; }
+    .edit-save {
+      flex: 1;
+      background: transparent;
+      border: 1px solid rgba(201,168,76,0.5);
+      color: var(--or);
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 0.5em;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .edit-save:hover { background: var(--or); color: var(--bg); }
+    .edit-cancel {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(245,240,232,0.35);
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.5em 0.8em;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .edit-cancel:hover { color: var(--creme); }
+
+    /* ── Séparateur danger ── */
+    .danger-sep {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(139,26,26,0.4), transparent);
+      margin: 0.5rem 0;
+    }
+    .danger-btn {
+      width: 100%;
+      background: transparent;
+      border: 1px solid rgba(139,26,26,0.35);
+      color: rgba(201,80,80,0.7);
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 0.75em 1em;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+    }
+    .danger-btn:hover {
+      border-color: rgba(139,26,26,0.7);
+      color: #c97a7a;
+      background: rgba(139,26,26,0.06);
+    }
+
+    /* ── Modale de confirmation ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9000;
+      padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: #1a1510;
+      border: 1px solid rgba(139,26,26,0.4);
+      padding: 2rem;
+      max-width: 400px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .modal-title {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #c97a7a;
+    }
+    .modal-body {
+      font-family: var(--font-corps);
+      font-style: italic;
+      font-size: 0.9rem;
+      color: var(--creme);
+      opacity: 0.75;
+      line-height: 1.6;
+    }
+    .modal-input {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(139,26,26,0.4);
+      color: var(--creme);
+      font-family: var(--font-titre);
+      font-style: italic;
+      font-size: 1rem;
+      padding: 0.35rem 0.3rem;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.2s;
+    }
+    .modal-input:focus { border-bottom-color: #c97a7a; }
+    .modal-input::placeholder { color: rgba(245,240,232,0.25); }
+    .modal-error {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: #c97a7a;
+      display: none;
+    }
+    .modal-error.visible { display: block; }
+    .modal-actions { display: flex; gap: 0.6rem; }
+    .modal-confirm {
+      flex: 1;
+      background: rgba(139,26,26,0.2);
+      border: 1px solid rgba(139,26,26,0.5);
+      color: #c97a7a;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 0.6em;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .modal-confirm:hover { background: rgba(139,26,26,0.4); }
+    .modal-cancel {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(245,240,232,0.35);
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.6em 1em;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .modal-cancel:hover { color: var(--creme); }
+
+    /* ── Barre force édition mdp ── */
+    .edit-pw-bar { height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
+    .edit-pw-fill { height: 100%; width: 0%; border-radius: 2px; transition: width 0.3s, background 0.3s; }
+
+    /* ── Streak ── */
+    #section-streak {
+      background: #0f0d0a;
+      border: 1px solid #2a2018;
+      padding: 20px;
+      text-align: center;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .streak-section-title {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.22em;
+      color: var(--or);
+      opacity: 0.5;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    #streak-feu {
+      font-size: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    #streak-nombre {
+      font-family: 'Playfair Display', serif;
+      font-size: 56px;
+      color: #c9a84c;
+      line-height: 1;
+    }
+    #streak-label {
+      font-family: 'EB Garamond', serif;
+      font-size: 14px;
+      color: #e8d5a3;
+      align-self: flex-end;
+      padding-bottom: 8px;
+    }
+    #streak-details {
+      font-family: 'Courier Prime', monospace;
+      font-size: 12px;
+      color: #888;
+      margin: 8px 0 16px;
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+    }
+    #streak-statut { font-style: italic; }
+    #streak-calendrier {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .streak-cercle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #1a1510;
+      border: 1px solid #2a2018;
+    }
+    .streak-cercle.joue {
+      background: #c9a84c;
+      border-color: #e8d5a3;
+    }
+    .streak-cercle.aujourdhui {
+      border-color: #c9a84c;
+      border-width: 2px;
+    }
+    .streak-cercle.joue.aujourdhui {
+      background: #c9a84c;
+      box-shadow: 0 0 8px rgba(201,168,76,0.5);
+    }
+
+    /* ── Badges ── */
+    #section-badges {
+      width: 100%;
+    }
+    .badges-section-title {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.22em;
+      color: var(--or);
+      opacity: 0.5;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    #badges-compteur {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--or-clair);
+      opacity: 0.6;
+      margin-bottom: 14px;
+    }
+    #grille-badges {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
+    }
+    .badge-item {
+      background: #0f0d0a;
+      border: 1px solid #2a2018;
+      padding: 14px 8px;
+      text-align: center;
+      cursor: default;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .badge-item.badge-obtenu { border-color: rgba(201,168,76,0.27); }
+    .badge-item.badge-obtenu:hover {
+      transform: translateY(-2px);
+      border-color: var(--or);
+    }
+    .badge-item.badge-locked { filter: grayscale(100%); opacity: 0.4; }
+    .badge-icone { font-size: 26px; margin-bottom: 6px; }
+    .badge-nom {
+      font-family: var(--font-titre);
+      font-size: 11px;
+      color: var(--or);
+      margin-bottom: 4px;
+      line-height: 1.2;
+    }
+    .badge-desc {
+      font-family: var(--font-corps);
+      font-size: 10px;
+      color: #777;
+      line-height: 1.3;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+  <nav id="top-nav">
+    <a class="brand" href="index.html">ÉNIGMES CRIMINELLES</a>
+    <div class="links" id="nav-links">
+      <a data-page="tutoriel" href="tutoriel.html">Comment jouer</a>
+      <a data-page="affaires" href="affaires.html">Affaires</a>
+      <a data-page="enquetes-speciales" href="enquetes-speciales.html">Enquêtes Spéciales <span class="badge-nouveau">NOUVEAU</span></a>
+      <a data-page="classement" href="classement.html">Classement</a>
+      <a data-page="livres" href="livres.html">Livres</a>
+      <a data-page="compte" id="nav-compte" href="profil.html" class="active-link">Mon compte</a>
+    </div>
+    <button id="nav-hamburger" aria-label="Menu" aria-expanded="false">☰</button>
+  </nav>
+  <div id="nav-mobile-panel">
+    <a href="tutoriel.html">Comment jouer</a>
+    <a href="affaires.html">Affaires</a>
+    <a href="enquetes-speciales.html">Enquêtes Spéciales <span class="badge-nouveau">NOUVEAU</span></a>
+    <a href="classement.html">Classement</a>
+    <a href="livres.html">Livres</a>
+    <a id="nav-mobile-compte" href="profil.html" class="active-link">Mon compte</a>
+  </div>
+
+  <div class="page-profil">
+
+    <!-- ── Carte enquêteur ── -->
+    <div class="profil-section">
+      <div class="profil-section-title">Carte d'enquêteur</div>
+      <canvas id="enqueteur-card" width="420" height="240"></canvas>
+    </div>
+
+    <!-- ── Streak quotidien ── -->
+    <div id="section-streak">
+      <div class="streak-section-title">Série quotidienne</div>
+      <div id="streak-feu">
+        <span id="streak-icone">🔥</span>
+        <span id="streak-nombre">0</span>
+        <span id="streak-label">jours de suite</span>
+      </div>
+      <div id="streak-details">
+        <span>Record : <strong id="streak-max">0</strong> jours</span>
+        <span id="streak-statut"></span>
+      </div>
+      <div id="streak-calendrier"></div>
+    </div>
+
+    <!-- ── Distinctions ── -->
+    <div id="section-badges">
+      <div class="badges-section-title">Distinctions</div>
+      <div id="badges-compteur">0 / 10 distinctions obtenues</div>
+      <div id="grille-badges"></div>
+    </div>
+
+    <!-- ── Informations du compte ── -->
+    <div class="profil-section">
+      <div class="profil-section-title">Informations du compte</div>
+      <div class="info-row">
+        <span class="info-key">Email</span>
+        <span class="info-val" id="info-email">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-key">Inscrit le</span>
+        <span class="info-val" id="info-date">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-key">Dernière connexion</span>
+        <span class="info-val" id="info-login">—</span>
+      </div>
+    </div>
+
+    <!-- ── Progression ── -->
+    <div class="profil-section">
+      <div class="profil-section-title">Progression</div>
+      <div class="grade-display" id="grade-display">Inspecteur Stagiaire ★</div>
+      <div class="prog-bar-wrap">
+        <div class="prog-bar"><div class="prog-bar-fill" id="prog-fill" style="width:0%"></div></div>
+        <span class="prog-label" id="prog-label">0 / 20</span>
+      </div>
+    </div>
+
+    <!-- ── Actions ── -->
+    <div class="profil-section">
+      <div class="profil-section-title">Actions</div>
+
+      <button class="action-btn" id="btn-edit-pseudo">✎ &nbsp;Modifier mon pseudo</button>
+      <div class="edit-zone" id="zone-pseudo">
+        <input class="edit-input" type="text" id="new-pseudo" placeholder="Nouveau nom de code" maxlength="20" autocomplete="off" />
+        <span class="edit-error" id="err-pseudo-edit"></span>
+        <div class="edit-actions">
+          <button class="edit-save" id="save-pseudo">Enregistrer</button>
+          <button class="edit-cancel" id="cancel-pseudo">Annuler</button>
+        </div>
+      </div>
+
+      <button class="action-btn" id="btn-edit-pw">🔑 &nbsp;Modifier mon mot de passe</button>
+      <div class="edit-zone" id="zone-pw">
+        <input class="edit-input" type="password" id="curr-pw" placeholder="Mot de passe actuel" maxlength="128" />
+        <input class="edit-input" type="password" id="new-pw" placeholder="Nouveau mot de passe" maxlength="128" />
+        <div class="edit-pw-bar"><div class="edit-pw-fill" id="edit-pw-fill"></div></div>
+        <input class="edit-input" type="password" id="confirm-pw" placeholder="Confirmer le nouveau mot de passe" maxlength="128" />
+        <span class="edit-error" id="err-pw-edit"></span>
+        <div class="edit-actions">
+          <button class="edit-save" id="save-pw">Enregistrer</button>
+          <button class="edit-cancel" id="cancel-pw">Annuler</button>
+        </div>
+      </div>
+
+      <button class="action-btn" id="btn-logout">→ &nbsp;Se déconnecter</button>
+
+      <a class="action-btn" href="stats.html" style="display:block;text-align:left;text-decoration:none;color:inherit;border-color:rgba(201,168,76,0.2);">📊 &nbsp;Voir mes statistiques détaillées →</a>
+    </div>
+
+    <!-- ── Zone danger ── -->
+    <div class="profil-section">
+      <div class="danger-sep"></div>
+      <button class="danger-btn" id="btn-delete">✕ &nbsp;Supprimer mon compte</button>
+    </div>
+
+  </div>
+
+  <!-- ── Modale suppression ── -->
+  <div class="modal-overlay" id="delete-modal">
+    <div class="modal-box">
+      <div class="modal-title">Action irréversible</div>
+      <div class="modal-body">
+        Cette action est irréversible. Toutes vos données et votre progression
+        seront définitivement supprimées. Tapez votre email pour confirmer :
+      </div>
+      <input class="modal-input" type="email" id="modal-email-confirm"
+        placeholder="votre@email.com" autocomplete="off" />
+      <span class="modal-error" id="modal-error"></span>
+      <div class="modal-actions">
+        <button class="modal-confirm" id="modal-confirm-btn">Confirmer la suppression</button>
+        <button class="modal-cancel" id="modal-cancel-btn">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+    var SUPABASE_URL      = 'https://acmazynakkmhbbkymfjv.supabase.co';
+    var SUPABASE_ANON_KEY = 'sb_publishable_mY2chf8gDjPag_hgDs5z1A_Bv2HMF6O';
+    var supabase = window.supabase
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+      : null;
+    window._supabase = supabase;
+    if (!supabase) console.error('[Supabase] ERREUR — CDN non chargé');
+    else console.log('[Supabase] Client initialisé ✓');
+  </script>
+  <script src="./js/auth.js"></script>
+  <script src="./js/scoring.js"></script>
+  <script src="./js/badges.js"></script>
+  <script src="./js/stats.js"></script>
+  <script>
+    requireLogin();
+
+    (function () {
+      var fc = document.createElement('canvas'); fc.width = fc.height = 32;
+      var x = fc.getContext('2d');
+      x.fillStyle = '#0a0a0a'; x.fillRect(0, 0, 32, 32);
+      x.strokeStyle = '#c9a84c'; x.lineWidth = 2.5; x.lineCap = 'round';
+      x.beginPath(); x.arc(13, 13, 7, 0, Math.PI * 2); x.stroke();
+      x.beginPath(); x.moveTo(18, 18); x.lineTo(26, 26); x.stroke();
+      var lk = document.createElement('link'); lk.rel = 'icon'; lk.href = fc.toDataURL();
+      document.head.appendChild(lk);
+    }());
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      /* Migration si compte créé avant Supabase */
+      await migrerCompteLocalVersSupabase();
+
+      var session = getSession();
+      var prog    = await getProgression();
+      prog = prog || {};
+      /* date_inscription stockée dans la session lors du login */
+      var user = { dateInscription: session.dateInscription || null };
+
+      // ── Carte enquêteur ──
+      function drawCard() {
+        var canvas = document.getElementById('enqueteur-card');
+        var ctx = canvas.getContext('2d');
+        var W = 420, H = 240;
+        canvas.width = W; canvas.height = H;
+
+        ctx.fillStyle = '#0f0d0a';
+        ctx.fillRect(0, 0, W, H);
+
+        // Bordure or double
+        ctx.strokeStyle = 'rgba(201,168,76,0.6)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(6, 6, W-12, H-12);
+        ctx.strokeStyle = 'rgba(201,168,76,0.25)';
+        ctx.lineWidth = 0.5;
+        ctx.strokeRect(10, 10, W-20, H-20);
+
+        // Filigrane "CONFIDENTIEL"
+        ctx.save();
+        ctx.globalAlpha = 0.04;
+        ctx.fillStyle = '#c9a84c';
+        ctx.font = 'bold 36px Courier New, monospace';
+        ctx.textAlign = 'center';
+        ctx.translate(W/2, H/2 + 10);
+        ctx.rotate(-0.25);
+        ctx.fillText('CONFIDENTIEL', 0, 0);
+        ctx.restore();
+
+        // Entête
+        ctx.fillStyle = 'rgba(201,168,76,0.55)';
+        ctx.font = '700 9px Courier New, monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText('ÉNIGMES CRIMINELLES', 20, 30);
+        ctx.fillStyle = 'rgba(245,240,232,0.25)';
+        ctx.font = '8px Courier New, monospace';
+        ctx.fillText('CARTE D\'ENQUÊTEUR — ACCÈS CLASSIFIÉ', 20, 42);
+
+        // Ligne séparatrice
+        ctx.strokeStyle = 'rgba(201,168,76,0.3)';
+        ctx.lineWidth = 0.5;
+        ctx.beginPath(); ctx.moveTo(20, 50); ctx.lineTo(W-20, 50); ctx.stroke();
+
+        // Pseudo
+        ctx.fillStyle = '#f5f0e8';
+        ctx.font = 'bold 28px Georgia, serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(session.pseudo, 20, 90);
+
+        // Grade
+        var nbResol = prog.affairesResolues ? prog.affairesResolues.length : 0;
+        ctx.fillStyle = '#c9a84c';
+        ctx.font = '13px Georgia, serif';
+        ctx.fillText(getGrade(nbResol), 20, 112);
+
+        // Affaires résolues
+        ctx.fillStyle = 'rgba(245,240,232,0.5)';
+        ctx.font = '10px Courier New, monospace';
+        ctx.fillText('AFFAIRES RÉSOLUES', 20, 145);
+        ctx.fillStyle = '#f5f0e8';
+        ctx.font = 'bold 22px Courier New, monospace';
+        ctx.fillText(nbResol + ' / 20', 20, 170);
+
+        // Matricule
+        ctx.fillStyle = 'rgba(201,168,76,0.4)';
+        ctx.font = '8px Courier New, monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText('MATRICULE', W-20, 145);
+        ctx.fillStyle = 'rgba(245,240,232,0.6)';
+        ctx.font = '10px Courier New, monospace';
+        ctx.fillText('#' + session.userId.substring(0,8).toUpperCase(), W-20, 160);
+
+        // Date inscription
+        if (user) {
+          var d = new Date(user.dateInscription);
+          ctx.fillStyle = 'rgba(245,240,232,0.35)';
+          ctx.font = '8px Courier New, monospace';
+          ctx.fillText('DEPUIS ' + d.toLocaleDateString('fr-FR', {month:'short', year:'numeric'}).toUpperCase(), W-20, 175);
+        }
+
+        // Bas
+        ctx.strokeStyle = 'rgba(201,168,76,0.3)';
+        ctx.lineWidth = 0.5;
+        ctx.beginPath(); ctx.moveTo(20, 195); ctx.lineTo(W-20, 195); ctx.stroke();
+        ctx.fillStyle = 'rgba(201,168,76,0.4)';
+        ctx.font = '7px Courier New, monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText('DOSSIER CLASSIFIÉ — ACCÈS RESTREINT', 20, 210);
+        ctx.textAlign = 'right';
+        ctx.fillText('enigmes-criminelles.fr', W-20, 210);
+      }
+      drawCard();
+
+      // ── Badges ──
+      if (typeof renderBadges === 'function') await renderBadges();
+
+      // ── Streak ──
+      await (async function() {
+        var streak = typeof getStreak === 'function' ? await getStreak() : { actuel: 0, maximum: 0, joueAujourdhui: false };
+        document.getElementById('streak-nombre').textContent = streak.actuel;
+        document.getElementById('streak-max').textContent    = streak.maximum;
+        var statutEl = document.getElementById('streak-statut');
+        if (streak.joueAujourdhui) {
+          statutEl.textContent = '✓ Joué aujourd\'hui';
+          statutEl.style.color = '#c9a84c';
+        } else if (streak.actuel > 0) {
+          statutEl.textContent = '⚠ Pas encore joué aujourd\'hui';
+          statutEl.style.color = '#c97a2a';
+        } else {
+          statutEl.textContent = 'Aucune série en cours';
+        }
+        if (streak.actuel === 0) {
+          document.getElementById('streak-icone').textContent = '🕯';
+        }
+
+        // Calendrier 7 jours
+        var historique = prog.historiqueJours || [];
+        var cal = document.getElementById('streak-calendrier');
+        var today = new Date();
+        cal.innerHTML = '';
+        for (var i = 6; i >= 0; i--) {
+          var d = new Date(today);
+          d.setDate(today.getDate() - i);
+          var dStr = d.toISOString().split('T')[0];
+          var joue = historique.indexOf(dStr) !== -1;
+          var estAujourdhui = i === 0;
+          var cercle = document.createElement('div');
+          cercle.className = 'streak-cercle' + (joue ? ' joue' : '') + (estAujourdhui ? ' aujourdhui' : '');
+          cercle.title = dStr;
+          cal.appendChild(cercle);
+        }
+      }());
+
+      // ── Infos compte ──
+      function maskEmail(email) {
+        var parts = email.split('@');
+        var local = parts[0];
+        var masked = local.substring(0, Math.min(2, local.length)) + '**';
+        return masked + '@' + parts[1];
+      }
+      function formatDate(iso) {
+        if (!iso) return '—';
+        return new Date(iso).toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'});
+      }
+      document.getElementById('info-email').textContent = maskEmail(session.email);
+      document.getElementById('info-date').textContent  = user ? formatDate(user.dateInscription) : '—';
+      document.getElementById('info-login').textContent = formatDate(session.loginDate);
+
+      // ── Progression ──
+      var nbResol = prog.affairesResolues ? prog.affairesResolues.length : 0;
+      document.getElementById('grade-display').textContent = getGrade(nbResol);
+      document.getElementById('prog-label').textContent    = nbResol + ' / 20';
+      document.getElementById('prog-fill').style.width     = (nbResol / 20 * 100) + '%';
+
+      // ── Modifier pseudo ──
+      document.getElementById('btn-edit-pseudo').addEventListener('click', function() {
+        var z = document.getElementById('zone-pseudo');
+        z.classList.toggle('open');
+        if (z.classList.contains('open')) document.getElementById('new-pseudo').focus();
+      });
+      document.getElementById('cancel-pseudo').addEventListener('click', function() {
+        document.getElementById('zone-pseudo').classList.remove('open');
+      });
+      document.getElementById('save-pseudo').addEventListener('click', async function() {
+        var newPseudo = document.getElementById('new-pseudo').value.trim();
+        var errEl = document.getElementById('err-pseudo-edit');
+        errEl.textContent = ''; errEl.classList.remove('visible');
+        if (!/^[a-zA-Z0-9\-]{3,20}$/.test(newPseudo)) {
+          errEl.textContent = 'Nom de code invalide (3–20 caractères, lettres, chiffres, tirets).';
+          errEl.classList.add('visible'); return;
+        }
+        try {
+          await updatePseudo(newPseudo);
+          document.getElementById('zone-pseudo').classList.remove('open');
+          window.location.reload();
+        } catch(e) {
+          errEl.textContent = e.message === 'PSEUDO_EXISTS'
+            ? 'Ce nom de code est déjà pris.'
+            : 'Erreur lors de la modification.';
+          errEl.classList.add('visible');
+        }
+      });
+
+      // ── Modifier mot de passe ──
+      document.getElementById('btn-edit-pw').addEventListener('click', function() {
+        var z = document.getElementById('zone-pw');
+        z.classList.toggle('open');
+        if (z.classList.contains('open')) document.getElementById('curr-pw').focus();
+      });
+      document.getElementById('cancel-pw').addEventListener('click', function() {
+        document.getElementById('zone-pw').classList.remove('open');
+      });
+      var newPwInput = document.getElementById('new-pw');
+      var editPwFill = document.getElementById('edit-pw-fill');
+      newPwInput.addEventListener('input', function() {
+        var val = this.value;
+        var len = val.length >= 8;
+        var maj = /[A-Z]/.test(val);
+        var num = /[0-9]/.test(val);
+        var score = [len, maj, num].filter(Boolean).length;
+        var colors = ['', '#c97a7a', '#c9a84c', '#4a9a40'];
+        var widths  = ['0%', '33%', '66%', '100%'];
+        editPwFill.style.width = widths[score];
+        editPwFill.style.background = colors[score];
+      });
+      document.getElementById('save-pw').addEventListener('click', async function() {
+        var currPw    = document.getElementById('curr-pw').value;
+        var newPw     = document.getElementById('new-pw').value;
+        var confirmPw = document.getElementById('confirm-pw').value;
+        var errEl     = document.getElementById('err-pw-edit');
+        errEl.textContent = ''; errEl.classList.remove('visible');
+        if (!newPw || newPw.length < 8 || !/[A-Z]/.test(newPw) || !/[0-9]/.test(newPw)) {
+          errEl.textContent = 'Le nouveau mot de passe ne respecte pas les critères (8 chars, majuscule, chiffre).';
+          errEl.classList.add('visible'); return;
+        }
+        if (newPw !== confirmPw) {
+          errEl.textContent = 'Les mots de passe ne correspondent pas.';
+          errEl.classList.add('visible'); return;
+        }
+        try {
+          await updatePassword(currPw, newPw);
+          document.getElementById('zone-pw').classList.remove('open');
+          document.getElementById('curr-pw').value = '';
+          document.getElementById('new-pw').value = '';
+          document.getElementById('confirm-pw').value = '';
+          editPwFill.style.width = '0%';
+        } catch(e) {
+          errEl.textContent = e.message === 'WRONG_PASSWORD'
+            ? 'Mot de passe actuel incorrect.'
+            : 'Erreur lors de la modification.';
+          errEl.classList.add('visible');
+        }
+      });
+
+      // ── Déconnexion ──
+      document.getElementById('btn-logout').addEventListener('click', logout);
+
+      // ── Suppression de compte ──
+      document.getElementById('btn-delete').addEventListener('click', function() {
+        document.getElementById('delete-modal').classList.add('open');
+        document.getElementById('modal-email-confirm').value = '';
+        document.getElementById('modal-error').classList.remove('visible');
+      });
+      document.getElementById('modal-cancel-btn').addEventListener('click', function() {
+        document.getElementById('delete-modal').classList.remove('open');
+      });
+      document.getElementById('modal-confirm-btn').addEventListener('click', async function() {
+        var typed = document.getElementById('modal-email-confirm').value.trim().toLowerCase();
+        var errEl = document.getElementById('modal-error');
+        if (typed !== session.email) {
+          errEl.textContent = 'L\'email saisi ne correspond pas à votre compte.';
+          errEl.classList.add('visible');
+          return;
+        }
+        await deleteAccount();
+      });
+    });
+  </script>
+
+  <footer id="footer-global">
+    <div id="footer-inner">
+      <div id="footer-logo">ÉNIGMES CRIMINELLES</div>
+      <div id="footer-liens">
+        <a href="mentions-legales.html">Mentions légales</a>
+        <span class="footer-sep">·</span>
+        <a href="politique-confidentialite.html">Politique de confidentialité</a>
+        <span class="footer-sep">·</span>
+        <a href="livres.html">La série</a>
+        <span class="footer-sep">·</span>
+        <a href="https://www.amazon.fr/dp/B0GZK93B5F" target="_blank" rel="noopener">Commander sur Amazon</a>
+      </div>
+      <div id="footer-copy">
+        © <span id="footer-annee"></span> Victor Lenormand — Tous droits réservés
+      </div>
+    </div>
+  </footer>
+  <script>document.getElementById('footer-annee').textContent = new Date().getFullYear();</script>
+
+</body>
+</html>

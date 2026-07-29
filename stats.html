@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>Mes Statistiques — Énigmes Criminelles</title>
+  <meta name="author" content="Victor Lenormand">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0a0a0a">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=EB+Garamond:ital,wght@0,400;1,400&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/style.css" />
+  <style>
+    .page-stats {
+      padding: 5rem 1.5rem 4rem;
+      max-width: 820px;
+      margin: 0 auto;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .stats-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .stats-header h2 {
+      font-family: var(--font-titre);
+      font-size: clamp(1.3rem, 3.5vw, 2rem);
+      color: var(--or);
+      letter-spacing: 0.07em;
+      margin: 0.3rem 0;
+    }
+    #stats-sous-titre {
+      font-family: var(--font-corps);
+      font-style: italic;
+      color: var(--or-clair);
+      opacity: 0.7;
+      font-size: 0.92rem;
+    }
+    .stats-back {
+      margin-bottom: 1.5rem;
+    }
+    .stats-back a {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      color: var(--or-clair);
+      opacity: 0.6;
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: opacity 0.2s;
+    }
+    .stats-back a:hover { opacity: 1; }
+
+    /* ── Section titles ── */
+    .stats-section { margin: 2rem 0; }
+    .stats-section-title {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.22em;
+      color: var(--or);
+      opacity: 0.5;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid rgba(201,168,76,0.12);
+    }
+
+    /* ── KPI grid ── */
+    #kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .kpi-carte {
+      background: #0f0d0a;
+      border: 1px solid #2a2018;
+      padding: 20px 16px;
+      text-align: center;
+    }
+    .kpi-valeur {
+      font-family: var(--font-titre);
+      font-size: 2.2rem;
+      color: var(--or);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .kpi-label {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: #888;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ── Stats secondaires ── */
+    .stats-secondary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .stat-mini {
+      background: rgba(201,168,76,0.03);
+      border: 1px solid rgba(201,168,76,0.1);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .stat-mini-val {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      color: var(--creme);
+      font-weight: bold;
+    }
+    .stat-mini-lbl {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      color: #666;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ── Canvas progression ── */
+    #canvas-progression {
+      width: 100%;
+      max-width: 780px;
+      display: block;
+      margin: 0 auto;
+      border: 1px solid rgba(201,168,76,0.1);
+    }
+
+    /* ── Barres de niveau ── */
+    .barre-niveau-wrapper { margin: 10px 0; }
+    .barre-niveau-label {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--or-clair);
+      margin-bottom: 5px;
+    }
+    .barre-niv-nom { opacity: 0.8; }
+    .barre-niv-val { color: var(--or); }
+    .barre-niveau-track {
+      height: 8px;
+      background: #1a1510;
+      border: 1px solid #2a2018;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .barre-niveau-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #c9a84c, #e8d5a3);
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.8s ease;
+    }
+
+    /* ── Tableau top 5 ── */
+    #tableau-top5 {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 13px;
+    }
+    #tableau-top5 th {
+      color: var(--or);
+      letter-spacing: 2px;
+      font-size: 10px;
+      text-transform: uppercase;
+      padding: 10px 8px;
+      border-bottom: 1px solid rgba(201,168,76,0.4);
+      text-align: left;
+    }
+    #tableau-top5 td {
+      padding: 9px 8px;
+      border-bottom: 1px solid rgba(201,168,76,0.07);
+      color: var(--or-clair);
+    }
+
+    /* ── État vide ── */
+    #stats-vide {
+      text-align: center;
+      padding: 4rem 1rem;
+      font-family: var(--font-corps);
+      font-style: italic;
+      color: var(--or-clair);
+      opacity: 0.55;
+      font-size: 1.05rem;
+    }
+    #stats-vide a {
+      display: block;
+      margin-top: 1.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      color: var(--or);
+      text-transform: uppercase;
+      text-decoration: none;
+      opacity: 0.8;
+    }
+    .hidden { display: none; }
+
+    @media (max-width: 640px) {
+      #kpi-grid             { grid-template-columns: repeat(2, 1fr); }
+      .stats-secondary-grid { grid-template-columns: repeat(2, 1fr); }
+      .kpi-valeur           { font-size: 1.8rem; }
+    }
+    @media (max-width: 380px) {
+      #kpi-grid             { grid-template-columns: 1fr 1fr; }
+      .stats-secondary-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+  <nav id="top-nav">
+    <a class="brand" href="index.html">ÉNIGMES CRIMINELLES</a>
+    <div class="links" id="nav-links">
+      <a data-page="tutoriel" href="tutoriel.html">Comment jouer</a>
+      <a data-page="affaires" href="affaires.html">Affaires</a>
+      <a data-page="enquetes-speciales" href="enquetes-speciales.html">Enquêtes Spéciales <span class="badge-nouveau">NOUVEAU</span></a>
+      <a data-page="classement" href="classement.html">Classement</a>
+      <a data-page="livres" href="livres.html">Livres</a>
+      <a data-page="compte" id="nav-compte" href="profil.html" class="active-link">Mon compte</a>
+    </div>
+    <button id="nav-hamburger" aria-label="Menu" aria-expanded="false">☰</button>
+  </nav>
+  <div id="nav-mobile-panel">
+    <a href="tutoriel.html">Comment jouer</a>
+    <a href="affaires.html">Affaires</a>
+    <a href="enquetes-speciales.html">Enquêtes Spéciales <span class="badge-nouveau">NOUVEAU</span></a>
+    <a href="classement.html">Classement</a>
+    <a href="livres.html">Livres</a>
+    <a id="nav-mobile-compte" href="profil.html" class="active-link">Mon compte</a>
+  </div>
+
+  <main class="page-stats">
+
+    <div class="stats-back">
+      <a href="profil.html">← Retour au profil</a>
+    </div>
+
+    <div class="stats-header">
+      <span class="stamp-label">Rapport d'enquêteur</span>
+      <h2>DOSSIER STATISTIQUES</h2>
+      <div id="stats-sous-titre"></div>
+      <div class="divider"></div>
+    </div>
+
+    <!-- État vide -->
+    <div id="stats-vide" class="hidden">
+      Aucune affaire résolue pour le moment.<br>
+      Vos statistiques apparaîtront après votre première résolution.
+      <a href="affaires.html">Commencer une affaire →</a>
+    </div>
+
+    <!-- Contenu principal -->
+    <div id="stats-contenu">
+
+      <!-- ── KPI ── -->
+      <div class="stats-section">
+        <div class="stats-section-title">Chiffres clés</div>
+        <div id="kpi-grid">
+          <div class="kpi-carte">
+            <div class="kpi-valeur" id="kpi-score">—</div>
+            <div class="kpi-label">Score total</div>
+          </div>
+          <div class="kpi-carte">
+            <div class="kpi-valeur" id="kpi-affaires">—</div>
+            <div class="kpi-label">Affaires résolues</div>
+          </div>
+          <div class="kpi-carte">
+            <div class="kpi-valeur" id="kpi-sans-faute">—</div>
+            <div class="kpi-label">Affaires sans faute</div>
+          </div>
+          <div class="kpi-carte">
+            <div class="kpi-valeur" id="kpi-streak">—</div>
+            <div class="kpi-label">Meilleur streak</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Stats secondaires ── -->
+      <div class="stats-section">
+        <div class="stats-section-title">Détail des performances</div>
+        <div class="stats-secondary-grid">
+          <div class="stat-mini">
+            <div class="stat-mini-val" id="stat-score-moyen">—</div>
+            <div class="stat-mini-lbl">Score moyen</div>
+          </div>
+          <div class="stat-mini">
+            <div class="stat-mini-val" id="stat-meilleur">—</div>
+            <div class="stat-mini-lbl">Meilleur score</div>
+          </div>
+          <div class="stat-mini">
+            <div class="stat-mini-val" id="stat-streak-actuel">—</div>
+            <div class="stat-mini-lbl">Streak actuel</div>
+          </div>
+          <div class="stat-mini">
+            <div class="stat-mini-val" id="stat-temps-moyen">—</div>
+            <div class="stat-mini-lbl">Temps moyen</div>
+          </div>
+          <div class="stat-mini">
+            <div class="stat-mini-val" id="stat-temps-meilleur">—</div>
+            <div class="stat-mini-lbl">Meilleur temps</div>
+          </div>
+          <div class="stat-mini">
+            <div class="stat-mini-val" id="stat-erreurs-total">—</div>
+            <div class="stat-mini-lbl">Total erreurs</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Graphique ── -->
+      <div class="stats-section">
+        <div class="stats-section-title">Progression dans le temps</div>
+        <canvas id="canvas-progression" width="780" height="200"></canvas>
+      </div>
+
+      <!-- ── Répartition par niveau ── -->
+      <div class="stats-section">
+        <div class="stats-section-title">Répartition par niveau</div>
+
+        <div class="barre-niveau-wrapper">
+          <div class="barre-niveau-label">
+            <span class="barre-niv-nom">★☆☆ Inspecteur</span>
+            <span class="barre-niv-val" id="val-n1">— / 7</span>
+          </div>
+          <div class="barre-niveau-track">
+            <div class="barre-niveau-fill" id="barre-n1"></div>
+          </div>
+        </div>
+
+        <div class="barre-niveau-wrapper">
+          <div class="barre-niveau-label">
+            <span class="barre-niv-nom">★★☆ Commissaire</span>
+            <span class="barre-niv-val" id="val-n2">— / 7</span>
+          </div>
+          <div class="barre-niveau-track">
+            <div class="barre-niveau-fill" id="barre-n2"></div>
+          </div>
+        </div>
+
+        <div class="barre-niveau-wrapper">
+          <div class="barre-niveau-label">
+            <span class="barre-niv-nom">★★★ Détective</span>
+            <span class="barre-niv-val" id="val-n3">— / 6</span>
+          </div>
+          <div class="barre-niveau-track">
+            <div class="barre-niveau-fill" id="barre-n3"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Top 5 ── -->
+      <div class="stats-section">
+        <div class="stats-section-title">Meilleures affaires</div>
+        <table id="tableau-top5">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Affaire</th>
+              <th>Points</th>
+              <th>Temps</th>
+              <th>Erreurs</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-top5">
+            <tr><td colspan="5" style="text-align:center;padding:24px;opacity:0.4;">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div><!-- /stats-contenu -->
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+    var SUPABASE_URL      = 'https://acmazynakkmhbbkymfjv.supabase.co';
+    var SUPABASE_ANON_KEY = 'sb_publishable_mY2chf8gDjPag_hgDs5z1A_Bv2HMF6O';
+    var supabase = window.supabase
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+      : null;
+    window._supabase = supabase;
+    if (!supabase) console.error('[Supabase] ERREUR — CDN non chargé');
+    else console.log('[Supabase] Client initialisé ✓');
+  </script>
+  <script src="./js/auth.js"></script>
+  <script>
+    requireLogin();
+  </script>
+  <script src="./js/stats.js"></script>
+  <script>
+    (function () {
+      var fc = document.createElement('canvas'); fc.width = fc.height = 32;
+      var x = fc.getContext('2d');
+      x.fillStyle = '#0a0a0a'; x.fillRect(0, 0, 32, 32);
+      x.strokeStyle = '#c9a84c'; x.lineWidth = 2.5; x.lineCap = 'round';
+      x.beginPath(); x.arc(13, 13, 7, 0, Math.PI * 2); x.stroke();
+      x.beginPath(); x.moveTo(18, 18); x.lineTo(26, 26); x.stroke();
+      var lk = document.createElement('link'); lk.rel = 'icon'; lk.href = fc.toDataURL();
+      document.head.appendChild(lk);
+    }());
+  </script>
+
+  <footer id="footer-global">
+    <div id="footer-inner">
+      <div id="footer-logo">ÉNIGMES CRIMINELLES</div>
+      <div id="footer-liens">
+        <a href="mentions-legales.html">Mentions légales</a>
+        <span class="footer-sep">·</span>
+        <a href="politique-confidentialite.html">Politique de confidentialité</a>
+        <span class="footer-sep">·</span>
+        <a href="livres.html">La série</a>
+        <span class="footer-sep">·</span>
+        <a href="https://www.amazon.fr/dp/B0GZK93B5F" target="_blank" rel="noopener">Commander sur Amazon</a>
+      </div>
+      <div id="footer-copy">
+        © <span id="footer-annee"></span> Victor Lenormand — Tous droits réservés
+      </div>
+    </div>
+  </footer>
+  <script>document.getElementById('footer-annee').textContent = new Date().getFullYear();</script>
+
+</body>
+</html>

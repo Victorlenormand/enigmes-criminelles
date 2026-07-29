@@ -3,1545 +3,216 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dossier N°00 — Affaires Non Résolues</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>Énigmes Criminelles — 20 affaires policières à résoudre en ligne</title>
+  <meta name="description" content="Trouvez le tueur, la méthode et le lieu. Mots mêlés + déduction + logique. 20 affaires gratuites, 3 niveaux de difficulté.">
+  <meta name="author" content="Victor Lenormand">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Énigmes Criminelles">
+  <meta property="og:title" content="Énigmes Criminelles">
+  <meta property="og:description" content="20 affaires policières à résoudre. Mots mêlés, déduction, logique. Gratuit.">
+  <meta property="og:url" content="https://enigmes-criminelles.fr/">
+  <meta property="og:image" content="https://enigmes-criminelles.fr/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="fr_FR">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://enigmes-criminelles.fr/og-image.jpg">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Dancing+Script:wght@600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet" />
-
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=EB+Garamond:ital,wght@0,400;1,400&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/style.css" />
   <style>
-    /* ═══════════════════════════════════════════════════════════
-       Reset & variables
-    ═══════════════════════════════════════════════════════════ */
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    :root {
-      --bg:        #0a0a0a;
-      --or:        #c9a84c;
-      --or-clair:  #e8d5a3;
-      --creme:     #f5f0e8;
-      --rouge:     #8b1a1a;
-
-      --font-titre: 'Playfair Display', Georgia, serif;
-      --font-corps: 'EB Garamond', Georgia, serif;
-      --font-mono:  'Courier Prime', 'Courier New', monospace;
-    }
-
-    html, body {
-      width: 100%;
-      height: 100%;
-      background: var(--bg);
-      color: var(--creme);
-      font-family: var(--font-corps);
-      font-size: 18px;
-      line-height: 1.65;
-      overflow: hidden;
-      user-select: none;
-      -webkit-user-select: none;
-    }
-
-    /* ═══════════════════════════════════════════════════════════
-       Système d'écrans — un seul visible à la fois, fondu CSS
-    ═══════════════════════════════════════════════════════════ */
-    .screen {
-      position: fixed;
-      inset: 0;
+    .hero {
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 5rem 2rem 3rem;
-      gap: 1.25rem;
+      gap: 1.4rem;
       text-align: center;
-
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-      overflow-y: auto;
+      max-width: 600px;
     }
-
-    .screen.active {
-      opacity: 1;
-      pointer-events: all;
+    .hero h1 {
+      font-size: clamp(2.4rem, 7vw, 5rem);
+      letter-spacing: 0.08em;
+      line-height: 1.05;
     }
-
-    /* ═══════════════════════════════════════════════════════════
-       Typographie globale
-    ═══════════════════════════════════════════════════════════ */
-    h1 {
-      font-family: var(--font-titre);
-      font-size: clamp(2.8rem, 7vw, 5.5rem);
-      color: var(--or);
-      letter-spacing: 0.05em;
-      line-height: 1.1;
-    }
-
-    h2 {
-      font-family: var(--font-titre);
-      font-size: clamp(1.5rem, 3.5vw, 2.4rem);
-      color: var(--or);
-      letter-spacing: 0.04em;
-    }
-
-    h3 {
-      font-family: var(--font-titre);
-      font-size: clamp(1rem, 2vw, 1.4rem);
-      color: var(--or-clair);
-      font-style: italic;
-    }
-
-    p {
+    .hero-sub {
       font-family: var(--font-corps);
-      font-size: clamp(0.95rem, 1.5vw, 1.1rem);
-      color: var(--creme);
-      max-width: 56ch;
+      font-size: clamp(1rem, 1.8vw, 1.2rem);
+      font-style: italic;
+      color: var(--or-clair);
+      opacity: 0.85;
+      max-width: 42ch;
+      line-height: 1.6;
     }
-
-    /* ═══════════════════════════════════════════════════════════
-       Composants réutilisables
-    ═══════════════════════════════════════════════════════════ */
-
-    /* Étiquette rouge CONFIDENTIEL */
-    .stamp-label {
-      display: inline-block;
-      font-family: var(--font-mono);
-      font-size: 0.65rem;
-      font-weight: 700;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-      color: var(--rouge);
-      border: 1px solid var(--rouge);
-      padding: 0.2em 0.7em;
-    }
-
-    /* Numéro d'écran discret */
-    .screen-id {
-      font-family: var(--font-mono);
-      font-size: 0.6rem;
-      letter-spacing: 0.2em;
-      color: var(--or);
-      opacity: 0.35;
-    }
-
-    /* Séparateur linéaire doré */
-    .divider {
-      width: 100px;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--or), transparent);
-      flex-shrink: 0;
-    }
-
-    /* Bouton principal */
-    .btn {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--or);
-      background: transparent;
-      border: 1px solid var(--or);
-      padding: 0.6em 1.8em;
-      cursor: pointer;
-      transition: background 0.22s ease, color 0.22s ease;
-    }
-
-    .btn:hover {
-      background: var(--or);
-      color: var(--bg);
-    }
-
-    .btn + .btn { margin-left: 0.75rem; }
-
-    /* Zone de boutons de navigation entre écrans */
-    .nav-btns {
+    .hero-btns {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 0.6rem;
-      margin-top: 0.5rem;
+      gap: 0.8rem;
+      margin-top: 0.4rem;
     }
-
-    /* ═══════════════════════════════════════════════════════════
-       Barre de navigation persistante (cachée sur screen-1)
-    ═══════════════════════════════════════════════════════════ */
-    #top-nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      height: 3.2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 2rem;
-      border-bottom: 1px solid rgba(201, 168, 76, 0.12);
-      z-index: 200;
-
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.5s ease;
-    }
-
-    #top-nav.visible {
-      opacity: 1;
-      pointer-events: all;
-    }
-
-    #top-nav .brand {
+    .btn-primary {
       font-family: var(--font-mono);
-      font-size: 0.62rem;
+      font-size: 0.78rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--bg);
+      background: var(--or);
+      border: 1px solid var(--or);
+      padding: 0.7em 2em;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.22s, color 0.22s;
+    }
+    .btn-primary:hover { background: var(--or-clair); border-color: var(--or-clair); }
+    .hero-badge {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
       letter-spacing: 0.22em;
       color: var(--or);
-      opacity: 0.5;
-    }
-
-    #top-nav .links {
-      display: flex;
-      gap: 1.6rem;
-    }
-
-    #top-nav .links button {
-      font-family: var(--font-mono);
-      font-size: 0.6rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--or-clair);
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      opacity: 0.4;
-      transition: opacity 0.2s;
-      padding: 0;
-    }
-
-    #top-nav .links button:hover,
-    #top-nav .links button.active-link {
-      opacity: 1;
-    }
-
-    /* ═══════════════════════════════════════════════════════════
-       Ornements de coin permanents
-    ═══════════════════════════════════════════════════════════ */
-    .corner {
-      position: fixed;
-      width: 36px;
-      height: 36px;
-      opacity: 0.18;
-      pointer-events: none;
-      z-index: 100;
-    }
-    .corner.tl { top: 10px; left: 10px;
-      border-top: 1px solid var(--or); border-left: 1px solid var(--or); }
-    .corner.tr { top: 10px; right: 10px;
-      border-top: 1px solid var(--or); border-right: 1px solid var(--or); }
-    .corner.bl { bottom: 10px; left: 10px;
-      border-bottom: 1px solid var(--or); border-left: 1px solid var(--or); }
-    .corner.br { bottom: 10px; right: 10px;
-      border-bottom: 1px solid var(--or); border-right: 1px solid var(--or); }
-
-    /* ═══════════════════════════════════════════════════════════
-       SCREEN-1  Accueil / splash
-    ═══════════════════════════════════════════════════════════ */
-    #screen-1 {
-      background: #000;
-      gap: 0;
-      justify-content: center;
-    }
-
-    /* — Tampon circulaire rouge — */
-    .s1-stamp {
-      width: clamp(160px, 22vw, 210px);
-      height: clamp(160px, 22vw, 210px);
-      border-radius: 50%;
-      border: 6px solid var(--rouge);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      flex-shrink: 0;
-      margin-bottom: 2.6rem;
-
-      opacity: 0;
-      animation: stampCrash 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
-      transform-origin: center;
-    }
-
-    .s1-stamp::before {
-      content: '';
-      position: absolute;
-      inset: 10px;
-      border-radius: 50%;
-      border: 2px solid var(--rouge);
       opacity: 0.45;
-    }
-
-    .s1-stamp-text {
-      font-family: var(--font-mono);
-      font-size: clamp(0.85rem, 1.5vw, 1.05rem);
-      font-weight: 700;
-      letter-spacing: 0.18em;
-      color: var(--rouge);
       text-transform: uppercase;
-      text-align: center;
-      line-height: 1.4;
-      user-select: none;
-      padding: 0 1rem;
     }
-
-    @keyframes stampCrash {
-      0%   { transform: scale(3)    rotate(-8deg); opacity: 0; }
-      60%  { transform: scale(0.92) rotate( 2deg); opacity: 1; }
-      80%  { transform: scale(1.06) rotate(-1deg); opacity: 1; }
-      100% { transform: scale(1)    rotate(-3deg); opacity: 1; }
-    }
-
-    /* — Texte d'introduction — */
-    .s1-intro {
-      font-family: var(--font-titre);
-      font-style: italic;
-      font-size: clamp(1rem, 2vw, 1.2rem);
-      color: var(--creme);
-      line-height: 1.85;
-      text-align: center;
-      max-width: 46ch;
-      margin-bottom: 2rem;
-
-      opacity: 0;
-      animation: s1FadeUp 0.9s ease forwards;
-      animation-delay: 1.5s;
-    }
-
-    /* — Formulaire d'entrée — */
-    .s1-form {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-
-      opacity: 0;
-      animation: s1FadeUp 0.8s ease forwards;
-      animation-delay: 2.8s;
-    }
-
-    .s1-form input {
-      background: transparent;
-      border: none;
-      border-bottom: 1px solid rgba(201, 168, 76, 0.3);
-      color: var(--creme);
-      font-family: var(--font-titre);
-      font-style: italic;
-      font-size: 1rem;
-      padding: 0.45rem 0.3rem;
-      width: clamp(200px, 30vw, 280px);
-      text-align: center;
-      outline: none;
-      transition: border-color 0.3s;
-    }
-
-    .s1-form input::placeholder {
-      color: rgba(245, 240, 232, 0.28);
-      letter-spacing: 0.04em;
-    }
-
-    .s1-form input:focus {
-      border-bottom-color: var(--or);
-    }
-
-    .s1-btn-open {
+    #hero-compteur {
       font-family: var(--font-mono);
-      font-size: 0.75rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--rouge);
-      background: transparent;
-      border: 1px solid var(--rouge);
-      padding: 0.6em 1.8em;
-      cursor: pointer;
-      margin-top: 0.2rem;
-      transition: background 0.22s ease, color 0.22s ease;
-    }
-
-    .s1-btn-open:hover {
-      background: var(--rouge);
-      color: var(--creme);
-    }
-
-    @keyframes s1FadeUp {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0);   }
-    }
-
-    /* ═══════════════════════════════════════════════════════════
-       SCREEN-2  Brief du Commissaire
-    ═══════════════════════════════════════════════════════════ */
-    #screen-2 {
-      justify-content: flex-start;
-      padding-top: 5.5rem;
-      gap: 1.6rem;
-    }
-
-    /* — Barre de progression Affaire 1 / 2 / 3 — */
-    .s2-progress {
-      display: flex;
-      align-items: flex-start;
-      gap: 0;
-      flex-shrink: 0;
-    }
-
-    .s2-step {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.45rem;
-    }
-
-    .s2-dot {
-      width: 11px;
-      height: 11px;
-      border-radius: 50%;
-      border: 1px solid rgba(201, 168, 76, 0.3);
-      background: transparent;
-      transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
-    }
-
-    .s2-step.lit .s2-dot {
-      background: var(--or);
-      border-color: var(--or);
-      box-shadow: 0 0 7px rgba(201, 168, 76, 0.55);
-    }
-
-    .s2-step-label {
-      font-family: var(--font-mono);
-      font-size: 0.55rem;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: var(--or);
-      opacity: 0.35;
-      white-space: nowrap;
-    }
-
-    .s2-step.lit .s2-step-label {
-      opacity: 1;
-    }
-
-    .s2-connector {
-      width: 52px;
-      height: 1px;
-      background: rgba(201, 168, 76, 0.18);
-      margin: 5px 4px 0; /* aligne avec le centre du dot */
-      flex-shrink: 0;
-    }
-
-    /* — Feuillet dactylographié — */
-    .s2-feuillet {
-      background: #1a1510;
-      border: 1px solid rgba(201, 168, 76, 0.32);
-      box-shadow:
-        inset 0 0 40px rgba(0, 0, 0, 0.55),
-        0 2px 20px rgba(0, 0, 0, 0.4);
-      padding: clamp(1.4rem, 3vw, 2.2rem) clamp(1.6rem, 4vw, 2.8rem);
-      max-width: 600px;
-      width: 100%;
-      text-align: left;
-    }
-
-    .s2-para {
-      font-family: var(--font-corps);
-      font-style: italic;
-      font-size: clamp(1rem, 1.6vw, 1.12rem);
-      color: var(--creme);
-      line-height: 1.95;
-      max-width: none;
-      margin-bottom: 1.1rem;
-    }
-
-    .s2-para:last-of-type {
-      margin-bottom: 0;
-    }
-
-    .s2-sig-line {
-      width: 100%;
-      height: 1px;
-      background: rgba(201, 168, 76, 0.18);
-      margin: 1.4rem 0 1rem;
-    }
-
-    .s2-signature {
-      font-family: 'Dancing Script', cursive;
-      font-size: clamp(1.35rem, 2.8vw, 1.8rem);
-      color: var(--or);
-      text-align: right;
-      display: block;
-      line-height: 1.2;
-    }
-
-    /* ═══════════════════════════════════════════════════════════
-       SCREEN-6  Résultats finaux
-    ═══════════════════════════════════════════════════════════ */
-    #screen-6 {
-      justify-content: flex-start;
-      padding-top: 5.5rem;
-      gap: 1.4rem;
-    }
-
-    .s6-headline {
-      font-family: var(--font-corps);
-      font-style: italic;
-      font-size: clamp(0.95rem, 1.8vw, 1.15rem);
+      font-size: 0.62rem;
+      letter-spacing: 0.14em;
       color: var(--or-clair);
-      text-align: center;
-      max-width: 52ch;
-    }
-
-    .s6-grade {
-      font-family: var(--font-titre);
-      font-size: clamp(1.7rem, 4vw, 2.8rem);
-      color: var(--or);
-      text-align: center;
-      letter-spacing: 0.06em;
-      line-height: 1.15;
-    }
-
-    .s6-grade.divisionnaire {
-      animation: s6Shimmer 2s ease-in-out infinite;
-    }
-
-    @keyframes s6Shimmer {
-      0%, 100% { text-shadow: 0 0 8px rgba(201, 168, 76, 0.3); color: var(--or); }
-      50%       { text-shadow: 0 0 22px rgba(232, 213, 163, 0.9), 0 0 44px rgba(201, 168, 76, 0.5); color: var(--or-clair); }
-    }
-
-    .s6-stars {
-      display: flex;
-      gap: 0.55rem;
-      justify-content: center;
-      font-size: 1.9rem;
-      line-height: 1;
-    }
-
-    .s6-star          { color: rgba(201, 168, 76, 0.18); }
-    .s6-star.active   { color: var(--or); }
-    .s6-star.gold     { color: var(--or-clair); text-shadow: 0 0 14px rgba(232, 213, 163, 0.9); }
-
-    .s6-canvas-wrap {
-      border: 1px solid rgba(201, 168, 76, 0.28);
-      box-shadow: 0 4px 32px rgba(0, 0, 0, 0.55);
-      line-height: 0;
-      flex-shrink: 0;
-    }
-
-    .s6-canvas-wrap canvas {
-      display: block;
-      max-width: min(400px, 90vw);
-      height: auto;
-    }
-
-    /* ═══ Mots mêlés — écrans 3-4-5 ═══ */
-    #screen-3, #screen-4, #screen-5 {
-      justify-content: flex-start;
-      padding-top: 5.2rem;
-      gap: 0.8rem;
-    }
-    .ws-header { display:flex; flex-direction:column; align-items:center; gap:0.5rem; flex-shrink:0; width:100%; }
-    .ws-titre { font-family:var(--font-titre); font-size:clamp(0.9rem,2vw,1.3rem); color:var(--or); font-style:italic; }
-    .ws-body { display:flex; gap:1.5rem; align-items:flex-start; flex-wrap:wrap; justify-content:center; width:100%; }
-    .ws-grid { display:grid; grid-template-columns:repeat(10,1fr); gap:3px; user-select:none; -webkit-user-select:none; flex-shrink:0; touch-action:none; }
-    .ws-cell { width:38px; height:38px; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:0.8rem; font-weight:700; color:var(--creme); background:rgba(201,168,76,0.03); border:1px solid rgba(201,168,76,0.1); cursor:pointer; transition:background 0.12s,color 0.12s; }
-    .ws-cell:hover:not(.ws-found):not(.ws-residual) { background:rgba(201,168,76,0.1); }
-    .ws-cell.ws-start { background:rgba(201,168,76,0.35); color:var(--or); }
-    .ws-cell.ws-sel   { background:rgba(201,168,76,0.2); color:var(--or-clair); }
-    .ws-cell.ws-found { background:rgba(139,26,26,0.2); color:rgba(245,240,232,0.55); text-decoration:line-through; }
-    .ws-cell.ws-residual { color:var(--or); background:rgba(201,168,76,0.14); animation:wsGlow 0.5s ease forwards; }
-    @keyframes wsGlow { from { background:rgba(201,168,76,0.55); } to { background:rgba(201,168,76,0.14); } }
-    .ws-side { display:flex; flex-direction:column; gap:1rem; min-width:145px; }
-    .ws-list-lbl { font-family:var(--font-mono); font-size:0.55rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--or); opacity:0.45; }
-    .ws-word-item { font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.1em; color:var(--creme); padding:0.3em 0; border-bottom:1px solid rgba(201,168,76,0.1); transition:all 0.3s; }
-    .ws-word-item.ws-word-found { text-decoration:line-through; color:var(--rouge); opacity:0.7; }
-    .ws-word-item.ws-word-ghost-revealed { color:var(--or); font-weight:700; }
-    .ws-ghost-msg { font-family:var(--font-corps); font-style:italic; font-size:0.72rem; color:var(--or-clair); opacity:0.85; margin-top:0.4rem; line-height:1.4; }
-    .ws-answer-section { display:none; padding-top:0.6rem; }
-    .ws-answer-row { display:flex; align-items:flex-start; gap:0.5rem; margin-bottom:0.45rem; flex-wrap:wrap; }
-    .ws-answer-lbl { font-family:var(--font-mono); font-size:0.52rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--or); width:4.5rem; text-align:right; flex-shrink:0; padding-top:14px; }
-    .ws-ans-lbl { font-family:var(--font-corps); font-style:italic; font-size:0.82rem; color:var(--creme); opacity:0.75; margin-bottom:0.5rem; line-height:1.4; }
-    .ws-char-boxes { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:0.8rem; }
-    .ws-char-inp { width:36px; height:44px; text-align:center; background:transparent; border:1.5px solid var(--or); color:var(--or-clair); font-family:var(--font-mono); font-size:1.15rem; font-weight:700; text-transform:uppercase; outline:none; transition:border-color 0.2s, box-shadow 0.2s; caret-color:var(--or); }
-    .ws-char-inp:focus { border-color:var(--or-clair); box-shadow:0 0 6px rgba(201,168,76,0.45); }
-    .ws-sub-btn { margin-top:0.3rem; }
-    .ws-stamp-wrap { display:flex; flex-direction:column; align-items:center; gap:0.4rem; margin-top:0.5rem; }
-    .ws-stamp { font-family:var(--font-mono); font-size:clamp(1.1rem,3vw,1.8rem); font-weight:700; letter-spacing:0.22em; padding:0.25em 0.6em; border:3px solid; display:inline-block; animation:stampCrash 0.5s cubic-bezier(0.22,0.61,0.36,1) forwards; opacity:0; transform-origin:center; }
-    .ws-stamp.ws-resolu { color:#3a9a3a; border-color:#3a9a3a; }
-    .ws-stamp.ws-echec  { color:var(--rouge); border-color:var(--rouge); }
-    .ws-sol-reveal { font-family:var(--font-mono); font-size:0.75rem; letter-spacing:0.12em; color:var(--or-clair); opacity:0.85; text-align:center; margin-top:0.3rem; }
-
-    /* ═══════════════════════════════════════════════════════════
-       SCREEN-3 à 5 & SCREEN-CARTE  (placeholders)
-    ═══════════════════════════════════════════════════════════ */
-    .placeholder-badge {
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      letter-spacing: 0.15em;
-      color: var(--or);
-      opacity: 0.3;
-      margin-top: 0.25rem;
-    }
-
-    /* ═══════════════════════════════════════════════════════════
-       Responsive — mobile 375 px
-    ═══════════════════════════════════════════════════════════ */
-    @media (max-width: 480px) {
-      html, body { font-size: 15px; }
-
-      /* Nav : masque le brand, liens scrollables horizontalement */
-      #top-nav { padding: 0 0.8rem; height: 2.8rem; }
-      #top-nav .brand { display: none; }
-      #top-nav .links {
-        width: 100%;
-        justify-content: flex-start;
-        gap: 0.8rem;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-      }
-      #top-nav .links::-webkit-scrollbar { display: none; }
-      #top-nav .links button { font-size: 0.58rem; white-space: nowrap; flex-shrink: 0; }
-
-      /* Écrans */
-      .screen { padding: 3.8rem 1rem 2rem; gap: 0.9rem; }
-      #screen-2, #screen-6 { padding-top: 3.8rem; }
-
-      /* Ornements de coin */
-      .corner { width: 22px; height: 22px; }
-
-      /* Screen-1 */
-      .s1-stamp { margin-bottom: 1.5rem; }
-      .s1-intro { font-size: 0.9rem; line-height: 1.7; }
-      .s1-form input { width: 85vw; }
-
-      /* Screen-2 */
-      .s2-feuillet { padding: 1.1rem 1.2rem; }
-      .s2-para { font-size: 0.92rem; line-height: 1.8; }
-      .s2-connector { width: 28px; }
-
-      /* Boutons */
-      .btn { font-size: 0.68rem; padding: 0.55em 1.1em; }
-      .s1-btn-open { font-size: 0.68rem; }
-      .nav-btns { gap: 0.4rem; flex-direction: column; align-items: center; }
-
-      /* Screen-6 */
-      .s6-grade { font-size: clamp(1.3rem, 5vw, 2rem); }
-      .s6-canvas-wrap canvas { max-width: calc(100vw - 2rem); }
-
-      .ws-body { flex-direction: column; align-items: center; }
-      .ws-side { max-width: 100%; flex-direction: row; flex-wrap: wrap; gap: 0.8rem; }
-
-      /* Grilles mots mêlés (screens 3-5) — cellule minimale 32×32 */
-      .ws-cell {
-        min-width:  32px !important;
-        min-height: 32px !important;
-        width:      32px !important;
-        height:     32px !important;
-        font-size:  0.75rem !important;
-        line-height: 32px !important;
-      }
-      .ws-grid { gap: 2px !important; }
+      opacity: 0.5;
+      margin-top: 1.2rem;
+      text-transform: uppercase;
     }
   </style>
 </head>
 <body>
 
-  <!-- ── Ornements de coin ──────────────────────────────────── -->
   <div class="corner tl"></div>
   <div class="corner tr"></div>
   <div class="corner bl"></div>
   <div class="corner br"></div>
 
-  <!-- ── Barre de navigation persistante ──────────────────── -->
   <nav id="top-nav">
-    <span class="brand">N-00 // DOSSIER CLASSIFIÉ</span>
-    <div class="links">
-      <button data-target="screen-2">Profil</button>
-      <button data-target="screen-3">Mission</button>
-      <button data-target="screen-4">Réseau</button>
-      <button data-target="screen-5">Archives</button>
-      <button data-target="screen-6">Protocole</button>
-      <button data-target="screen-carte">Carte</button>
+    <a class="brand" href="index.html">ÉNIGMES CRIMINELLES</a>
+    <div class="links" id="nav-links">
+      <a data-page="tutoriel" href="tutoriel.html">Comment jouer</a>
+      <a data-page="affaires" href="affaires.html">Affaires</a>
+      <a data-page="enquetes-speciales" href="enquetes-speciales.html">Enquêtes Spéciales <span class="badge-nouveau">NOUVEAU</span></a>
+      <a data-page="classement" href="classement.html">Classement</a>
+      <a data-page="livres" href="livres.html">Livres</a>
+      <a data-page="compte" id="nav-compte" href="inscription.html">Mon compte</a>
     </div>
+    <button id="nav-hamburger" aria-label="Menu" aria-expanded="false">☰</button>
   </nav>
-
-  <!-- ════════════════════════════════════════════════════════
-       SCREEN-1 : Accueil
-  ════════════════════════════════════════════════════════ -->
-  <div id="screen-1" class="screen active">
-
-    <!-- Tampon animé -->
-    <div class="s1-stamp">
-      <span class="s1-stamp-text">CONFIDENTIEL</span>
-    </div>
-
-    <!-- Texte d'intro (apparaît à 1,5 s) -->
-    <p class="s1-intro">
-      Ce dossier n'était pas censé quitter les archives.<br />
-      Il est maintenant entre vos mains.
-    </p>
-
-    <!-- Formulaire (apparaît à 2,8 s) -->
-    <div class="s1-form">
-      <input
-        type="text"
-        id="s1-input"
-        placeholder="Votre nom de code"
-        autocomplete="off"
-        maxlength="40"
-      />
-      <button class="s1-btn-open" id="s1-btn">
-        &#9654;&nbsp; Ouvrir le dossier
-      </button>
-    </div>
-
+  <div id="nav-mobile-panel">
+    <a href="tutoriel.html">Comment jouer</a>
+    <a href="affaires.html">Affaires</a>
+    <a href="enquetes-speciales.html">Enquêtes Spéciales <span class="badge-nouveau">NOUVEAU</span></a>
+    <a href="classement.html">Classement</a>
+    <a href="livres.html">Livres</a>
+    <a id="nav-mobile-compte" href="inscription.html">Mon compte</a>
   </div>
 
-  <!-- ════════════════════════════════════════════════════════
-       SCREEN-2 : Brief du Commissaire
-  ════════════════════════════════════════════════════════ -->
-  <div id="screen-2" class="screen">
+  <main class="page-home">
+    <div class="hero">
 
-    <!-- Barre de progression -->
-    <div class="s2-progress">
-      <div class="s2-step lit">
-        <div class="s2-dot"></div>
-        <span class="s2-step-label">Affaire 1</span>
-      </div>
-      <div class="s2-connector"></div>
-      <div class="s2-step">
-        <div class="s2-dot"></div>
-        <span class="s2-step-label">Affaire 2</span>
-      </div>
-      <div class="s2-connector"></div>
-      <div class="s2-step">
-        <div class="s2-dot"></div>
-        <span class="s2-step-label">Affaire 3</span>
-      </div>
-    </div>
+      <span class="hero-badge">// Dossier classifié — Accès restreint //</span>
 
-    <!-- Feuillet dactylographié -->
-    <div class="s2-feuillet">
-      <p class="s2-para">
-        Vingt-deux ans de carrière. J'en ai fermé, des dossiers.
-        Mais ces trois-là restent ouverts sur mon bureau.
-        Pas faute de preuves. Faute d'un regard suffisamment acéré pour les lire.
-      </p>
-      <p class="s2-para">
-        Ces affaires n'ont jamais été transmises au parquet.
-        Elles ont été classées. Enterrées.
-      </p>
-      <p class="s2-para">
-        Vous avez maintenant accès à ce que le Ministère
-        a voulu faire disparaître.
+      <h1>ÉNIGMES<br/>CRIMINELLES</h1>
+
+      <p class="hero-sub">
+        20 affaires criminelles à résoudre.<br/>
+        Trouvez le tueur, la méthode et le lieu.
       </p>
 
-      <div class="s2-sig-line"></div>
-      <span class="s2-signature">— Commissaire R. Morel</span>
+      <div class="divider"></div>
+
+      <div class="hero-btns" id="hero-btns">
+        <!-- injecté par JS selon état connexion -->
+      </div>
+
+      <div id="hero-compteur"></div>
+
     </div>
+  </main>
 
-    <!-- Navigation -->
-    <div class="nav-btns">
-      <button class="btn" onclick="showScreen('screen-3')">
-        Ouvrir la première affaire &rarr;
-      </button>
-    </div>
-
-  </div>
-
-  <!-- ════════════════════════════════════════════════════════
-       SCREEN-3 : Affaire 1
-  ════════════════════════════════════════════════════════ -->
-  <div id="screen-3" class="screen">
-    <div class="ws-header" id="ws-hdr-3"></div>
-    <div class="ws-body">
-      <div class="ws-grid" id="ws-grid-3"></div>
-      <div class="ws-side">
-        <div id="ws-wlist-3"></div>
-        <div class="ws-answer-section" id="ws-ans-3"></div>
+  <footer id="footer-global">
+    <div id="footer-inner">
+      <div id="footer-logo">ÉNIGMES CRIMINELLES</div>
+      <div id="footer-liens">
+        <a href="mentions-legales.html">Mentions légales</a>
+        <span class="footer-sep">·</span>
+        <a href="politique-confidentialite.html">Politique de confidentialité</a>
+        <span class="footer-sep">·</span>
+        <a href="livres.html">La série</a>
+        <span class="footer-sep">·</span>
+        <a href="https://www.amazon.fr/dp/B0GZK93B5F" target="_blank" rel="noopener">Commander sur Amazon</a>
+      </div>
+      <div id="footer-copy">
+        © <span id="footer-annee"></span> Victor Lenormand — Tous droits réservés
       </div>
     </div>
-  </div>
+  </footer>
+  <script>document.getElementById('footer-annee').textContent = new Date().getFullYear();</script>
 
-  <!-- ════════════════════════════════════════════════════════
-       SCREEN-4 : Affaire 2
-  ════════════════════════════════════════════════════════ -->
-  <div id="screen-4" class="screen">
-    <div class="ws-header" id="ws-hdr-4"></div>
-    <div class="ws-body">
-      <div class="ws-grid" id="ws-grid-4"></div>
-      <div class="ws-side">
-        <div id="ws-wlist-4"></div>
-        <div class="ws-answer-section" id="ws-ans-4"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ════════════════════════════════════════════════════════
-       SCREEN-5 : Affaire 3
-  ════════════════════════════════════════════════════════ -->
-  <div id="screen-5" class="screen">
-    <div class="ws-header" id="ws-hdr-5"></div>
-    <div class="ws-body">
-      <div class="ws-grid" id="ws-grid-5"></div>
-      <div class="ws-side">
-        <div id="ws-wlist-5"></div>
-        <div class="ws-answer-section" id="ws-ans-5"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ════════════════════════════════════════════════════════
-       SCREEN-6 : Résultats finaux
-  ════════════════════════════════════════════════════════ -->
-  <div id="screen-6" class="screen">
-
-    <p class="s6-headline" id="s6-headline"></p>
-
-    <h2 class="s6-grade" id="s6-grade"></h2>
-
-    <div class="s6-stars" id="s6-stars"></div>
-
-    <div class="divider"></div>
-
-    <!-- Carte enquêteur générée en canvas -->
-    <div class="s6-canvas-wrap">
-      <canvas id="s6-canvas" width="400" height="220"></canvas>
-    </div>
-
-    <div class="nav-btns">
-      <button class="btn" id="s6-dl-btn">&#11015; Télécharger ma carte</button>
-      <button class="btn" id="s6-replay-btn">&#8635; Rejouer depuis le début</button>
-    </div>
-
-  </div>
-
-  <!-- ════════════════════════════════════════════════════════
-       SCREEN-CARTE : Carte opérationnelle (placeholder)
-  ════════════════════════════════════════════════════════ -->
-  <div id="screen-carte" class="screen">
-    <span class="screen-id">ÉCRAN 07 / 07</span>
-    <span class="stamp-label">Carte opérationnelle</span>
-
-    <h2>Zone d'opération</h2>
-    <div class="divider"></div>
-
-    <p>[ contenu à venir ]</p>
-    <p class="placeholder-badge">// carte //</p>
-
-    <div class="nav-btns">
-      <button class="btn" onclick="showScreen('screen-6')">← Protocole</button>
-      <button class="btn" onclick="showScreen('screen-1')">⌂ Accueil</button>
-    </div>
-  </div>
-
-  <!-- ════════════════════════════════════════════════════════
-       JavaScript — navigation
-  ════════════════════════════════════════════════════════ -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
-    /* ── Globales ─────────────────────────────────────────────── */
-    var enqueteurNom = '';
-    var score = 0; // incrémenté par les écrans 3-4-5
-
-    /* ── Favicon — loupe or sur fond noir, généré en canvas ───── */
+    var SUPABASE_URL      = 'https://acmazynakkmhbbkymfjv.supabase.co';
+    var SUPABASE_ANON_KEY = 'sb_publishable_mY2chf8gDjPag_hgDs5z1A_Bv2HMF6O';
+    var supabase = window.supabase
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+      : null;
+    window._supabase = supabase;
+    if (!supabase) console.error('[Supabase] ERREUR — CDN non chargé');
+    else console.log('[Supabase] Client initialisé ✓');
+  </script>
+  <script src="./js/auth.js"></script>
+  <script>
     (function () {
-      var fc = document.createElement('canvas');
-      fc.width = fc.height = 32;
+      var fc = document.createElement('canvas'); fc.width = fc.height = 32;
       var x = fc.getContext('2d');
-      x.fillStyle = '#0a0a0a';
-      x.fillRect(0, 0, 32, 32);
-      x.strokeStyle = '#c9a84c';
-      x.lineWidth = 2.5;
-      x.lineCap = 'round';
+      x.fillStyle = '#0a0a0a'; x.fillRect(0, 0, 32, 32);
+      x.strokeStyle = '#c9a84c'; x.lineWidth = 2.5; x.lineCap = 'round';
       x.beginPath(); x.arc(13, 13, 7, 0, Math.PI * 2); x.stroke();
       x.beginPath(); x.moveTo(18, 18); x.lineTo(26, 26); x.stroke();
-      var lk = document.createElement('link');
-      lk.rel = 'icon'; lk.href = fc.toDataURL();
+      var lk = document.createElement('link'); lk.rel = 'icon'; lk.href = fc.toDataURL();
       document.head.appendChild(lk);
     }());
 
-    /* ── Son tampon encreur (AudioContext procédural) ─────────── */
-    function playStampSound() {
-      try {
-        var ac = new (window.AudioContext || window.webkitAudioContext)();
-        var t  = ac.currentTime;
-
-        // Basse impulsion — choc du tampon
-        var osc  = ac.createOscillator();
-        var gain = ac.createGain();
-        osc.connect(gain); gain.connect(ac.destination);
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(90, t);
-        osc.frequency.exponentialRampToValueAtTime(38, t + 0.18);
-        gain.gain.setValueAtTime(0, t);
-        gain.gain.linearRampToValueAtTime(0.75, t + 0.008);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
-        osc.start(t); osc.stop(t + 0.22);
-
-        // Bruit blanc filtré — texture « claquement »
-        var sr  = ac.sampleRate;
-        var buf = ac.createBuffer(1, sr * 0.07, sr);
-        var d   = buf.getChannelData(0);
-        for (var i = 0; i < d.length; i++) { d[i] = Math.random() * 2 - 1; }
-        var ns  = ac.createBufferSource();
-        ns.buffer = buf;
-        var flt = ac.createBiquadFilter();
-        flt.type = 'lowpass'; flt.frequency.value = 380;
-        var ng  = ac.createGain();
-        ns.connect(flt); flt.connect(ng); ng.connect(ac.destination);
-        ng.gain.setValueAtTime(0.28, t);
-        ng.gain.exponentialRampToValueAtTime(0.001, t + 0.07);
-        ns.start(t); ns.stop(t + 0.07);
-      } catch (e) { /* AudioContext non disponible — silencieux */ }
-    }
-
-    /* ── Formulaire screen-1 ──────────────────────────────────── */
-    document.getElementById('s1-btn').addEventListener('click', function () {
-      playStampSound();
-      var val = document.getElementById('s1-input').value.trim();
-      enqueteurNom = val || 'Inconnu';
-      showScreen('screen-2');
-    });
-
-    document.getElementById('s1-input').addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') { document.getElementById('s1-btn').click(); }
-    });
-
-    /* ══════════════════════════════════════════════════════════
-       MOTS MÊLÉS — données et moteur
-    ══════════════════════════════════════════════════════════ */
-
-    var wsActiveAffaire = null;
-
-    function generateGrid(placements, residualSeq) {
-      var r, c, i, pr, pc;
-      var grid = [], wordCells = [];
-      for (r = 0; r < 10; r++) {
-        grid.push([]); wordCells.push([]);
-        for (c = 0; c < 10; c++) { grid[r].push(null); wordCells[r].push(false); }
-      }
-      placements.forEach(function(p) {
-        for (i = 0; i < p.mot.length; i++) {
-          pr = p.dir === 'V' ? p.row + i : p.row;
-          pc = p.dir === 'H' ? p.col + i : p.col;
-          grid[pr][pc] = p.mot[i];
-          wordCells[pr][pc] = true;
-        }
-      });
-      var residuels = [], seqIdx = 0;
-      for (r = 0; r < 10; r++) {
-        for (c = 0; c < 10; c++) {
-          if (!wordCells[r][c]) {
-            grid[r][c] = residualSeq[seqIdx % residualSeq.length];
-            seqIdx++;
-            residuels.push([r, c]);
-          }
-        }
-      }
-      return {grid: grid, residuels: residuels};
-    }
-
-    var AFFAIRES = [
-      {
-        id: 3,
-        affaireNum: 1,
-        titre: 'La Nuit du Palais Royal',
-        ghost: {mot: 'GRENIER', cat: 'LIEU'},
-        wordPlacements: [
-          {mot:'RAPPORT',  row:0, col:0, dir:'H'},
-          {mot:'REGISTRE', row:2, col:0, dir:'H'},
-          {mot:'LANTERNE', row:0, col:9, dir:'V'},
-          {mot:'BRUYERE',  row:4, col:0, dir:'H'},
-          {mot:'COGNAC',   row:0, col:8, dir:'V'}
-        ],
-        residualSeq: 'LEONEPEE',
-        solution: {tueur:'LEON', methode:'EPEE', lieu:'GRENIER'},
-        nextScreen: 'screen-4'
-      },
-      {
-        id: 4,
-        affaireNum: 2,
-        titre: 'Le Dernier Train de Lyon',
-        ghost: {mot: 'LAME', cat: 'METHODE'},
-        wordPlacements: [
-          {mot:'BAGAGE',  row:0, col:0, dir:'H'},
-          {mot:'EXPRESS', row:2, col:0, dir:'H'},
-          {mot:'TICKET',  row:4, col:0, dir:'H'},
-          {mot:'COULOIR', row:0, col:7, dir:'V'},
-          {mot:'RETARD',  row:0, col:9, dir:'V'}
-        ],
-        residualSeq: 'VICTORQUAI',
-        solution: {tueur:'VICTOR', methode:'LAME', lieu:'QUAI'},
-        nextScreen: 'screen-5'
-      },
-      {
-        id: 5,
-        affaireNum: 3,
-        titre: 'La Disparition Rue des Orfèvres',
-        ghost: {mot: 'BLANCHE', cat: 'TUEUR'},
-        wordPlacements: [
-          {mot:'CONTRAT',  row:0, col:0, dir:'H'},
-          {mot:'ARCHIVES', row:2, col:0, dir:'H'},
-          {mot:'FENETRE',  row:0, col:9, dir:'V'},
-          {mot:'DOSSIER',  row:0, col:8, dir:'V'},
-          {mot:'SCEAU',    row:4, col:0, dir:'H'}
-        ],
-        residualSeq: 'ARSENICCAVE',
-        solution: {tueur:'BLANCHE', methode:'ARSENIC', lieu:'CAVE'},
-        nextScreen: 'screen-6'
-      }
-    ];
-
-    var wsStates = {};
-
-    function wsNorm(s) {
-      return (s||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
-    }
-
-    function wsGetCell(affId, r, c) {
-      var g = document.getElementById('ws-grid-' + affId);
-      return g ? g.querySelector('[data-r="'+r+'"][data-c="'+c+'"]') : null;
-    }
-
-    function wsGetCellsBetween(r1,c1,r2,c2) {
-      var cells = [];
-      if (r1 === r2) {
-        var mn = Math.min(c1,c2), mx = Math.max(c1,c2);
-        for (var c = mn; c <= mx; c++) cells.push([r1,c]);
-      } else if (c1 === c2) {
-        var mn2 = Math.min(r1,r2), mx2 = Math.max(r1,r2);
-        for (var r = mn2; r <= mx2; r++) cells.push([r,c1]);
-      }
-      return cells;
-    }
-
-    function wsInitAffaire(aff) {
-      if (!aff.grid) {
-        var result = generateGrid(aff.wordPlacements, aff.residualSeq);
-        aff.grid = result.grid;
-        aff.residuels = result.residuels;
-      }
-      wsStates[aff.id] = {found:[], done:false, mouseDown:false, startCell:null, axis:null};
-
-      var hdr = document.getElementById('ws-hdr-' + aff.id);
-      hdr.innerHTML =
-        '<div class="s2-progress">' +
-          wsStep('Affaire 1', aff.affaireNum >= 1) +
-          '<div class="s2-connector"></div>' +
-          wsStep('Affaire 2', aff.affaireNum >= 2) +
-          '<div class="s2-connector"></div>' +
-          wsStep('Affaire 3', aff.affaireNum >= 3) +
-        '</div>' +
-        '<p class="ws-titre">' + aff.titre + '</p>' +
-        '<div class="divider"></div>';
-
-      wsRenderGrid(aff);
-      wsRenderWordList(aff);
-
-      verifyGrid(aff);
-      var ans = document.getElementById('ws-ans-' + aff.id);
-      ans.innerHTML = '';
-      ans.style.display = 'none';
-    }
-
-    function wsStep(label, lit) {
-      return '<div class="s2-step'+(lit?' lit':'')+'"><div class="s2-dot"></div><span class="s2-step-label">'+label+'</span></div>';
-    }
-
-    function wsExtendSel(aff, r, c) {
-      var st = wsStates[aff.id];
-      if (!st.startCell) return;
-      var sr = st.startCell[0], sc = st.startCell[1];
-      if (r === sr && c === sc) { wsClearSel(aff); return; }
-      if (!st.axis) {
-        if (r === sr) st.axis = 'H';
-        else if (c === sc) st.axis = 'V';
-        else st.axis = (Math.abs(r - sr) >= Math.abs(c - sc)) ? 'V' : 'H';
-      }
-      var cells = (st.axis === 'H')
-        ? wsGetCellsBetween(sr, sc, sr, c)
-        : wsGetCellsBetween(sr, sc, r, sc);
-      wsClearSel(aff);
-      cells.forEach(function(pos) {
-        var cell = wsGetCell(aff.id, pos[0], pos[1]);
-        if (cell && !cell.classList.contains('ws-found')) cell.classList.add('ws-sel');
-      });
-    }
-
-    function wsRenderGrid(aff) {
-      var gridEl = document.getElementById('ws-grid-' + aff.id);
-      gridEl.innerHTML = '';
-      for (var r = 0; r < 10; r++) {
-        for (var c = 0; c < 10; c++) {
-          var cell = document.createElement('div');
-          cell.className = 'ws-cell';
-          cell.dataset.r = r;
-          cell.dataset.c = c;
-          cell.textContent = aff.grid[r][c];
-          gridEl.appendChild(cell);
-        }
-      }
-
-      gridEl.addEventListener('mousedown', function(e) {
-        e.preventDefault();
-        var st = wsStates[aff.id];
-        if (st.done) return;
-        var t = e.target.closest('.ws-cell');
-        if (!t) return;
-        st.mouseDown = true;
-        st.startCell = [parseInt(t.dataset.r), parseInt(t.dataset.c)];
-        st.axis = null;
-        wsActiveAffaire = aff;
-        wsClearSel(aff);
-        if (!t.classList.contains('ws-found')) t.classList.add('ws-sel');
-      });
-
-      gridEl.addEventListener('mouseover', function(e) {
-        var st = wsStates[aff.id];
-        if (!st.mouseDown) return;
-        var t = e.target.closest('.ws-cell');
-        if (t) wsExtendSel(aff, parseInt(t.dataset.r), parseInt(t.dataset.c));
-      });
-
-      gridEl.addEventListener('touchstart', function(e) {
-        e.preventDefault();
-        var st = wsStates[aff.id];
-        if (st.done) return;
-        var touch = e.touches[0];
-        var el = document.elementFromPoint(touch.clientX, touch.clientY);
-        var cell = el && el.closest('.ws-cell');
-        if (!cell) return;
-        st.mouseDown = true;
-        st.startCell = [parseInt(cell.dataset.r), parseInt(cell.dataset.c)];
-        st.axis = null;
-        wsActiveAffaire = aff;
-        wsClearSel(aff);
-        if (!cell.classList.contains('ws-found')) cell.classList.add('ws-sel');
-      }, {passive:false});
-
-      gridEl.addEventListener('touchmove', function(e) {
-        e.preventDefault();
-        var st = wsStates[aff.id];
-        if (!st.mouseDown) return;
-        var touch = e.touches[0];
-        var el = document.elementFromPoint(touch.clientX, touch.clientY);
-        var cell = el && el.closest('.ws-cell');
-        if (cell) wsExtendSel(aff, parseInt(cell.dataset.r), parseInt(cell.dataset.c));
-      }, {passive:false});
-
-      gridEl.addEventListener('touchend', function(e) {
-        e.preventDefault();
-        var st = wsStates[aff.id];
-        if (!st.mouseDown) return;
-        st.mouseDown = false;
-        wsActiveAffaire = null;
-        var selCells = [];
-        gridEl.querySelectorAll('.ws-sel').forEach(function(c2) {
-          selCells.push([parseInt(c2.dataset.r), parseInt(c2.dataset.c)]);
-        });
-        wsClearSel(aff);
-        st.startCell = null;
-        st.axis = null;
-        if (selCells.length >= 2) wsCheckMatch(aff, selCells);
-      }, {passive:false});
-    }
-
-    function wsClearSel(aff) {
-      var g = document.getElementById('ws-grid-' + aff.id);
-      if (!g) return;
-      g.querySelectorAll('.ws-sel').forEach(function(c) {
-        c.classList.remove('ws-sel');
-      });
-    }
-
-    function wsCheckMatch(aff, cells) {
-      var forward = cells.map(function(p) { return aff.grid[p[0]][p[1]]; }).join('');
-      var backward = forward.split('').reverse().join('');
-      var st = wsStates[aff.id];
-      var foundMot = null;
-      aff.wordPlacements.forEach(function(p) {
-        if (st.found.indexOf(p.mot) !== -1) return;
-        if (forward === p.mot || backward === p.mot) foundMot = p.mot;
-      });
-      if (foundMot) {
-        st.found.push(foundMot);
-        cells.forEach(function(p) {
-          var c = wsGetCell(aff.id, p[0], p[1]);
-          if (c) { c.classList.remove('ws-sel'); c.classList.add('ws-found'); }
-        });
-        var item = document.querySelector('#ws-wlist-'+aff.id+' [data-mot="'+foundMot+'"]');
-        if (item) item.classList.add('ws-word-found');
-        if (st.found.length >= aff.wordPlacements.length) {
-          st.done = true;
-          setTimeout(function() { wsRevealGhost(aff); }, 400);
-        }
-      }
-    }
-
-    function wsRenderWordList(aff) {
-      var el = document.getElementById('ws-wlist-' + aff.id);
-      el.innerHTML = '<div class="ws-list-lbl">Mots à trouver</div>';
-      aff.wordPlacements.forEach(function(p) {
-        var item = document.createElement('div');
-        item.className = 'ws-word-item';
-        item.dataset.mot = p.mot;
-        item.textContent = p.mot;
-        el.appendChild(item);
-      });
-      var ghost = document.createElement('div');
-      ghost.className = 'ws-word-item';
-      ghost.id = 'ws-ghost-item-' + aff.id;
-      ghost.textContent = aff.ghost.mot;
-      el.appendChild(ghost);
-    }
-
-    function wsRevealGhost(aff) {
-      var ghostItem = document.getElementById('ws-ghost-item-' + aff.id);
-      if (ghostItem) {
-        ghostItem.classList.add('ws-word-ghost-revealed');
-        var msg = document.createElement('div');
-        msg.className = 'ws-ghost-msg';
-        msg.textContent = 'Ce mot est introuvable dans la grille. Il constitue votre premier indice.';
-        ghostItem.parentNode.insertBefore(msg, ghostItem.nextSibling);
-      }
-      setTimeout(function() { wsIlluminateResiduals(aff); }, 1800);
-    }
-
-    function verifyGrid(aff) {
-      var wordCells = {};
-      aff.wordPlacements.forEach(function(p) {
-        for (var i = 0; i < p.mot.length; i++) {
-          var r = p.dir === 'V' ? p.row + i : p.row;
-          var c = p.dir === 'H' ? p.col + i : p.col;
-          var key = r + ',' + c;
-          if (wordCells[key] && wordCells[key] !== p.mot[i]) {
-            console.error('[verifyGrid] Affaire ' + aff.affaireNum + ': conflit cellule (' + r + ',' + c + ') entre "' + wordCells[key] + '" et "' + p.mot[i] + '"');
-          }
-          wordCells[key] = p.mot[i];
-        }
-      });
-      var uniqueWordCount = Object.keys(wordCells).length;
-      var residualCount = aff.residuels.length;
-      var total = uniqueWordCount + residualCount;
-      if (total !== 100) {
-        console.error('[verifyGrid] Affaire ' + aff.affaireNum + ': total=' + total + ' (attendu 100). mots=' + uniqueWordCount + ', res=' + residualCount);
-      }
-      var ghost = aff.ghost.cat;
-      var expected = '';
-      if (ghost === 'TUEUR') expected = aff.solution.methode + aff.solution.lieu;
-      else if (ghost === 'METHODE') expected = aff.solution.tueur + aff.solution.lieu;
-      else expected = aff.solution.tueur + aff.solution.methode;
-      var residualLetters = aff.residuels.map(function(pos) { return aff.grid[pos[0]][pos[1]]; }).join('');
-      var rSorted = residualLetters.split('').sort().join('');
-      var eSorted = expected.split('').sort().join('');
-      if (rSorted !== eSorted) {
-        console.error('[verifyGrid] Affaire ' + aff.affaireNum + ': residuels="' + residualLetters + '" != attendu="' + expected + '"');
+    document.addEventListener('DOMContentLoaded', async function () {
+      /* Compteur enquêteurs — Supabase si disponible, sinon localStorage */
+      var nbEnqueteurs = 0;
+      var db = window._supabase;
+      if (db) {
+        var res = await db.from('ec_users').select('id', { count: 'exact', head: true });
+        nbEnqueteurs = res.count || 0;
       } else {
-        console.log('[verifyGrid] Affaire ' + aff.affaireNum + ' OK — ' + uniqueWordCount + ' mots + ' + residualCount + ' res = 100');
+        nbEnqueteurs = JSON.parse(localStorage.getItem('ec_users_local') || '[]').length;
       }
-    }
-
-        function wsIlluminateResiduals(aff) {
-      var res = aff.residuels;
-      var interval = Math.min(300, Math.ceil(2800 / res.length));
-      res.forEach(function(pos, i) {
-        setTimeout(function() {
-          var c = wsGetCell(aff.id, pos[0], pos[1]);
-          if (c) c.classList.add('ws-residual');
-        }, i * interval);
-      });
-      setTimeout(function() { wsShowAnswerForm(aff); }, Math.min(2800, res.length * interval) + 500);
-    }
-
-    function wsShowAnswerForm(aff) {
-      var sec = document.getElementById('ws-ans-' + aff.id);
-      sec.style.display = 'block';
-      var fields = [
-        {key:'tueur',    label:'TUEUR',   len:aff.solution.tueur.length},
-        {key:'methode',  label:'MÉTHODE', len:aff.solution.methode.length},
-        {key:'lieu',     label:'LIEU',    len:aff.solution.lieu.length}
-      ];
-      var html = '';
-      fields.forEach(function(f) {
-        html += '<div class="ws-answer-row"><span class="ws-answer-lbl">' + f.label + '</span>';
-        html += '<div class="ws-char-boxes" id="ws-chars-' + aff.id + '-' + f.key + '">';
-        for (var i = 0; i < f.len; i++) {
-          html += '<input class="ws-char-inp" type="text" inputmode="text" maxlength="2" autocomplete="off" data-idx="' + i + '" />';
+      if (nbEnqueteurs > 0) {
+        var compteur = document.getElementById('hero-compteur');
+        if (compteur) {
+          compteur.textContent = nbEnqueteurs + ' enquêteur' + (nbEnqueteurs > 1 ? 's' : '') + ' inscrit' + (nbEnqueteurs > 1 ? 's' : '');
         }
-        html += '</div></div>';
-      });
-      html += '<button class="btn ws-sub-btn" id="ws-sub-' + aff.id + '">Refermer le dossier</button>';
-      html += '<div class="ws-stamp-wrap" id="ws-sw-' + aff.id + '"></div>';
-      html += '<div id="ws-nxt-' + aff.id + '" style="display:none"><button class="btn" id="ws-nxt-btn-' + aff.id + '">Affaire suivante &rarr;</button></div>';
-      sec.innerHTML = html;
-
-      fields.forEach(function(f) {
-        var boxes = Array.prototype.slice.call(sec.querySelectorAll('#ws-chars-' + aff.id + '-' + f.key + ' .ws-char-inp'));
-        boxes.forEach(function(box, idx) {
-          box.addEventListener('input', function() {
-            var v = wsNorm(box.value).replace(/[^A-Z]/g, '');
-            box.value = v ? v[v.length - 1] : '';
-            if (box.value && idx < boxes.length - 1) boxes[idx + 1].focus();
-          });
-          box.addEventListener('keydown', function(e) {
-            if (e.key === 'Backspace' && !box.value && idx > 0) {
-              boxes[idx - 1].focus();
-              boxes[idx - 1].value = '';
-            }
-          });
-        });
-      });
-
-      var firstBox = sec.querySelector('.ws-char-inp');
-      if (firstBox) firstBox.focus();
-
-      document.getElementById('ws-sub-' + aff.id).addEventListener('click', function() {
-        wsValidate(aff);
-      });
-      document.getElementById('ws-nxt-btn-' + aff.id).addEventListener('click', function() {
-        showScreen(aff.nextScreen);
-      });
-    }
-
-    function wsValidate(aff) {
-      function readField(key) {
-        var boxes = document.querySelectorAll('#ws-chars-' + aff.id + '-' + key + ' .ws-char-inp');
-        var v = '';
-        boxes.forEach(function(b) { v += b.value; });
-        return wsNorm(v);
       }
-      var okT = readField('tueur')   === wsNorm(aff.solution.tueur);
-      var okM = readField('methode') === wsNorm(aff.solution.methode);
-      var okL = readField('lieu')    === wsNorm(aff.solution.lieu);
-      var ok = okT && okM && okL;
-      if (ok) score++;
-      var wrap = document.getElementById('ws-sw-' + aff.id);
-      var stamp = document.createElement('div');
-      stamp.className = 'ws-stamp ' + (ok ? 'ws-resolu' : 'ws-echec');
-      stamp.textContent = ok ? 'RÉSOLU' : 'ÉCHEC';
-      wrap.appendChild(stamp);
-      if (!ok) {
-        var sol = document.createElement('p');
-        sol.className = 'ws-sol-reveal';
-        sol.textContent = 'Tueur : ' + aff.solution.tueur + ' — Méthode : ' + aff.solution.methode + ' — Lieu : ' + aff.solution.lieu;
-        wrap.appendChild(sol);
-      }
-      document.getElementById('ws-sub-' + aff.id).disabled = true;
-      document.getElementById('ws-nxt-' + aff.id).style.display = 'block';
-    }
-
-    document.addEventListener('mouseup', function() {
-      if (!wsActiveAffaire) return;
-      var aff = wsActiveAffaire;
-      var st = wsStates[aff.id];
-      if (!st || !st.mouseDown) return;
-      st.mouseDown = false;
-      wsActiveAffaire = null;
-      var g = document.getElementById('ws-grid-' + aff.id);
-      if (!g) return;
-      var selCells = [];
-      g.querySelectorAll('.ws-sel').forEach(function(c) {
-        selCells.push([parseInt(c.dataset.r), parseInt(c.dataset.c)]);
-      });
-      wsClearSel(aff);
-      st.startCell = null;
-      st.axis = null;
-      if (selCells.length >= 2) wsCheckMatch(aff, selCells);
-    });
-    /* ── Navigation ───────────────────────────────────────────── */
-    var topNav = document.getElementById('top-nav');
-
-    function showScreen(id) {
-      document.querySelectorAll('.screen').forEach(function (s) {
-        s.classList.remove('active');
-      });
-
-      var target = document.getElementById(id);
-      if (target) { target.classList.add('active'); }
-
-      if (id === 'screen-1') {
-        topNav.classList.remove('visible');
+      var btns = document.getElementById('hero-btns');
+      if (isLoggedIn()) {
+        btns.innerHTML =
+          '<a class="btn-primary" href="affaires.html">Continuer l\'enquête &rarr;</a>' +
+          '<a class="btn" href="livres.html">Voir les livres &rarr;</a>' +
+          '<a class="btn" href="tutoriel.html">Comment ça marche &rarr;</a>';
       } else {
-        topNav.classList.add('visible');
-      }
-
-      document.querySelectorAll('#top-nav .links button').forEach(function (btn) {
-        btn.classList.toggle('active-link', btn.dataset.target === id);
-      });
-
-      if (id === 'screen-6') { renderScreen6(); }
-
-      var wsMap = {'screen-3': AFFAIRES[0], 'screen-4': AFFAIRES[1], 'screen-5': AFFAIRES[2]};
-      if (wsMap[id]) { wsInitAffaire(wsMap[id]); }
-    }
-
-    document.querySelectorAll('#top-nav .links button').forEach(function (btn) {
-      btn.addEventListener('click', function () { showScreen(btn.dataset.target); });
-    });
-
-    /* ── Screen-6 : résultats ─────────────────────────────────── */
-    var GRADES = [
-      { label: 'Inspecteur Stagiaire',       stars: 1, div: false },
-      { label: 'Inspecteur',                 stars: 2, div: false },
-      { label: 'Commissaire',                stars: 3, div: false },
-      { label: 'Commissaire Divisionnaire',  stars: 3, div: true  }
-    ];
-
-    // Stocke le matricule généré pour que download et rendu soient cohérents
-    var s6Cache = { grade: '', stars: 0, div: false, matricule: '' };
-
-    function renderScreen6() {
-      var g = GRADES[Math.min(score, 3)];
-      var year = new Date().getFullYear();
-      var rand = String(1000 + Math.floor(Math.random() * 9000));
-      s6Cache = { grade: g.label, stars: g.stars, div: g.div,
-                  matricule: 'EC-' + year + '-' + rand };
-
-      // Headline
-      document.getElementById('s6-headline').textContent =
-        'Dossier ' + score + '/3 affaires résolues, ' + enqueteurNom + '.';
-
-      // Grade
-      var gradeEl = document.getElementById('s6-grade');
-      gradeEl.textContent = g.label;
-      gradeEl.className = 's6-grade' + (g.div ? ' divisionnaire' : '');
-
-      // Étoiles DOM
-      var starsEl = document.getElementById('s6-stars');
-      starsEl.innerHTML = '';
-      for (var i = 0; i < 3; i++) {
-        var sp = document.createElement('span');
-        sp.textContent = '★';
-        sp.className = 's6-star' + (i < g.stars ? (g.div ? ' gold' : ' active') : '');
-        starsEl.appendChild(sp);
-      }
-
-      drawCarteEnqueteur();
-    }
-
-    function drawCarteEnqueteur() {
-      var canvas = document.getElementById('s6-canvas');
-      var ctx    = canvas.getContext('2d');
-      var W = 400, H = 220;
-
-      // Fond
-      ctx.fillStyle = '#0a0a0a';
-      ctx.fillRect(0, 0, W, H);
-
-      // Bordure double
-      ctx.strokeStyle = '#c9a84c';
-      ctx.lineWidth   = 2;
-      ctx.strokeRect(5, 5, W - 10, H - 10);
-      ctx.strokeStyle = 'rgba(201,168,76,0.45)';
-      ctx.lineWidth   = 0.7;
-      ctx.strokeRect(10, 10, W - 20, H - 20);
-
-      ctx.textAlign = 'center';
-
-      // Logo
-      ctx.fillStyle = '#c9a84c';
-      ctx.font = 'bold 10px "Courier New", monospace';
-      ctx.fillText('ÉNIGMES  CRIMINELLES', W / 2, 32);
-
-      // Ligne séparatrice haute
-      _hline(ctx, 18, 41, W - 18, 'rgba(201,168,76,0.38)');
-
-      // Enquêteur
-      ctx.fillStyle = '#f5f0e8';
-      ctx.font = '11px "Courier New", monospace';
-      ctx.fillText('ENQUÊTEUR : ' + (enqueteurNom || 'INCONNU').toUpperCase(), W / 2, 64);
-
-      // Grade
-      ctx.fillStyle = '#c9a84c';
-      ctx.font = 'bold 13px Georgia, serif';
-      ctx.fillText(s6Cache.grade.toUpperCase(), W / 2, 90);
-
-      // Étoiles canvas
-      var starsFull  = '';
-      var starsEmpty = '';
-      for (var i = 0; i < 3; i++) {
-        starsFull  += (i < s6Cache.stars ? '★' : '');
-        starsEmpty += (i < s6Cache.stars ? '' : '☆');
-      }
-      ctx.font = '18px serif';
-      ctx.fillStyle = s6Cache.div ? '#e8d5a3' : '#c9a84c';
-      ctx.fillText(starsFull + starsEmpty, W / 2, 118);
-
-      // Ligne séparatrice basse
-      _hline(ctx, 18, 134, W - 18, 'rgba(201,168,76,0.25)');
-
-      // Matricule
-      ctx.fillStyle = '#e8d5a3';
-      ctx.font = '10px "Courier New", monospace';
-      ctx.fillText('MATRICULE : ' + s6Cache.matricule, W / 2, 156);
-
-      // Ligne avant pied
-      _hline(ctx, 18, 170, W - 18, 'rgba(201,168,76,0.2)');
-
-      // Pied confidentiel
-      ctx.fillStyle = 'rgba(139,26,26,0.85)';
-      ctx.font = 'bold 8px "Courier New", monospace';
-      ctx.fillText('DOSSIER  CONFIDENTIEL', W / 2, 193);
-    }
-
-    function _hline(ctx, x1, y, x2, color) {
-      ctx.strokeStyle = color;
-      ctx.lineWidth   = 0.5;
-      ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y); ctx.stroke();
-    }
-
-    /* ── Télécharger la carte ─────────────────────────────────── */
-    document.getElementById('s6-dl-btn').addEventListener('click', function () {
-      var canvas = document.getElementById('s6-canvas');
-
-      function triggerDownload(url) {
-        var a = document.createElement('a');
-        a.href     = url;
-        a.download = 'carte-enqueteur.png';
-        a.style.cssText = 'position:fixed;top:-9999px;opacity:0;pointer-events:none';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      }
-
-      // toBlob + createObjectURL : seule méthode fiable sur Safari/Firefox/Chrome
-      if (typeof canvas.toBlob === 'function') {
-        canvas.toBlob(function (blob) {
-          var url = URL.createObjectURL(blob);
-          triggerDownload(url);
-          // Révoque l'URL après que le navigateur a eu le temps de la consommer
-          setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
-        }, 'image/png');
-      } else {
-        // Navigateurs anciens sans toBlob — ouvre dans un nouvel onglet
-        window.open(canvas.toDataURL('image/png'), '_blank');
+        btns.innerHTML =
+          '<a class="btn-primary" href="inscription.html">Commencer l\'enquête &rarr;</a>' +
+          '<a class="btn" href="tutoriel.html">Comment ça marche &rarr;</a>' +
+          '<a class="btn" href="livres.html">Voir les livres &rarr;</a>';
       }
     });
-
-    /* ── Rejouer depuis le début ──────────────────────────────── */
-    document.getElementById('s6-replay-btn').addEventListener('click', function () {
-      score        = 0;
-      enqueteurNom = '';
-      document.getElementById('s1-input').value = '';
-
-      // Relance les animations CSS du screen-1
-      ['s1-stamp', 's1-intro', 's1-form'].forEach(function (cls) {
-        var el = document.querySelector('.' + cls);
-        if (!el) return;
-        el.style.animation = 'none';
-        el.offsetHeight;           // force reflow
-        el.style.animation = '';
-      });
-
-      showScreen('screen-1');
-    });
-
-    /* ── Démarrage ────────────────────────────────────────────── */
-    showScreen('screen-1');
   </script>
 
 </body>

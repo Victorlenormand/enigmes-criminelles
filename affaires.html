@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <title>Les Affaires — Énigmes Criminelles</title>
+  <meta name="author" content="Victor Lenormand">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=EB+Garamond:ital,wght@0,400;1,400&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+
+  <!-- Ornements de coin -->
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+  <!-- Navigation -->
+  <nav id="top-nav">
+    <a class="brand" href="index.html">ÉNIGMES CRIMINELLES</a>
+    <div class="links" id="nav-links">
+      <a data-page="tutoriel" href="tutoriel.html">Comment jouer</a>
+      <a data-page="affaires" href="affaires.html" class="active-link">Affaires</a>
+      <a data-page="enquetes-speciales" href="enquetes-speciales.html">Enquêtes Spéciales <span class="badge-nouveau">NOUVEAU</span></a>
+      <a data-page="classement" href="classement.html">Classement</a>
+      <a data-page="livres" href="livres.html">Livres</a>
+      <a data-page="compte" id="nav-compte" href="inscription.html">Mon compte</a>
+    </div>
+    <button id="nav-hamburger" aria-label="Menu" aria-expanded="false">☰</button>
+  </nav>
+  <div id="nav-mobile-panel">
+    <a href="tutoriel.html">Comment jouer</a>
+    <a href="affaires.html" class="active-link">Affaires</a>
+    <a href="enquetes-speciales.html">Enquêtes Spéciales <span class="badge-nouveau">NOUVEAU</span></a>
+    <a href="classement.html">Classement</a>
+    <a href="livres.html">Livres</a>
+    <a id="nav-mobile-compte" href="inscription.html">Mon compte</a>
+  </div>
+
+  <main class="page-content">
+
+    <!-- Vue sélection (par défaut) -->
+    <div id="vue-selection">
+      <div class="sel-header">
+        <h2>DOSSIERS CLASSIFIÉS</h2>
+        <p id="sel-progression">0 / 20 affaires résolues</p>
+      </div>
+      <div class="sel-niveaux">
+        <!-- Niveau 1 -->
+        <div class="sel-niveau">
+          <div class="sel-niveau-header">
+            <span class="sel-badge bronze">★☆☆</span>
+            <h3>NIVEAU 1 — INSPECTEUR</h3>
+            <p class="sel-niveau-desc">Mots horizontaux et verticaux</p>
+          </div>
+          <div class="sel-grid" id="sel-n1"></div>
+        </div>
+        <!-- Niveau 2 -->
+        <div class="sel-niveau">
+          <div class="sel-niveau-header">
+            <span class="sel-badge argent">★★☆</span>
+            <h3>NIVEAU 2 — COMMISSAIRE</h3>
+            <p class="sel-niveau-desc">+ Mots en diagonale</p>
+          </div>
+          <div class="sel-grid" id="sel-n2"></div>
+        </div>
+        <!-- Niveau 3 -->
+        <div class="sel-niveau">
+          <div class="sel-niveau-header">
+            <span class="sel-badge or">★★★</span>
+            <h3>NIVEAU 3 — DÉTECTIVE</h3>
+            <p class="sel-niveau-desc">+ Toutes directions et inversés</p>
+          </div>
+          <div class="sel-grid" id="sel-n3"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vue jeu (cachée par défaut, affichée au clic) -->
+    <div id="vue-jeu" style="display:none;">
+      <div class="jeu-back">
+        <button id="btn-retour" class="btn">← Retour aux dossiers</button>
+      </div>
+      <div id="jeu-affaire-container"></div>
+    </div>
+
+  </main>
+
+  <!-- Widget score fixe -->
+  <div id="widget-score">
+    <span id="ws-score">0 pts</span>
+    <span id="ws-rang"></span>
+  </div>
+
+  <!-- Overlay résultat -->
+  <div id="overlay-resultat" class="hidden">
+    <div id="carte-resultat">
+      <div id="resultat-tampon">RÉSOLU</div>
+      <h2 id="resultat-titre" style="font-family:'Playfair Display',serif;font-size:1rem;font-style:italic;color:#e8d5a3;margin:12px 0;"></h2>
+      <div id="resultat-solution">
+        <div class="solution-ligne"><span class="sol-label">TUEUR</span><span class="sol-valeur" id="sol-tueur"></span></div>
+        <div class="solution-ligne"><span class="sol-label">MÉTHODE</span><span class="sol-valeur" id="sol-methode"></span></div>
+        <div class="solution-ligne"><span class="sol-label">LIEU</span><span class="sol-valeur" id="sol-lieu"></span></div>
+      </div>
+      <div id="resultat-scores">
+        <div class="score-ligne"><span>Points de base</span><span id="sc-base"></span></div>
+        <div class="score-ligne"><span>Bonus vitesse</span><span id="sc-vitesse"></span></div>
+        <div class="score-ligne"><span>Bonus première tentative</span><span id="sc-bonus"></span></div>
+        <div class="score-ligne penalite" id="ligne-penalite"><span>Pénalités erreurs</span><span id="sc-penalite"></span></div>
+        <div class="score-ligne score-total"><span>TOTAL</span><span id="sc-total"></span></div>
+      </div>
+      <div id="resultat-rang">Grade : <strong id="rang-valeur"></strong></div>
+      <div id="resultat-actions">
+        <button id="btn-affaire-suivante">Affaire suivante →</button>
+        <button id="btn-voir-classement">Voir le classement</button>
+        <button id="btn-rejouer">Rejouer cette affaire</button>
+      </div>
+
+      <div id="section-partage">
+        <div id="partage-titre">Partagez votre résultat</div>
+        <div id="partage-apercu-wrapper">
+          <canvas id="apercu-partage"></canvas>
+        </div>
+        <div id="partage-format">
+          <button class="btn-format actif" data-format="carre">Carré (Instagram)</button>
+          <button class="btn-format" data-format="paysage">16/9 (Twitter)</button>
+        </div>
+        <div id="partage-actions">
+          <button id="btn-telecharger-image">⬇ Télécharger l'image</button>
+          <button id="btn-partager-natif" class="hidden">↗ Partager</button>
+        </div>
+        <div id="partage-texte-copie">
+          <textarea id="texte-a-copier" readonly></textarea>
+          <button id="btn-copier-texte">Copier le texte</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast streak -->
+  <div id="toast-streak" class="toast hidden">
+    <span id="toast-streak-texte"></span>
+  </div>
+
+  <!-- Toast badge -->
+  <div id="toast-badge" class="hidden toast-badge">
+    <span id="toast-badge-icone"></span>
+    <div>
+      <div id="toast-badge-nom"></div>
+      <div id="toast-badge-desc"></div>
+    </div>
+  </div>
+
+  <style>
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1a1510;
+      border: 1px solid #c9a84c;
+      color: #f5f0e8;
+      font-family: 'EB Garamond', serif;
+      font-size: 15px;
+      padding: 12px 24px;
+      z-index: 600;
+      white-space: nowrap;
+      animation: slideUpToast 0.3s ease;
+      pointer-events: none;
+    }
+    .toast.hidden { display: none; }
+    @keyframes slideUpToast {
+      from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+      to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
+    }
+    .toast-badge {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1a1510;
+      border: 2px solid #c9a84c;
+      color: #f5f0e8;
+      padding: 12px 20px;
+      z-index: 700;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 280px;
+      animation: slideUpToast 0.3s ease;
+      pointer-events: none;
+    }
+    .toast-badge.hidden { display: none; }
+    .toast-badge span:first-child { font-size: 28px; }
+    #toast-badge-nom {
+      font-family: 'Playfair Display', serif;
+      color: #c9a84c;
+      font-size: 14px;
+    }
+    #toast-badge-desc {
+      font-family: 'EB Garamond', serif;
+      font-size: 12px;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    /* ── Section partage ── */
+    #section-partage {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(201,168,76,0.15);
+    }
+    #partage-titre {
+      font-family: var(--font-mono, 'Courier Prime', monospace);
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      color: #c9a84c;
+      opacity: 0.6;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    #partage-apercu-wrapper {
+      text-align: center;
+      margin-bottom: 0.8rem;
+    }
+    #apercu-partage {
+      max-width: 100%;
+      border: 1px solid rgba(201,168,76,0.2);
+      display: block;
+      margin: 0 auto;
+    }
+    #partage-format {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    .btn-format {
+      font-family: var(--font-mono, 'Courier Prime', monospace);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      background: transparent;
+      border: 1px solid rgba(201,168,76,0.3);
+      color: #888;
+      padding: 6px 14px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+    .btn-format.actif,
+    .btn-format:hover {
+      border-color: #c9a84c;
+      color: #c9a84c;
+    }
+    #partage-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    #btn-telecharger-image,
+    #btn-partager-natif {
+      font-family: var(--font-mono, 'Courier Prime', monospace);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      background: rgba(201,168,76,0.08);
+      border: 1px solid rgba(201,168,76,0.4);
+      color: #c9a84c;
+      padding: 8px 18px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+    #btn-telecharger-image:hover,
+    #btn-partager-natif:hover {
+      background: rgba(201,168,76,0.18);
+    }
+    #btn-partager-natif.hidden { display: none; }
+    #partage-texte-copie {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    #texte-a-copier {
+      flex: 1;
+      background: #0a0908;
+      border: 1px solid #2a2018;
+      color: #888;
+      font-family: var(--font-mono, 'Courier Prime', monospace);
+      font-size: 0.7rem;
+      padding: 8px;
+      resize: none;
+      height: 64px;
+      line-height: 1.5;
+    }
+    #btn-copier-texte {
+      font-family: var(--font-mono, 'Courier Prime', monospace);
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      background: transparent;
+      border: 1px solid rgba(201,168,76,0.3);
+      color: #888;
+      padding: 8px 14px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    #btn-copier-texte:hover { color: #c9a84c; border-color: #c9a84c; }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+    var SUPABASE_URL      = 'https://acmazynakkmhbbkymfjv.supabase.co';
+    var SUPABASE_ANON_KEY = 'sb_publishable_mY2chf8gDjPag_hgDs5z1A_Bv2HMF6O';
+    var supabase = window.supabase
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+      : null;
+    window._supabase = supabase;
+    if (!supabase) console.error('[Supabase] ERREUR — CDN non chargé');
+    else console.log('[Supabase] Client initialisé ✓');
+  </script>
+  <script src="./js/auth.js"></script>
+  <script>
+    requireLogin();
+  </script>
+  <script src="./js/partage.js"></script>
+  <script src="./js/badges.js"></script>
+  <script src="./js/scoring.js"></script>
+  <script src="./js/affaires.js"></script>
+  <script>
+    /* ── Favicon ─────────────────────────────────────────────── */
+    (function () {
+      var fc = document.createElement('canvas');
+      fc.width = fc.height = 32;
+      var x = fc.getContext('2d');
+      x.fillStyle = '#0a0a0a'; x.fillRect(0, 0, 32, 32);
+      x.strokeStyle = '#c9a84c'; x.lineWidth = 2.5; x.lineCap = 'round';
+      x.beginPath(); x.arc(13, 13, 7, 0, Math.PI * 2); x.stroke();
+      x.beginPath(); x.moveTo(18, 18); x.lineTo(26, 26); x.stroke();
+      var lk = document.createElement('link');
+      lk.rel = 'icon'; lk.href = fc.toDataURL();
+      document.head.appendChild(lk);
+    }());
+
+    /* ── Migration + diagnostic au chargement ── */
+    document.addEventListener('DOMContentLoaded', async function() {
+      await migrerCompteLocalVersSupabase();
+      await diagnosticSupabase();
+    });
+
+    /* ── Widget score ────────────────────────────────────────── */
+    document.addEventListener('DOMContentLoaded', async function() {
+      var progInit = await getProgression();
+      progInit = progInit || {};
+      var scoresInit = progInit.scores || {};
+      var totalInit = Object.values(scoresInit).reduce(function(s, x) { return s + (x.points || 0); }, 0);
+      var wsScoreEl = document.getElementById('ws-score');
+      var wsRangEl  = document.getElementById('ws-rang');
+      if (wsScoreEl) wsScoreEl.textContent = totalInit + ' pts';
+      if (wsRangEl)  wsRangEl.textContent  = progInit.grade || '';
+    });
+
+    /* ── Vue sélection ───────────────────────────────────────── */
+    document.addEventListener('DOMContentLoaded', async function() {
+      var prog = await getProgression(true);
+      prog = prog || {};
+      var resolues = prog.affairesResolues || [];
+
+      document.getElementById('sel-progression').textContent = resolues.length + ' / 20 affaires résolues';
+
+      // Remplir les grilles de niveaux
+      var n1 = document.getElementById('sel-n1');
+      var n2 = document.getElementById('sel-n2');
+      var n3 = document.getElementById('sel-n3');
+
+      AFFAIRES.forEach(function(aff) {
+        var container = aff.niveau === 1 ? n1 : aff.niveau === 2 ? n2 : n3;
+        var resolue = resolues.indexOf(aff.id) !== -1;
+        var verrouillee = !resolue && aff.id > 1 && resolues.indexOf(aff.id - 1) === -1;
+
+        var card = document.createElement('div');
+        card.className = 'sel-card' + (resolue ? ' resolue' : '') + (verrouillee ? ' verrouillee' : '');
+        card.innerHTML =
+          '<div class="sel-num">N°' + String(aff.id).padStart(2,'0') + '</div>' +
+          '<div class="sel-titre">' + aff.titre + '</div>' +
+          '<div class="sel-statut ' + (resolue ? 'resolu' : 'ouvert') + '">' + (resolue ? '✓ Résolu' : 'Ouvert') + '</div>' +
+          (resolue ? '<div class="sel-stamp-resolu"><span>RÉSOLU</span></div>' : '');
+
+        if (!verrouillee) {
+          card.addEventListener('click', function() { ouvrirAffaire(aff); });
+        }
+        container.appendChild(card);
+      });
+
+      // URL param ?affaire=X — ouvrir directement une affaire
+      var params = new URLSearchParams(window.location.search);
+      var affaireParam = params.get('affaire');
+      if (affaireParam) {
+        var targetId = parseInt(affaireParam, 10);
+        var targetAff = AFFAIRES.find(function(a) { return a.id === targetId; });
+        var verrou = targetAff && targetAff.id > 1 && resolues.indexOf(targetAff.id - 1) === -1 && resolues.indexOf(targetAff.id) === -1;
+        if (targetAff && !verrou) ouvrirAffaire(targetAff);
+      }
+    });
+
+    function ouvrirAffaire(aff) {
+      document.getElementById('vue-selection').style.display = 'none';
+      var jeu = document.getElementById('vue-jeu');
+      jeu.style.display = 'block';
+
+      var container = document.getElementById('jeu-affaire-container');
+      container.innerHTML =
+        '<div class="affaire-game">' +
+          '<div class="ws-header" id="ws-hdr-' + aff.id + '"></div>' +
+          '<div class="ws-body">' +
+            '<div class="ws-grid" id="ws-grid-' + aff.id + '"></div>' +
+            '<div class="ws-side">' +
+              '<div id="ws-wlist-' + aff.id + '"></div>' +
+              '<div class="ws-answer-section" id="ws-ans-' + aff.id + '"></div>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+
+      wsInitAffaire(aff);
+    }
+
+    document.getElementById('btn-retour').addEventListener('click', function() {
+      document.getElementById('vue-jeu').style.display = 'none';
+      document.getElementById('vue-selection').style.display = 'block';
+      location.reload();
+    });
+  </script>
+
+  <footer id="footer-global">
+    <div id="footer-inner">
+      <div id="footer-logo">ÉNIGMES CRIMINELLES</div>
+      <div id="footer-liens">
+        <a href="mentions-legales.html">Mentions légales</a>
+        <span class="footer-sep">·</span>
+        <a href="politique-confidentialite.html">Politique de confidentialité</a>
+        <span class="footer-sep">·</span>
+        <a href="livres.html">La série</a>
+        <span class="footer-sep">·</span>
+        <a href="https://www.amazon.fr/dp/B0GZK93B5F" target="_blank" rel="noopener">Commander sur Amazon</a>
+      </div>
+      <div id="footer-copy">
+        © <span id="footer-annee"></span> Victor Lenormand — Tous droits réservés
+      </div>
+    </div>
+  </footer>
+  <script>document.getElementById('footer-annee').textContent = new Date().getFullYear();</script>
+
+</body>
+</html>
